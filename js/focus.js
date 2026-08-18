@@ -23,7 +23,7 @@ const G = { cx: 210, cy: 218, w: 132, h: 176 };
 const ICONS = {
   tick: 'M -34 2 L -11 26 L 34 -24',
   cross: 'M -26 -26 L 26 26 M 26 -26 L -26 26',
-  crown: 'M -40 22 L -46 -26 L -20 -6 L 0 -32 L 20 -6 L 46 -26 L 40 22 Z',
+  crown: 'M -42 26 L -50 -30 L -22 -6 L 0 -36 L 22 -6 L 50 -30 L 42 26 Z M -34 12 L 34 12',
   lock: 'M -20 -2 h 40 v 30 h -40 Z M -12 -2 v -12 a 12 12 0 0 1 24 0 v 12'
 };
 
@@ -34,7 +34,10 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
 
   const back = document.createElement('button');
   back.className = 'back';
-  back.textContent = 'BACK';
+  back.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15 5 L8 12 L15 19" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><span>BACK</span>`;
+  back.setAttribute('aria-label', 'Back to the menu');
   back.addEventListener('click', () => onBack());
   root.appendChild(back);
 
@@ -91,7 +94,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   // The tick that banks a step: a round button under the amount, and the only control on the face.
   const tickBtn = document.createElement('button');
   tickBtn.className = 'tick-btn';
-  tickBtn.innerHTML = `<svg viewBox="-60 -60 120 120"><path d="${ICONS.tick}" fill="none" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  tickBtn.innerHTML = `<svg viewBox="-60 -60 120 120"><path d="${ICONS.tick}" fill="none" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   coin.appendChild(tickBtn);
 
   // Tick if you held out, cross if you did not. Nothing else moves until it is answered.
@@ -105,7 +108,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   function verdictBtn(kind, d) {
     const b = document.createElement('button');
     b.className = `verdict-btn ${kind}`;
-    b.innerHTML = `<svg viewBox="-60 -60 120 120"><path d="${d}" fill="none" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    b.innerHTML = `<svg viewBox="-60 -60 120 120"><path d="${d}" fill="none" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     return b;
   }
 
@@ -224,15 +227,18 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     nameText.style.color = alpha(accent, 0.9);
 
     if (s === 'revealed') {
-      amountText.style.color = accent;
+      // Near-white, not the tier colour: the stone underneath is already wearing that colour, and
+      // the one number the app ever shows has to be readable before it is decorative.
+      amountText.style.color = lighten(accent, 0.9);
       countUp(amountText, currency, amountAt(l.plan, l.done));
     }
 
     clockText.textContent = clock(left);
     clockText.style.color = lighten(worn, 0.5);
 
-    if (s === 'waiting') setGlyph(ICONS.lock, alpha(lighten(worn, 0.35), 0.85), 'fill');
-    else if (s === 'done') setGlyph(ICONS.crown, accent, 'fill');
+    if (s === 'waiting') setGlyph(ICONS.lock, alpha(lighten(worn, 0.62), 0.9), 'fill');
+    // A crown in the track's colour, on a stone already wearing it, is a crown you cannot see.
+    else if (s === 'done') setGlyph(ICONS.crown, lighten(accent, 0.88), 'fill');
     else if (s === 'verdict') glyph.style.display = 'none';
 
     tickBtn.style.setProperty('--accent', accent);
@@ -263,7 +269,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     sparks(burst, accent, 18, 200);
     bounce(coin, 1.06, 620);
     animate(faceWrap, [{ filter: 'brightness(2.4)' }, { filter: 'brightness(1)' }], { duration: 620 });
-    setGlyph(ICONS.tick, accent, 'stroke');
+    setGlyph(ICONS.tick, lighten(accent, 0.9), 'stroke');
     amountText.hidden = true;
     if (finished) { sparks(burst, accent, 46, 300); ring(burst, accent, { size: 240, to: 5, ms: 1200, delay: 260 }); }
     // The burst runs for about 1.8 s before the gem settles into whatever comes next.

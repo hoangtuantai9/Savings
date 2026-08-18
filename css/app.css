@@ -142,7 +142,7 @@ html, body {
 
 .gem-wrap {
   position: relative;
-  width: 82%;
+  width: 88%;
   display: grid;
   place-items: center;
   will-change: transform;
@@ -164,8 +164,10 @@ html, body {
 .stop-mid   { stop-color: var(--mid, #ffb020); }
 .stop-point { stop-color: var(--point, #7a4f00); }
 
-.stone { transform-origin: center; }
-.stone-body { transition: none; filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.55)); }
+/* One shadow, under the whole stone. Hanging it off the body alone left the rim and the facets
+   sitting on a shadow that was not theirs, which reads as a misprint rather than as a gem. */
+.stone { transform-origin: center; filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.55)); }
+.stone-body { transition: none; }
 .stone-rim { stroke-linejoin: round; stroke-width: 3; transition: stroke 620ms ease; }
 
 .stone-cut {
@@ -245,18 +247,23 @@ html, body {
   position: absolute;
   top: clamp(14px, 3vh, 28px);
   left: clamp(14px, 3vw, 28px);
-  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 22px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(23, 27, 34, 0.7);
-  color: var(--muted);
-  font: 600 11px/1 var(--ui);
-  letter-spacing: 0.24em;
+  background: rgba(23, 27, 34, 0.85);
+  color: var(--text);
+  font: 600 13px/1 var(--ui);
+  letter-spacing: 0.2em;
   cursor: pointer;
   backdrop-filter: blur(6px);
   transition: color 240ms ease, border-color 240ms ease, transform 240ms ease;
 }
-.back:hover { color: var(--text); border-color: var(--accent); transform: translateX(-2px); }
+.back:hover { border-color: var(--accent); color: var(--accent); transform: translateX(-3px); }
+.back svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2.4; fill: none; }
 
 .coin {
   position: relative;
@@ -291,13 +298,15 @@ html, body {
   text-indent: 0.5em;
 }
 
+/* The amount lands on the widest part of the stone. It is set in near-white rather than the tier
+   colour: the stone under it is already that colour, and colour on colour cannot be read. */
 .face-amount {
-  font-size: clamp(22px, 5.4vmin, 44px);
-  font-weight: 700;
+  font-size: clamp(24px, 6.2vmin, 52px);
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-  transform: translateY(-6%);
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55), 0 0 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-9%);
 }
 
 .face-clock {
@@ -310,22 +319,26 @@ html, body {
 
 .face-glyph {
   width: 26%;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.55));
   height: auto;
   transform: translateY(-14%);
-  filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.4));
 }
 .focus[data-stage='waiting'] .face-glyph { transform: translateY(-56%) scale(0.44); }
 .focus[data-stage='done'] .face-glyph { transform: translateY(-6%) scale(1.4); }
 
 /* The only control on the face. */
+/* Clear of the stone's bottom vertex, not sitting on it, and big enough for a thumb. */
 .tick-btn, .verdict-btn {
   position: absolute;
-  bottom: 16%;
-  width: clamp(52px, 12%, 74px);
+  bottom: -8%;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: clamp(66px, 17%, 96px);
   aspect-ratio: 1;
-  border: 2px solid var(--accent);
+  border: 3px solid var(--accent);
   border-radius: 50%;
-  background: rgba(10, 13, 18, 0.55);
+  background: rgba(9, 12, 17, 0.94);
   color: var(--accent);
   display: grid;
   place-items: center;
@@ -334,17 +347,20 @@ html, body {
   box-shadow: 0 0 26px -6px var(--accent);
   transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 260ms ease, background 260ms ease;
 }
-.tick-btn svg, .verdict-btn svg { width: 52%; height: 52%; stroke: currentColor; }
+.tick-btn svg, .verdict-btn svg { width: 54%; height: 54%; stroke: currentColor; filter: drop-shadow(0 0 9px currentColor); }
 .tick-btn:hover, .verdict-btn:hover { transform: scale(1.12); box-shadow: 0 0 40px -4px var(--accent); }
 .tick-btn:active, .verdict-btn:active { transform: scale(0.94); }
 
 .verdict {
   position: absolute;
-  bottom: 14%;
+  bottom: -8%;
+  left: 0;
+  right: 0;
   display: flex;
-  gap: 18px;
+  justify-content: center;
+  gap: clamp(20px, 6%, 38px);
 }
-.verdict-btn { position: static; }
+.verdict-btn { position: static; margin-inline: 0; }
 .verdict-btn.tick { border-color: #35c08e; color: #35c08e; box-shadow: 0 0 26px -6px #35c08e; }
 .verdict-btn.cross { border-color: #ff5a57; color: #ff5a57; box-shadow: 0 0 26px -6px #ff5a57; }
 

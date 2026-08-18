@@ -146,7 +146,7 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     c.parts.rim.setAttribute('stroke-dasharray', dash(GEM.w, GEM.h, finished ? 1 : t.done / total));
 
     c.countText.textContent = shut ? '' : String(t.done);
-    c.countText.style.fill = darken(accent, 0.62);
+    c.countText.style.fill = darken(accent, 0.72);
     c.clockText.textContent = shut ? clock(left) : '';
     c.clockText.style.fill = lighten(worn, 0.55);
 
