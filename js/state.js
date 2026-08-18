@@ -6,6 +6,7 @@
 // into later — one write path, one broadcast.
 
 import { plans, VERSION, count } from './plans.js';
+import * as sync from './sync.js';
 
 const KEY = 'savings.data';
 
@@ -78,10 +79,13 @@ const listeners = new Set();
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 
 export function save(state) {
+  // Stamped on the way out: the tie-breaker when two devices wrote from the same revision.
+  state.savedAt = Date.now();
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
   } catch { /* private mode or a full disk: the session still runs, it just will not survive */ }
   for (const fn of listeners) fn(state);
+  sync.push(state);
 }
 
 // Another tab of the same browser writing the file: adopt it rather than fight it. This is also

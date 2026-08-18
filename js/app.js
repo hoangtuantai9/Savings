@@ -11,7 +11,8 @@ import { accentOf, alpha, ICE } from './gem.js';
 import { proclaim, after, money } from './fx.js';
 import { createMenu } from './menu.js';
 import { createFocus } from './focus.js';
-import { historyPanel, settingsPanel, confirmPanel } from './panels.js';
+import { historyPanel, settingsPanel, confirmPanel, syncPanel } from './panels.js';
+import * as sync from './sync.js';
 
 let state = store.load();
 let busy = false;                 // a celebration is playing; the rules hold still until it ends
@@ -278,11 +279,42 @@ addEventListener('keydown', e => {
 
   if (ctrl && e.key.toLowerCase() === 'h') { e.preventDefault(); openHistory(); }
   else if (ctrl && e.key.toLowerCase() === 'r') { e.preventDefault(); resetAll(); }
+  else if (ctrl && e.key.toLowerCase() === 'l') { e.preventDefault(); openSync(); }
   else if (e.key === 'Escape' && focus.isOpen()) leaveFocus();
 });
 
 // Another tab of the same browser writing the file: adopt it rather than fight it.
 store.watchOtherTabs(next => { state = next; render(); });
+
+// ---- the same books, on another machine ------------------------------------------------------
+
+/**
+ * A document arriving from elsewhere. It is only ever adopted between moments — a burst mid-flight
+ * would swap the ladder out from under a celebration — and only if it is the one to keep.
+ */
+function adopt(remote) {
+  const kept = sync.pick(state, remote);
+  if (kept === state) return;
+  const take = () => { state = kept; store.save(state); render(); if (focus.isOpen()) focus.paint(); };
+  busy ? after(600, () => (busy ? after(1200, take) : take())) : take();
+}
+
+sync.init(adopt).then(remote => { if (remote) adopt(remote); });
+
+function openSync() {
+  syncPanel({
+    status: sync.syncStatus(),
+    email: sync.account(),
+    onSignIn: async (email, password) => { const r = await sync.signIn(email, password); if (r) adopt(r); },
+    onSignUp: async (email, password) => {
+      const r = await sync.signUp(email, password);
+      if (r?.confirm) throw new Error('Check your inbox, then sign in.');
+      // A brand new account starts empty, so this device's ladders are what fills it.
+      store.save(state);
+    },
+    onSignOut: () => sync.signOut()
+  });
+}
 
 menu.enter();
 render();

@@ -120,6 +120,62 @@ function exportCsv(state) {
 }
 
 /**
+ * The way in to the shared books. Kept off every screen and reachable only by Ctrl+L, for the same
+ * reason the totals are: the menu is two cards and nothing else.
+ */
+export function syncPanel({ status, email, onSignIn, onSignUp, onSignOut }) {
+  const p = panel('Sync');
+
+  if (status === 'off') {
+    p.body.innerHTML = `<p class="panel-note">No backend is configured, so this browser keeps its own
+      books. Fill in <code>js/config.js</code> with a Supabase project URL and anon key, and every
+      device pointed at it shares one ladder.</p>`;
+    const close = button('Close');
+    close.addEventListener('click', p.close);
+    p.foot.append(close);
+    return;
+  }
+
+  if (status !== 'signed-out') {
+    p.body.innerHTML = `<div class="totals">
+        <div><span>Signed in</span><b>${email ?? '—'}</b></div>
+        <div><span>State</span><b>${status === 'live' ? 'in step' : 'offline — will catch up'}</b></div>
+      </div>
+      <p class="panel-note">Every device signed in here shares one set of ladders. A step banked on
+      one moves the others within a second or so.</p>`;
+    const out = button('Sign out', 'danger');
+    out.addEventListener('click', () => { p.close(); onSignOut(); });
+    const close = button('Close');
+    close.addEventListener('click', p.close);
+    p.foot.append(out, close);
+    return;
+  }
+
+  p.body.innerHTML = `
+    <label class="field"><span>Email</span><input type="email" id="email" autocomplete="username"></label>
+    <label class="field"><span>Password</span><input type="password" id="password" autocomplete="current-password"></label>
+    <p class="panel-note" id="sync-msg">Use the same account on every machine. The first time on a new
+    account, create it — the ladders you have climbed here are carried up to it.</p>`;
+
+  const say = m => { $('#sync-msg', p.body).textContent = m; };
+  const creds = () => [$('#email', p.body).value.trim(), $('#password', p.body).value];
+
+  const run = async (fn, label) => {
+    const [email, password] = creds();
+    if (!email || !password) return say('Both fields, please.');
+    say(label);
+    try { await fn(email, password); p.close(); }
+    catch (e) { say(e.message); }
+  };
+
+  const create = button('Create account');
+  create.addEventListener('click', () => run(onSignUp, 'Creating…'));
+  const enter = button('Sign in', 'primary');
+  enter.addEventListener('click', () => run(onSignIn, 'Signing in…'));
+  p.foot.append(create, enter);
+}
+
+/**
  * One track's options. Each track's are its own — changing one never touches the other.
  * `apply` receives the new plan; `onUndo` rolls the track back one step and clears its lock.
  */

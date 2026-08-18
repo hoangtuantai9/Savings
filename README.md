@@ -236,9 +236,43 @@ localStorage.setItem('savings.data', '<the contents of data.json>')
 
 Two tabs of the same browser stay in step: whichever one writes, the other adopts it.
 
-**Two different machines do not yet.** The app is built for it — every change goes through the single `save()` in
-`js/state.js`, and the history is append-only, so merging two devices is a union rather than a fight — but the
-backend that would carry it between them is not wired up. Until it is, one browser is one set of books.
+## Syncing
+
+Leave `js/config.js` empty and that is the whole story: one browser, one set of books, nothing leaving the machine.
+Fill it in and every device signed into the same account shares one ladder — tick a step on Windows and the phone has
+moved on to the next amount before you have put it down.
+
+**1. Make the table.** In the Supabase SQL editor:
+
+```sql
+create table savings_state (
+  user_id    uuid primary key references auth.users on delete cascade,
+  doc        jsonb not null,
+  rev        bigint not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+alter table savings_state enable row level security;
+
+-- Each account reaches its own row and no other. Without this, the anon key in the page would be
+-- enough for anyone to read your books.
+create policy "own row" on savings_state
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- So a change on one device reaches the others rather than waiting to be asked for.
+alter publication supabase_realtime add table savings_state;
+```
+
+**2. Point the app at it.** In `js/config.js`, paste the project URL and the anon key from **Project Settings → API**.
+The anon key belongs in the page — it is not a password. The policy above is what keeps the books private.
+
+**3. Sign in.** `Ctrl+L` on any device. Create the account once; sign into it everywhere else. The device that
+creates it carries its ladders up; the rest adopt what is already there.
+
+**How two devices are reconciled.** Every write carries a revision one higher than the one it was made from. A
+document arriving with a higher revision wins outright. Two devices that wrote from the same revision are compared on
+how many steps their history knows about — a banked step is a fact, and the device that has seen more of them is
+ahead — and on the clock only to break a tie. A device that was offline pushes as soon as it is back.
 
 ## Layout
 
@@ -247,6 +281,8 @@ index.html               the room, and nothing else
 manifest.webmanifest     what makes it installable
 icon.svg                 the split stone
 css/app.css              every colour, every idle
+js/config.js             where the books are kept, if anywhere but this browser
+js/sync.js               one set of books across every machine
 js/plans.js              the four ladders, and how to read one
 js/state.js              what is remembered, and the one place it is written
 js/gem.js                the diamond: geometry, cuts and colour
