@@ -20,7 +20,7 @@ const VND_LOCK = 18, USD_LOCK = 25;
 // Neither is ever drawn anywhere: the whole point of a bonus is that you cannot tell whether it is
 // five minutes or fifty away, and a counter of what is left today would give the second one up as
 // surely as a clock gives the first.
-const VND_BONUS_LOCK = 60, USD_BONUS_LOCK = 60;
+const VND_BONUS_LOCK = 45, USD_BONUS_LOCK = 45;
 
 /** Twice a day, per currency. The third take of the day does not come round until tomorrow. */
 export const BONUS_PER_DAY = 2;

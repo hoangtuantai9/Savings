@@ -161,7 +161,7 @@ Columns C and D of the sheet are a second ladder each, both at ×1.20 — one be
 Neither sits anywhere on screen waiting to be used. **It shows up, or it does not** — an ice-blue stone appears
 beside that currency's gem on the menu and out past the rim on the coin's own screen. Tap it and that column opens.
 
-Behind each is a hidden clock, and a hidden allowance. Taking a bonus step puts that stone away for **an hour**, and
+Behind each is a hidden clock, and a hidden allowance. Taking a bonus step puts that stone away for **45 minutes**, and
 a stone may only be taken **twice in a day**; the second take of the day sends it away until tomorrow rather than
 until the hour is up. Each currency keeps its own tally, so VND having had its two goes says nothing about USD.
 
