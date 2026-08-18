@@ -6,9 +6,9 @@
 // a cold blue until the light has gone out of it, the bloom behind it fades to nothing, and the
 // countdown is cut into the middle of the face in a pale tint of the track's own colour.
 
-import { plans, count, amountAt, toNextTier } from './plans.js';
+import { count, toNextTier } from './plans.js';
 import { track, bonus, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, ICE, el, outline, SVG } from './gem.js';
+import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, ICE, el, SVG } from './gem.js';
 import { animate, pop, shiver, clock, EASE_OUT, done } from './fx.js';
 
 const COLD = '#3A4B63';          // where a locked stone is mixed to: cold, and no longer lit
@@ -94,8 +94,6 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
 
     return { card, rim, glow, edgeLight, bloom, wrap, svg, parts, countText, clockText, ice, iceParts, name };
   }
-
-
 
   /** Draws one card from the state. Everything is eased from wherever it stands. */
   function paint(state, currency) {

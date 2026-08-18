@@ -5,6 +5,8 @@
 // a draining lock exactly where the time says it should be. Corners are softened with
 // stroke-linejoin instead.
 
+import { tierAt } from './plans.js';
+
 export const SVG = 'http://www.w3.org/2000/svg';
 
 export const el = (tag, attrs = {}, parent = null) => {
@@ -22,7 +24,7 @@ export const outline = (cx, cy, w, h) =>
  * The narrow half of the diamond, drawn over the fill as a lighter panel so the stone reads as cut
  * glass rather than a flat lozenge. Same centre and height as the outline.
  */
-export const facet = (cx, cy, w, h) =>
+const facet = (cx, cy, w, h) =>
   `M ${cx} ${cy - h} L ${cx + w * 0.42} ${cy} L ${cx} ${cy + h} L ${cx - w * 0.42} ${cy} Z`;
 
 export const perimeter = (w, h) => 4 * Math.hypot(w, h);
@@ -46,8 +48,8 @@ export function dash(w, h, fraction) {
 
 // ---- colour -----------------------------------------------------------------------------------
 
-export const TIERS = ['#FF5A57', '#FFB020', '#35C08E'];
-export const ACCENT = { VND: '#FFB020', USD: '#35C08E' };
+const TIERS = ['#FF5A57', '#FFB020', '#35C08E'];
+const ACCENT = { VND: '#FFB020', USD: '#35C08E' };
 export const ICE = '#8FD6FF';
 
 const hex = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
@@ -76,9 +78,7 @@ export function accentOf(currency, plan, index) {
   if (!plan.tierEnds.length) return ACCENT[currency];
   const last = Math.max(0, (plan.custom.length || plan.steps) - 1);
   const step = Math.min(last, Math.max(0, index));   // a finished track sits one past its last step
-  let tier = 0;
-  for (const end of plan.tierEnds) { if (step < end) break; tier++; }
-  return TIERS[Math.min(TIERS.length - 1, tier)];
+  return TIERS[Math.min(TIERS.length - 1, tierAt(plan, step))];
 }
 
 /**

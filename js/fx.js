@@ -1,16 +1,16 @@
 // Movement, and the words struck across the window.
 //
 // Everything here animates transform and opacity only, so the compositor carries it and nothing
-// touches layout mid-flight. Timings are the desktop app's, kept to the millisecond where they
-// were doing real work — the 1.8 s burst, the five-flick shiver, the 620 ms elastic settle.
+// touches layout mid-flight. The timings that do real work are exact and stay that way: the 1.8 s
+// burst, the five-flick shiver, the 620 ms elastic settle.
 
 import { SVG, el, outline, alpha } from './gem.js';
 
 export const EASE_OUT = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
 export const EASE_IN = 'cubic-bezier(0.55, 0.06, 0.68, 0.19)';
-export const EASE_SOFT = 'cubic-bezier(0.45, 0, 0.55, 1)';
+const EASE_SOFT = 'cubic-bezier(0.45, 0, 0.55, 1)';
 /** Overshoots and settles — small things arriving under their own steam. */
-export const EASE_BACK = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+const EASE_BACK = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 

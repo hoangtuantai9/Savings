@@ -4,11 +4,11 @@
 // the verdict is on disk the moment a step is banked, so closing the tab is not a way around the
 // question.
 
-import { plans, count, amountAt, VERSION, BONUS_PER_DAY } from './plans.js';
+import { count, amountAt, BONUS_PER_DAY } from './plans.js';
 import * as store from './state.js';
 import { track, bonus, remaining, setTrack, setBonus, totals, today } from './state.js';
-import { accentOf, alpha, ICE } from './gem.js';
-import { proclaim, after, money } from './fx.js';
+import { accentOf, alpha } from './gem.js';
+import { proclaim, after } from './fx.js';
 import { createMenu } from './menu.js';
 import { createFocus } from './focus.js';
 import { historyPanel, settingsPanel, confirmPanel, syncPanel } from './panels.js';
@@ -331,5 +331,5 @@ function openSync() {
 menu.enter();
 render();
 
-// Kept off the window in the desktop app and kept off it here: nothing on screen reads the totals.
+// Nothing on screen ever reads the totals; this is the one way in, and it asks first.
 if (location.hash === '#books') openHistory();

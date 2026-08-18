@@ -4,7 +4,7 @@
 // Nothing here shows on the menu — it is two cards and nothing else. Options are a right-click on
 // a card, history is Ctrl+H, and a reset is Ctrl+R with no button anywhere.
 
-import { plans, count, amountAt, VERSION } from './plans.js';
+import { count, amountAt } from './plans.js';
 import { totals } from './state.js';
 import { money } from './fx.js';
 
@@ -14,7 +14,7 @@ const $ = (sel, root = document) => root.querySelector(sel);
  * Number input is lenient: 50,000 · 50.000 · 1234567 · 0.30 all parse the way you would expect.
  * A separator with exactly three digits behind it is grouping; anything else is a decimal point.
  */
-export function parseNumber(raw) {
+function parseNumber(raw) {
   const s = String(raw).trim().replace(/[\s ₫$]/g, '');
   if (!s) return NaN;
   const last = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));

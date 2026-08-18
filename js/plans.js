@@ -1,5 +1,5 @@
-// The ladders, transcribed from DataSavingFinal.csv by way of the desktop app's Plans.cs.
-// Column A is VND and column B is USD, 206 steps each; columns C and D are the bonuses.
+// The four ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
+// 206 steps each; columns C and D are the bonuses behind them.
 // The sheet keeps VND in thousands ("17,90" = 17.900 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -12,13 +12,13 @@ export const VERSION = 7;
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once.
-export const VND_LOCK = 18, USD_LOCK = 25;
+const VND_LOCK = 18, USD_LOCK = 25;
 
 // How long each bonus stays away once taken, and how many times a day it may be taken at all.
 // Neither is ever drawn anywhere: the whole point of a bonus is that you cannot tell whether it is
 // five minutes or fifty away, and a counter of what is left today would give the second one up as
 // surely as a clock gives the first.
-export const VND_BONUS_LOCK = 60, USD_BONUS_LOCK = 60;
+const VND_BONUS_LOCK = 60, USD_BONUS_LOCK = 60;
 
 /** Twice a day, per currency. The third take of the day does not come round until tomorrow. */
 export const BONUS_PER_DAY = 2;
@@ -149,7 +149,7 @@ export const plans = {
 
 // ---- reading a plan --------------------------------------------------------------------------
 
-export const usesCustom = p => p.custom.length > 0;
+const usesCustom = p => p.custom.length > 0;
 export const count = p => (usesCustom(p) ? p.custom.length : Math.max(1, p.steps));
 
 export function amountAt(p, index) {

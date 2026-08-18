@@ -92,7 +92,7 @@ async function rest(path, init = {}, retry = true) {
 }
 
 /** The document as this device last knew it, or null if the row has never been written. */
-export async function pull() {
+async function pull() {
   if (!session) return null;
   const res = await rest(`${TABLE}?select=doc,rev&user_id=eq.${session.user.id}`);
   if (!res.ok) { status = 'offline'; return null; }

@@ -1,16 +1,13 @@
 // Everything the app remembers, and the one place it is written down.
 //
-// The desktop app kept this in %APPDATA%\Savings\data.json; the web keeps the same shape in
-// localStorage under the key below, so a saved file from the old app can be pasted straight in.
-// Every mutation goes through save(), which is also the single seam a sync backend would plug
-// into later — one write path, one broadcast.
+// It lives in localStorage under one key. Every mutation goes through save(), which is the single
+// seam the sync layer plugs into — one write path, one broadcast, so nothing can reach the disk
+// without also being offered to the other machines.
 
 import { plans, VERSION, count } from './plans.js';
 import * as sync from './sync.js';
 
 const KEY = 'savings.data';
-
-export const TRACKS = ['VND', 'USD'];
 
 /** A fresh, unclimbed set of ladders. */
 export function blank() {
@@ -79,18 +76,12 @@ export function load() {
   return migrate(blank());
 }
 
-const listeners = new Set();
-
-/** Called after every write — the menu and the coin screen both redraw off this. */
-export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
-
 export function save(state) {
   // Stamped on the way out: the tie-breaker when two devices wrote from the same revision.
   state.savedAt = Date.now();
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
   } catch { /* private mode or a full disk: the session still runs, it just will not survive */ }
-  for (const fn of listeners) fn(state);
   sync.push(state);
 }
 

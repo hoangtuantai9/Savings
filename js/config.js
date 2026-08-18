@@ -2,7 +2,7 @@
 //
 // Leave both fields empty and the app runs exactly as it does now: one browser, one set of books,
 // nothing leaving the machine. Fill them in and every device pointed at the same project shares one
-// ladder — tick a step on Windows and the phone has moved on to the next one before you put it down.
+// ladder — tick a step on one machine and the phone has moved on before you have put it down.
 //
 // The anon key is meant to be public; it is not a password. What keeps the books private is Row
 // Level Security on the table, which ties every row to the account that signed in. Turn that on

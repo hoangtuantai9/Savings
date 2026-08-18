@@ -13,8 +13,8 @@
 
 import { count, amountAt } from './plans.js';
 import { track, bonus, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
-import { animate, done, pop, flip, bounce, ring, shards, sparks, countUp, clock, money, EASE_OUT, EASE_IN } from './fx.js';
+import { stone, wear, accentOf, blend, alpha, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
+import { animate, done, pop, flip, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
 const G = { cx: 210, cy: 218, w: 132, h: 176 };

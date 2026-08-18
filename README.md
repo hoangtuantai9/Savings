@@ -36,21 +36,23 @@ The whole app is static files, so GitHub Pages serves it as-is:
 Cloudflare Pages, Netlify and Vercel all work the same way, and any of them can serve a private repository for free
 if you would rather the code were not public.
 
-## The window
+## Getting at it
 
-There is no window. This is the one thing the desktop version had that a browser tab cannot give back: it sat above
-every other window, carried no taskbar button, was skipped by Alt+Tab and could not be quit except through its tray
-icon. A tab can be buried under another tab, and that was the exact failure the desktop app was built to prevent.
-
-What survives, and is worth knowing:
+Everything is a click or a key; nothing is a menu.
 
 | | |
 |---|---|
-| **Installed as a PWA** | Its own window, own icon, no address bar — on desktop and phone alike |
-| **Escape** | Back to the menu from a coin screen |
+| **Click a card** | Into that currency's screen |
+| **Click the ice stone** | Into its bonus, whether the card behind it is open or shut |
+| **Escape** or **BACK** | Out to the menu |
 | **Right-click a card** | That track's options |
 | **Ctrl/⌘ + H** | History and totals |
+| **Ctrl/⌘ + L** | Sign in, so every device shares one set of books |
 | **Ctrl/⌘ + R** | Start both ladders over |
+
+Installed as a PWA it gets its own window and its own icon, with no address bar — on a desktop and on a phone alike.
+A tab, though, can be buried under another tab: if the amount due is meant to stay in front of you, install it rather
+than bookmarking it.
 
 ## Flow
 
@@ -121,7 +123,7 @@ The two tracks are fully independent. Save VND today and leave USD alone; each h
 
 ## Milestones and colour
 
-Each ladder is a list of exact milestones, transcribed from `DataSavingFinal.csv`, and is split into three colour
+Each ladder is a list of exact milestones, transcribed from the source spreadsheet, and is split into three colour
 bands. A track wears the colour of the band its current step falls in — rim, amount, tick, burst and its card on the
 menu all move together, so crossing into a new band is a visible promotion rather than a number you have to look up.
 
@@ -230,14 +232,15 @@ for it — a reset should take deliberate effort to reach.
 
 ## Data
 
-Everything lives in your browser's `localStorage`, under `savings.data`, in the same shape the desktop app wrote to
-`%APPDATA%\Savings\data.json` — so a file from that version can be pasted straight in through the developer console:
+Everything lives in your browser's `localStorage`, under `savings.data`. Two tabs of the same browser stay in step:
+whichever one writes, the other adopts it. To move a set of books to another browser by hand, copy that entry across:
 
 ```js
-localStorage.setItem('savings.data', '<the contents of data.json>')
+copy(localStorage.getItem('savings.data'))            // in the console of the browser that has them
+localStorage.setItem('savings.data', '<paste>')       // in the console of the one that wants them
 ```
 
-Two tabs of the same browser stay in step: whichever one writes, the other adopts it.
+To have every device stay in step on its own instead, see **Syncing** below.
 
 ## Syncing
 

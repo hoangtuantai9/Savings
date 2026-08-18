@@ -4,7 +4,6 @@
 
 :root {
   --bg: #0e1116;
-  --card: #171b22;
   --line: #2a313d;
   --text: #e7edf5;
   --muted: #8b95a5;
@@ -13,7 +12,6 @@
   --bloom-opacity: 0.4;
   --bloom-scale: 1;
   --edge-speed: 5200ms;
-  --edge-len: 1200;
   --ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
 
