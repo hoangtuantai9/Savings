@@ -1,0 +1,181 @@
+<Application x:Class="Savings.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+
+    <SolidColorBrush x:Key="Bg"    Color="#0E1116"/>
+
+    <!-- Main window ground: cold blue in the top-left corner falling to near-black, with a violet
+         cast picked up on the way out. Dialogs keep the flat Bg above. -->
+    <LinearGradientBrush x:Key="BgGrad" StartPoint="0,0" EndPoint="1,1">
+      <GradientStop Color="#161E2E" Offset="0"/>
+      <GradientStop Color="#0E1219" Offset="0.42"/>
+      <GradientStop Color="#0A0D12" Offset="0.72"/>
+      <GradientStop Color="#181328" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Card"  Color="#171B22"/>
+    <SolidColorBrush x:Key="Line"  Color="#2A313D"/>
+    <SolidColorBrush x:Key="Text"  Color="#E7EDF5"/>
+    <SolidColorBrush x:Key="Muted" Color="#8B95A5"/>
+    <SolidColorBrush x:Key="Vnd"   Color="#FFB020"/>
+    <SolidColorBrush x:Key="Usd"   Color="#35C08E"/>
+
+    <!-- Rim of every gem. Lit from the top vertex and picking a sheen back up at the bottom, so the
+         diamond reads as cut glass instead of a black outline. -->
+    <LinearGradientBrush x:Key="Rim" StartPoint="0.5,0" EndPoint="0.5,1">
+      <GradientStop Color="#66FFFFFF" Offset="0"/>
+      <GradientStop Color="#1FFFFFFF" Offset="0.55"/>
+      <GradientStop Color="#4DFFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Hairline around the face of a gem, matched to the rim above. -->
+    <SolidColorBrush x:Key="Edge" Color="#FFFFFF" Opacity="0.20"/>
+
+    <!-- Milestone tiers: a track wears the colour of the band its current step falls in -->
+    <SolidColorBrush x:Key="Tier1" Color="#FF5A57"/>
+    <SolidColorBrush x:Key="Tier2" Color="#FFB020"/>
+    <SolidColorBrush x:Key="Tier3" Color="#35C08E"/>
+
+    <!-- The bonus stone. Deliberately outside the tier scale above: red, amber and green all mean
+         "this is how far you have come", and the bonus means nothing of the sort. -->
+    <SolidColorBrush x:Key="Ice" Color="#8FD6FF"/>
+
+    <!-- ============ ICONS ============
+         Every mark in the app is drawn here, on a 24x24 grid, rather than borrowed from a font. The
+         emoji this replaced (🔒 and 🎉) are a different art style in every Windows build and neither
+         took the track's colour; these are plain geometry, so they scale cleanly and get painted in
+         whatever the gem is currently wearing. Filled shapes use EvenOdd (F0) to punch their holes. -->
+    <Geometry x:Key="IconLockBody">F0 M 6.2,10 L 17.8,10 A 3.2,3.2 0 0 1 21,13.2 L 21,19.8 A 3.2,3.2 0 0 1 17.8,23 L 6.2,23 A 3.2,3.2 0 0 1 3,19.8 L 3,13.2 A 3.2,3.2 0 0 1 6.2,10 Z M 10.4,15.6 A 1.6,1.6 0 1 0 13.6,15.6 A 1.6,1.6 0 1 0 10.4,15.6 Z M 11.25,16.9 L 12.75,16.9 L 12.45,20.3 L 11.55,20.3 Z</Geometry>
+    <Geometry x:Key="IconLockShackle">M 6.9,10 L 6.9,7.4 A 5.1,5.1 0 0 1 17.1,7.4 L 17.1,10</Geometry>
+    <Geometry x:Key="IconCrown">M 2.6,19 L 4.6,6.6 L 9.3,12 L 12,4.4 L 14.7,12 L 19.4,6.6 L 21.4,19 Z M 3.4,20.4 L 20.6,20.4 L 20.6,22.6 L 3.4,22.6 Z</Geometry>
+    <Geometry x:Key="IconCheck">M 4.5,12.5 L 9.6,17.6 L 19.5,6.4</Geometry>
+    <Geometry x:Key="IconCross">M 6,6 L 18,18 M 18,6 L 6,18</Geometry>
+    <Geometry x:Key="IconBack">M 19.5,12 L 5.6,12 M 11.6,6 L 5.4,12 L 11.6,18</Geometry>
+    <Geometry x:Key="IconUndo">M 4.2,11.2 L 9.4,6 M 4.2,11.2 L 9.4,16.4 M 4.2,11.2 L 14.6,11.2 A 5.4,5.4 0 0 1 14.6,22 L 9.8,22</Geometry>
+    <!-- Four-point sparkle, with the arms drawn as curves so the star reads as a glint off cut glass
+         rather than a compass rose. Used on the menu, where the twinkles are what say a gem is open. -->
+    <Geometry x:Key="IconSpark">M 12,1 C 13.1,8.2 15.8,10.9 23,12 C 15.8,13.1 13.1,15.8 12,23 C 10.9,15.8 8.2,13.1 1,12 C 8.2,10.9 10.9,8.2 12,1 Z</Geometry>
+    <Geometry x:Key="IconWarn">F0 M 12,2.6 L 22.6,21.4 L 1.4,21.4 Z M 11,8.6 L 13,8.6 L 12.6,15.4 L 11.4,15.4 Z M 10.75,17.4 A 1.25,1.25 0 1 0 13.25,17.4 A 1.25,1.25 0 1 0 10.75,17.4 Z</Geometry>
+
+    <Style TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="Foreground" Value="{StaticResource Text}"/>
+      <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
+    </Style>
+
+    <!-- Primary button: rounded, dims on hover / press -->
+    <Style x:Key="Btn" TargetType="Button">
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#0E1116"/>
+      <Setter Property="Background" Value="{StaticResource Text}"/>
+      <Setter Property="Padding" Value="18,11"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="b" CornerRadius="10" Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="b" Property="Opacity" Value="0.88"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="b" Property="Opacity" Value="0.70"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="b" Property="Opacity" Value="0.30"/>
+                <Setter Property="Cursor" Value="Arrow"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Secondary button: text only -->
+    <Style x:Key="Ghost" TargetType="Button" BasedOn="{StaticResource Btn}">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+      <Setter Property="FontWeight" Value="Normal"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="b" CornerRadius="8" Background="Transparent" Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="b" Property="Background" Value="#1E242E"/>
+                <Setter Property="Foreground" Value="{StaticResource Text}"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="b" Property="Opacity" Value="0.30"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Back: the only way out of a coin's own screen, so it is a real button now rather than a line
+         of small grey text. Quiet next to READY, but the same weight class. -->
+    <Style x:Key="Back" TargetType="Button">
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="FontSize" Value="17"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Padding" Value="26,12"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="b" CornerRadius="15" Background="#14FFFFFF"
+                    BorderBrush="#1FFFFFFF" BorderThickness="1"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="b" Property="Background" Value="#26FFFFFF"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="#3DFFFFFF"/>
+                <Setter Property="Foreground" Value="{StaticResource Text}"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="b" Property="Background" Value="#0DFFFFFF"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style TargetType="TextBox">
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Foreground" Value="{StaticResource Text}"/>
+      <Setter Property="CaretBrush" Value="{StaticResource Text}"/>
+      <Setter Property="Background" Value="#0E1116"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="9,7"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Border CornerRadius="8" Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+              <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+  </Application.Resources>
+</Application>

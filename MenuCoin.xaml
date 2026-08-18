@@ -1,0 +1,216 @@
+<UserControl x:Class="Savings.MenuCoin"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- The gem is the button. There is no green bar under it any more: lit and sparkling means the way
+       in is open, dulled with a clock cut into its face means it is shut. -->
+  <Border x:Name="Panel" CornerRadius="22" Cursor="Hand" Opacity="0"
+          RenderTransformOrigin="0.5,0.5"
+          MouseEnter="Panel_MouseEnter" MouseLeave="Panel_MouseLeave"
+          MouseLeftButtonDown="Panel_MouseDown" MouseLeftButtonUp="Panel_MouseUp"
+          MouseRightButtonUp="Panel_RightClick">
+
+    <!-- Outer glow, lit in the track's own tier colour. Off until the pointer arrives. -->
+    <Border.Effect>
+      <DropShadowEffect x:Name="Halo" ShadowDepth="0" BlurRadius="34" Opacity="0.18"/>
+    </Border.Effect>
+
+    <!-- The card's frame is 2px of this brush, and the brush turns: a light travels the border
+         forever. WPF has no conic gradient, so a rotating linear one stands in — near enough at
+         this width, and it costs one animated angle. -->
+    <Border.Background>
+      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+          <RotateTransform x:Name="RimSpin" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#1AFFFFFF" Offset="0"/>
+        <GradientStop x:Name="RimCore" Color="#00000000" Offset="0.5"/>
+        <GradientStop Color="#0DFFFFFF" Offset="1"/>
+      </LinearGradientBrush>
+    </Border.Background>
+
+    <Border.RenderTransform>
+      <TransformGroup>
+        <ScaleTransform x:Name="Hover" ScaleX="1" ScaleY="1"/>
+        <TranslateTransform x:Name="Rise" Y="30"/>
+      </TransformGroup>
+    </Border.RenderTransform>
+
+    <Border CornerRadius="20" Margin="2" ClipToBounds="True">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0.35,1">
+          <GradientStop Color="#1A2130" Offset="0"/>
+          <GradientStop Color="#12161F" Offset="0.46"/>
+          <GradientStop Color="#0C0F16" Offset="1"/>
+        </LinearGradientBrush>
+      </Border.Background>
+
+      <Grid>
+        <!-- Accent light pooling at the top of the card, and a sheen over it. Both are Borders
+             carrying the card's own top corner radius: a Border does not clip its children to its
+             CornerRadius, so a plain Rectangle here would fill the rounded corners back in square. -->
+        <Border VerticalAlignment="Top" Height="190" CornerRadius="20,20,0,0">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+              <GradientStop x:Name="WashTop" Color="#00000000" Offset="0"/>
+              <GradientStop x:Name="WashOut" Color="#00000000" Offset="1"/>
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+        <Border VerticalAlignment="Top" Height="96" CornerRadius="20,20,0,0">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+              <GradientStop Color="#12FFFFFF" Offset="0"/>
+              <GradientStop Color="#00FFFFFF" Offset="1"/>
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+
+        <!-- Drawn at a fixed 300 wide so the gem's perimeter maths stays exact; the Viewbox is what
+             lets the card shrink with the window instead of spilling over its own panel. -->
+        <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Margin="16,15">
+          <Grid Width="300">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- The gem, and nothing written on it but the rung it stands on. How far up the ladder
+                 that is stays off this screen — the colour is the only progress the card admits to. -->
+            <Grid Grid.Row="0" Width="300" Height="240">
+              <Ellipse x:Name="Bloom" Width="176" Height="176" Opacity="0.22"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <ScaleTransform x:Name="HaloBeat" ScaleX="1" ScaleY="1"/>
+                </Ellipse.RenderTransform>
+                <Ellipse.Effect>
+                  <BlurEffect Radius="48"/>
+                </Ellipse.Effect>
+              </Ellipse>
+
+              <!-- The stone itself, grouped so the shiver at the end of a lock can move all of it as
+                   one piece — rim, arc, face and count together. The bloom behind it and the bonus
+                   stone beside it are deliberately left out: a gem shaking in its own glow reads as the
+                   gem moving, and the bonus keeps its own clock and has nothing to announce here. -->
+              <Grid x:Name="Stone" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                  <TransformGroup>
+                    <ScaleTransform x:Name="Wake" ScaleX="1" ScaleY="1"/>
+                    <TranslateTransform x:Name="Quake"/>
+                  </TransformGroup>
+                </Grid.RenderTransform>
+
+                <Path x:Name="Track" Stroke="{StaticResource Rim}" StrokeThickness="8" StrokeLineJoin="Round"/>
+                <Path x:Name="PlanArc" Opacity="0.85" StrokeThickness="8"
+                      StrokeLineJoin="Round" StrokeDashCap="Round"/>
+                <Path x:Name="FaceFill" StrokeThickness="1.5" StrokeLineJoin="Round" Stroke="#59FFFFFF"/>
+                <Path x:Name="Facet" Fill="#26FFFFFF"/>
+
+                <!-- The glint: a band of light crossing the face every few seconds while the gem is
+                     open. Clipped to the face by being the face — the same geometry, filled with a
+                     gradient that is transparent at both ends, so parking it off to one side leaves
+                     the stone clean without a second animation to fade it out. -->
+                <Path x:Name="Glint" Opacity="0" IsHitTestVisible="False">
+                  <Path.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="34,58" MappingMode="Absolute">
+                      <LinearGradientBrush.Transform>
+                        <TranslateTransform x:Name="Gleam" X="-160"/>
+                      </LinearGradientBrush.Transform>
+                      <GradientStop Color="#00FFFFFF" Offset="0"/>
+                      <GradientStop Color="#B3FFFFFF" Offset="0.5"/>
+                      <GradientStop Color="#00FFFFFF" Offset="1"/>
+                    </LinearGradientBrush>
+                  </Path.Fill>
+                </Path>
+
+                <!-- What is cut into the stone: the steps cleared while the way in is open, the clock
+                     while it is shut. One or the other, never both, and always dead centre — the card
+                     has nowhere else to say either of them now. -->
+                <Grid>
+                  <Viewbox x:Name="StepBox" MaxWidth="112" Height="62" Stretch="Uniform"
+                           StretchDirection="DownOnly"
+                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Dark rather than pale: the face is a top-lit gradient and ink is the one
+                         colour that holds up over red, amber and green alike. -->
+                    <TextBlock x:Name="StepText" FontSize="58" FontWeight="Bold"
+                               Foreground="#0E1116" Opacity="0.72"/>
+                  </Viewbox>
+
+                  <!-- The clock takes the very same box the count sits in, so the two are centred on
+                       one point and neither can look hung off the middle of the stone. The card's own
+                       typeface rather than a terminal one, held steady by tabular figures: the digits
+                       keep a monospace's fixed column so nothing shuffles as the seconds fall, without
+                       a monospace's look. It wears a pale tint of the track's colour, lit from behind
+                       by the same, so a closed gem still reads as this track's gem. -->
+                  <Viewbox x:Name="LockBox" Opacity="0" MaxWidth="126" Height="58" Stretch="Uniform"
+                           StretchDirection="DownOnly" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="ClockText" FontSize="40" FontWeight="SemiBold"
+                               Typography.NumeralAlignment="Tabular"/>
+                  </Viewbox>
+                </Grid>
+              </Grid>
+
+              <!-- Twinkles riding the stone while it is open. They are the whole invitation now, so
+                   they sit over the gem rather than behind it, and each keeps its own period: four
+                   sparks on one clock would read as a blinking light rather than cut glass. -->
+              <Grid x:Name="Sparks" Opacity="0" IsHitTestVisible="False">
+                <Path x:Name="Spark1" Data="{StaticResource IconSpark}" Fill="#FFFFFF" Stretch="Uniform"
+                      Width="26" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top"
+                      Margin="137,33,0,0" RenderTransformOrigin="0.5,0.5">
+                  <Path.RenderTransform><ScaleTransform x:Name="Spark1Pop" ScaleX="0.4" ScaleY="0.4"/></Path.RenderTransform>
+                </Path>
+                <Path x:Name="Spark2" Data="{StaticResource IconSpark}" Fill="#FFFFFF" Stretch="Uniform"
+                      Width="20" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top"
+                      Margin="78,80,0,0" RenderTransformOrigin="0.5,0.5">
+                  <Path.RenderTransform><ScaleTransform x:Name="Spark2Pop" ScaleX="0.4" ScaleY="0.4"/></Path.RenderTransform>
+                </Path>
+                <Path x:Name="Spark3" Data="{StaticResource IconSpark}" Fill="#FFFFFF" Stretch="Uniform"
+                      Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top"
+                      Margin="194,146,0,0" RenderTransformOrigin="0.5,0.5">
+                  <Path.RenderTransform><ScaleTransform x:Name="Spark3Pop" ScaleX="0.4" ScaleY="0.4"/></Path.RenderTransform>
+                </Path>
+                <Path x:Name="Spark4" Data="{StaticResource IconSpark}" Fill="#FFFFFF" Stretch="Uniform"
+                      Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"
+                      Margin="106,174,0,0" RenderTransformOrigin="0.5,0.5">
+                  <Path.RenderTransform><ScaleTransform x:Name="Spark4Pop" ScaleX="0.4" ScaleY="0.4"/></Path.RenderTransform>
+                </Path>
+              </Grid>
+
+              <!-- The bonus stone, when there is one, and its own way in. It keeps no company with the
+                   gem behind it: the two ladders run on unrelated clocks, so a locked track must not be
+                   able to take the bonus down with it. Deliberately given no Background — with nothing
+                   to hit but the stone itself, a click anywhere around it falls through to the card,
+                   and a click on it goes straight to the bonus whether the big gem is open or shut. -->
+              <Grid x:Name="Sat" Opacity="0" Cursor="Hand" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Width="120" Height="110" Margin="186,6,0,0" RenderTransformOrigin="0.5,0.5"
+                    MouseEnter="Sat_MouseEnter" MouseLeave="Sat_MouseLeave" MouseLeftButtonUp="Sat_Click">
+                <Grid.RenderTransform>
+                  <TransformGroup>
+                    <ScaleTransform x:Name="SatHover" ScaleX="1" ScaleY="1"/>
+                    <ScaleTransform x:Name="SatScale" ScaleX="0.4" ScaleY="0.4"/>
+                  </TransformGroup>
+                </Grid.RenderTransform>
+                <Path x:Name="SatHalo" Stroke="{StaticResource Ice}" StrokeThickness="4"
+                      StrokeLineJoin="Round" Opacity="0.3" RenderTransformOrigin="0.5,0.5">
+                  <Path.RenderTransform>
+                    <ScaleTransform x:Name="SatBeat" ScaleX="1" ScaleY="1"/>
+                  </Path.RenderTransform>
+                </Path>
+                <Path x:Name="SatStone" StrokeThickness="2" StrokeLineJoin="Round" Stroke="#EAF7FF"/>
+                <Path x:Name="SatFacet" Fill="#4DFFFFFF"/>
+              </Grid>
+            </Grid>
+
+            <!-- The currency, and then nothing. Whether this track owes a verdict or has run out of
+                 rungs is the coin's own screen to say — out here the gem being open is the whole
+                 message, and a line of small print under it only ever muddied that. -->
+            <TextBlock x:Name="CurrencyText" Grid.Row="1" FontSize="34" FontWeight="Bold"
+                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+          </Grid>
+        </Viewbox>
+      </Grid>
+    </Border>
+  </Border>
+</UserControl>

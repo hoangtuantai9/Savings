@@ -1,0 +1,47 @@
+<UserControl x:Class="Savings.Celebration"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Visibility="Collapsed" IsHitTestVisible="False">
+
+  <Grid x:Name="Root" Opacity="0">
+
+    <!-- The room goes dark so the word is the only thing lit. -->
+    <Rectangle>
+      <Rectangle.Fill>
+        <RadialGradientBrush RadiusX="0.72" RadiusY="0.72">
+          <GradientStop Color="#B8000000" Offset="0"/>
+          <GradientStop Color="#D1000000" Offset="0.45"/>
+          <GradientStop Color="#F2000000" Offset="1"/>
+        </RadialGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+
+    <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Margin="24">
+      <Grid Width="620" Height="260">
+
+        <!-- The gem is gone from this screen, but the shockwave keeps its shape: the app is built on
+             one diamond and the moment should still be recognisably its own. -->
+        <Path x:Name="Wave" StrokeThickness="3" StrokeLineJoin="Round" Opacity="0"
+              RenderTransformOrigin="0.5,0.5">
+          <Path.RenderTransform>
+            <ScaleTransform x:Name="WaveScale" ScaleX="0.5" ScaleY="0.5"/>
+          </Path.RenderTransform>
+        </Path>
+
+        <!-- One TextBlock per letter, filled in by the code-behind. WPF has no letter-spacing, so the
+             letters are laid out by hand and flown home from a wider spread — which is the whole
+             animation now that there is nothing else on screen. -->
+        <StackPanel x:Name="Word" Orientation="Horizontal" Opacity="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    RenderTransformOrigin="0.5,0.5">
+          <StackPanel.RenderTransform>
+            <ScaleTransform x:Name="WordScale" ScaleX="1.18" ScaleY="1.18"/>
+          </StackPanel.RenderTransform>
+        </StackPanel>
+      </Grid>
+    </Viewbox>
+
+    <!-- Sparks live outside the Viewbox so they can fly past the word without being clipped. -->
+    <Canvas x:Name="Sparks" IsHitTestVisible="False"/>
+  </Grid>
+</UserControl>
