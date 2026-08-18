@@ -101,20 +101,52 @@ html, body {
 .card.shut { cursor: default; filter: saturate(0.45); }
 .card.shut:hover { transform: none; }
 
-.card-edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.card-edge rect { transition: stroke 620ms ease; }
-
-/* A light travelling the card's border in the track's colour, quickening as a promotion comes
-   into range. */
-.edge-light {
-  stroke-linecap: round;
-  animation: edge-run var(--edge-speed) linear infinite;
-  filter: drop-shadow(0 0 5px var(--accent));
+/* The border the light travels: the whole compartment outlined in the tier colour. */
+.card-rim {
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: border-color 620ms ease;
 }
-.card.shut .edge-light { animation-play-state: paused; opacity: 0; }
 
-@keyframes edge-run {
-  to { stroke-dashoffset: calc(var(--edge-len) * -1px); }
+/* The light itself. A cone swept round the card, masked down to the ring — the head is white, the
+   tail fades out over half a turn, and because it is a gradient rather than a dash there are no
+   ends to be cut where the path begins. `--spin` has to be registered as an angle for it to
+   animate at all; where that is unsupported the card simply keeps its rim and no sweep. */
+@property --spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.card-edge {
+  position: absolute;
+  inset: 0;
+  padding: 2px;                       /* the thickness of the ring */
+  border-radius: inherit;
+  pointer-events: none;
+  animation: spin var(--edge-speed) linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: opacity 620ms ease;
+}
+
+/* The same sweep again, blurred and sitting under it: what makes the head read as lit rather than
+   drawn. */
+.card-edge.glow {
+  padding: 3px;
+  filter: blur(6px);
+  opacity: 0.9;
+}
+
+.card.shut .card-edge { opacity: 0; animation-play-state: paused; }
+
+@keyframes spin {
+  to { --spin: 360deg; }
 }
 
 /* The bloom behind the gem: the card's own idle, driven harder as a band nears its end. */

@@ -225,16 +225,27 @@ export const money = (currency, v) => (currency === 'VND'
 /**
  * Counts a number up from zero into a node. Eased out, so it arrives rather than stops — and it
  * lands on the exact figure, never on a rounding of the last frame.
+ *
+ * It steps rather than runs. At sixty frames a second a dollar figure is re-rendering its cents
+ * sixty times, which does not read as counting at all — it reads as noise. Twenty-two steps is
+ * fast enough to feel like a tally and slow enough that the eye can follow a digit.
  */
+const COUNT_STEPS = 22;
+
 export function countUp(node, currency, value, ms = 900) {
   if (reduced.matches) { node.textContent = money(currency, value); return; }
   const start = performance.now();
+  let shown = -1;
   const tick = now => {
     const t = Math.min(1, (now - start) / ms);
-    const eased = 1 - Math.pow(1 - t, 3);
-    // Đồng has no decimals of its own, so counting one up must not invent them mid-flight.
-    const at = t === 1 ? value : value * eased;
-    node.textContent = money(currency, currency === 'VND' ? Math.round(at) : at);
+    const step = Math.round(t * COUNT_STEPS);
+    if (step !== shown) {
+      shown = step;
+      const eased = 1 - Math.pow(1 - step / COUNT_STEPS, 3);
+      // Đồng has no decimals of its own, so counting one up must not invent them mid-flight.
+      const at = step === COUNT_STEPS ? value : value * eased;
+      node.textContent = money(currency, currency === 'VND' ? Math.round(at) : at);
+    }
     if (t < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);

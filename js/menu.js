@@ -31,13 +31,22 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     card.dataset.currency = currency;
     parent.appendChild(card);
 
-    // The light travelling the card's border in the track's tier colour.
-    const edge = document.createElementNS(SVG, 'svg');
-    edge.setAttribute('class', 'card-edge');
-    edge.setAttribute('preserveAspectRatio', 'none');
-    const edgeRect = el('rect', { x: 1, y: 1, rx: 21, fill: 'none', 'stroke-width': 2 }, edge);
-    const edgeLight = el('rect', { x: 1, y: 1, rx: 21, fill: 'none', 'stroke-width': 2, class: 'edge-light' }, edge);
-    card.appendChild(edge);
+    // The light travelling the card's border. A dashed stroke was the obvious way to do this and
+    // the wrong one: a dash has two hard ends, and where the pattern meets the start of the path it
+    // is cut, which is the chunk that kept going missing. This is a cone of light swept round the
+    // card instead — bright head, tail fading to nothing, no ends to catch on anything — masked to
+    // the border so only the ring of it shows. The halo underneath is the same sweep, blurred.
+    const rim = document.createElement('div');
+    rim.className = 'card-rim';
+    card.appendChild(rim);
+
+    const glow = document.createElement('div');
+    glow.className = 'card-edge glow';
+    card.appendChild(glow);
+
+    const edgeLight = document.createElement('div');
+    edgeLight.className = 'card-edge';
+    card.appendChild(edgeLight);
 
     const bloom = document.createElement('div');
     bloom.className = 'bloom';
@@ -83,30 +92,10 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     card.addEventListener('click', () => { if (!card.classList.contains('shut')) onOpen(currency); });
     card.addEventListener('contextmenu', e => { e.preventDefault(); onSettings(currency); });
 
-    return { card, edge, edgeRect, edgeLight, bloom, wrap, svg, parts, countText, clockText, ice, iceParts, name };
+    return { card, rim, glow, edgeLight, bloom, wrap, svg, parts, countText, clockText, ice, iceParts, name };
   }
 
-  // The border rect has to match the card in pixels for the dash to travel it evenly.
-  const fitEdges = () => {
-    for (const c of Object.values(cards)) {
-      // offsetWidth is the laid-out size; getBoundingClientRect is that size after transforms,
-      // so reading it mid-zoom baked the animation's scale into the border and left it hanging
-      // off the card once the zoom had finished.
-      const width = c.card.offsetWidth, height = c.card.offsetHeight;
-      if (!width) continue;
-      for (const r of [c.edgeRect, c.edgeLight]) {
-        r.setAttribute('width', Math.max(0, width - 2));
-        r.setAttribute('height', Math.max(0, height - 2));
-      }
-      // The rounded corners cut about 36 px off what 2·(w+h) would say, and a dash pattern that
-      // does not tile the path exactly leaves the light jumping — and a gap sitting on one edge —
-      // every time round. The element knows its own length; ask it.
-      const perimeter = c.edgeLight.getTotalLength?.() || 2 * (width + height);
-      c.edgeLight.style.setProperty('--edge-len', perimeter);
-      c.edgeLight.setAttribute('stroke-dasharray', `${perimeter * 0.22} ${perimeter}`);
-    }
-  };
-  addEventListener('resize', fitEdges);
+
 
   /** Draws one card from the state. Everything is eased from wherever it stands. */
   function paint(state, currency) {
@@ -140,11 +129,18 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     c.card.style.setProperty('--beat', `${Math.round(beat)}ms`);
     c.card.style.setProperty('--bloom-opacity', shut ? 0 : 0.5 + windup * 0.42);
     c.card.style.setProperty('--bloom-scale', 1 + windup * 0.22);
-    // The border the light travels: drawn in full round the card, so the tier colour outlines the
-    // whole compartment rather than only wherever the light happens to be at that moment.
-    c.edgeRect.style.stroke = alpha(shut ? '#8B95A5' : accent, shut ? 0.12 : 0.34);
-    c.edgeLight.style.stroke = shut ? 'transparent' : accent;
-    c.edgeLight.style.setProperty('--edge-speed', `${Math.round(5200 - windup * 3200)}ms`);
+    // The rim outlines the whole compartment in the tier colour; the sweep runs round it, head
+    // first, quickening as a promotion comes into range. The tail fades to nothing over roughly
+    // half a turn, so there is no end to it and nothing to catch on the corner it starts at.
+    c.rim.style.borderColor = alpha(shut ? '#8B95A5' : accent, shut ? 0.12 : 0.32);
+    const comet = `conic-gradient(from var(--spin),
+      ${alpha(accent, 0)} 0deg, ${alpha(accent, 0)} 186deg,
+      ${alpha(accent, 0.22)} 268deg, ${alpha(accent, 0.72)} 330deg,
+      ${alpha(accent, 0.98)} 352deg, #ffffff 358deg, ${alpha(accent, 0)} 360deg)`;
+    for (const layer of [c.edgeLight, c.glow]) {
+      layer.style.background = comet;
+      layer.style.setProperty('--edge-speed', `${Math.round(5200 - windup * 3200)}ms`);
+    }
 
     // Progress round the rim: geometry only, never a number.
     c.parts.rim.setAttribute('stroke-dasharray', dash(GEM.w, GEM.h, finished ? 1 : t.done / total));
@@ -182,7 +178,6 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
 
   function render(state) {
     for (const currency of ['VND', 'USD']) paint(state, currency);
-    fitEdges();
   }
 
   /** The cards fade and rise in on launch, and then sit still. */
