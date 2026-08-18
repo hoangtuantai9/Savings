@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Savings</title>
+<meta name="description" content="Two savings ladders, run side by side, with the numbers kept out of sight.">
+<meta name="theme-color" content="#0e1116">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Savings">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <!-- The room: a gradient ground, lit from the left and right by each track's tier colour. The
+       two views are built and swapped by the app; nothing else is ever on screen. -->
+  <main id="room">
+    <div class="room-bloom left" id="bloom-vnd"></div>
+    <div class="room-bloom right" id="bloom-usd"></div>
+  </main>
+
+  <!-- Where one word gets struck across the window. -->
+  <div id="cheer" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

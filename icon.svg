@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- One brilliant-cut stone split down the middle: gold for VND, mint for USD — the same icon
+       the desktop app carried, redrawn as vector so it scales to any tab, dock or home screen. -->
+  <defs>
+    <linearGradient id="goldLeft" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#ffd98a"/>
+      <stop offset="0.5" stop-color="#ffb020"/>
+      <stop offset="1" stop-color="#8f6212"/>
+    </linearGradient>
+    <linearGradient id="mintRight" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#a9ecd2"/>
+      <stop offset="0.5" stop-color="#35c08e"/>
+      <stop offset="1" stop-color="#1c6a4f"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="#0e1116"/>
+
+  <g transform="translate(256 268)">
+    <path d="M 0 -176 L 168 0 L 0 176 Z" fill="url(#mintRight)"/>
+    <path d="M 0 -176 L -168 0 L 0 176 Z" fill="url(#goldLeft)"/>
+    <path d="M 0 -176 L 70 0 L 0 176 L -70 0 Z" fill="#ffffff" opacity="0.16"/>
+    <path d="M 0 -176 L 168 0 L 0 176 L -168 0 Z" fill="none"
+          stroke="url(#rim)" stroke-width="9" stroke-linejoin="round"/>
+  </g>
+</svg>

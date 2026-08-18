@@ -1,2 +1,4 @@
-obj/
-bin/
+# Nothing to build: what is in this folder is what runs.
+.DS_Store
+Thumbs.db
+node_modules/

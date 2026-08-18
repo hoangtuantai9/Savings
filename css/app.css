@@ -1,0 +1,512 @@
+/* The room, the stones, and the light in both.
+   Only transform, opacity and filter are ever animated, so nothing here can touch layout while it
+   is moving — which is what keeps the gems smooth on a phone as readily as on a desktop. */
+
+:root {
+  --bg: #0e1116;
+  --card: #171b22;
+  --line: #2a313d;
+  --text: #e7edf5;
+  --muted: #8b95a5;
+  --accent: #ffb020;
+  --beat: 2500ms;
+  --bloom-opacity: 0.4;
+  --bloom-scale: 1;
+  --edge-speed: 5200ms;
+  --edge-len: 1200;
+  --ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+/* Several things here are hidden by the `hidden` attribute and laid out with grid or flex, and a
+   display rule would otherwise win over it — leaving an invisible view sitting on top of the menu,
+   swallowing every click. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The ground is a gradient — cold blue in one corner, violet in the other — lit from the left and
+   right by two soft blooms carrying each track's current tier colour. */
+#room {
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(148deg, #161e2e 0%, #0e1219 42%, #0a0d12 72%, #181328 100%);
+  overflow: hidden;
+  perspective: 1400px;
+}
+
+.room-bloom {
+  position: absolute;
+  top: 50%;
+  width: 70vmax;
+  height: 70vmax;
+  transform: translateY(-50%);
+  filter: blur(30px);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: background 900ms ease;
+}
+.room-bloom.left { left: -26vmax; }
+.room-bloom.right { right: -26vmax; }
+
+.view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+
+/* ---- the menu: two cards, and nothing else --------------------------------------------------- */
+
+.menu {
+  grid-auto-flow: column;
+  place-content: center;
+  gap: clamp(16px, 3.4vw, 52px);
+  padding: clamp(16px, 4vw, 48px);
+}
+
+.card {
+  position: relative;
+  width: min(36vmin, 310px);
+  aspect-ratio: 5 / 6;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  padding: 6% 6% 7%;
+  border-radius: 22px;
+  background:
+    linear-gradient(165deg, rgba(35, 42, 54, 0.92), rgba(18, 21, 28, 0.96));
+  box-shadow:
+    0 26px 60px -28px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  will-change: transform;
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 420ms ease, filter 620ms ease;
+}
+
+.card:hover { transform: translateY(-8px); box-shadow: 0 34px 70px -26px rgba(0, 0, 0, 0.95); }
+.card.shut { cursor: default; filter: saturate(0.45); }
+.card.shut:hover { transform: none; }
+
+.card-edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.card-edge rect { transition: stroke 620ms ease; }
+
+/* A light travelling the card's border in the track's colour, quickening as a promotion comes
+   into range. */
+.edge-light {
+  stroke-linecap: round;
+  animation: edge-run var(--edge-speed) linear infinite;
+  filter: drop-shadow(0 0 5px var(--accent));
+}
+.card.shut .edge-light { animation-play-state: paused; opacity: 0; }
+
+@keyframes edge-run {
+  to { stroke-dashoffset: calc(var(--edge-len) * -1px); }
+}
+
+/* The bloom behind the gem: the card's own idle, driven harder as a band nears its end. */
+.bloom {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  width: 90%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--accent), transparent 70%);
+  opacity: var(--bloom-opacity);
+  filter: blur(16px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(var(--bloom-scale));
+  animation: breathe var(--beat) ease-in-out infinite alternate;
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+@keyframes breathe {
+  from { transform: translate(-50%, -50%) scale(calc(var(--bloom-scale) * 0.92)); }
+  to   { transform: translate(-50%, -50%) scale(calc(var(--bloom-scale) * 1.1)); }
+}
+
+.gem-wrap {
+  position: relative;
+  width: 82%;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+.gem { width: 100%; height: auto; overflow: visible; }
+
+.card-name {
+  font-size: clamp(11px, 1.3vw, 14px);
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  transition: color 620ms ease;
+}
+
+/* ---- the stone itself ------------------------------------------------------------------------ */
+
+.stop-crown { stop-color: var(--crown, #fff); }
+.stop-mid   { stop-color: var(--mid, #ffb020); }
+.stop-point { stop-color: var(--point, #7a4f00); }
+
+.stone { transform-origin: center; }
+.stone-body { transition: none; filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.55)); }
+.stone-rim { stroke-linejoin: round; stroke-width: 3; transition: stroke 620ms ease; }
+
+.stone-cut {
+  stroke: #fff;
+  stroke-width: 1.2;
+  stroke-opacity: 0.17;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.stone-star {
+  transform-origin: center;
+  opacity: 0;
+  animation: twinkle 4200ms ease-in-out infinite;
+}
+/* A paused animation still paints its current frame, so a stone that has gone out has to have its
+   idle removed outright rather than merely stopped. */
+.card.shut .stone-star, .focus[data-stage='waiting'] .stone-star { animation: none; opacity: 0; }
+
+@keyframes twinkle {
+  0%, 62%, 100% { opacity: 0; }
+  74% { opacity: 0.9; }
+  86% { opacity: 0.15; }
+}
+
+/* A band of light crossing the face every few seconds — the sweep is quick, and most of the cycle
+   is the stone sitting still. */
+.stone-glint { animation: glint 5200ms ease-in-out infinite; }
+.card.shut .stone-glint, .focus[data-stage='waiting'] .stone-glint { animation: none; opacity: 0; }
+
+@keyframes glint {
+  0%, 62% { transform: translateX(0); }
+  86%, 100% { transform: translateX(340px); }
+}
+
+.gem-count {
+  font-family: var(--ui);
+  font-size: 46px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  opacity: 0.82;
+}
+
+.gem-clock {
+  font-family: var(--ui);
+  font-size: 30px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* The bonus: it shows up, or it does not. There is no dimmed socket for it. */
+.ice {
+  position: absolute;
+  top: 8%;
+  right: 4%;
+  width: 26%;
+  overflow: visible;
+  cursor: pointer;
+  filter: drop-shadow(0 0 14px rgba(143, 214, 255, 0.55));
+  animation: ice-beat 2400ms ease-in-out infinite alternate;
+  transition: filter 300ms ease;
+}
+.ice:hover { filter: drop-shadow(0 0 22px rgba(143, 214, 255, 0.9)); }
+
+@keyframes ice-beat {
+  from { transform: scale(0.94); }
+  to   { transform: scale(1.12); }
+}
+
+/* ---- one currency's own screen ---------------------------------------------------------------- */
+
+.focus { z-index: 2; }
+
+.back {
+  position: absolute;
+  top: clamp(14px, 3vh, 28px);
+  left: clamp(14px, 3vw, 28px);
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(23, 27, 34, 0.7);
+  color: var(--muted);
+  font: 600 11px/1 var(--ui);
+  letter-spacing: 0.24em;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: color 240ms ease, border-color 240ms ease, transform 240ms ease;
+}
+.back:hover { color: var(--text); border-color: var(--accent); transform: translateX(-2px); }
+
+.coin {
+  position: relative;
+  width: min(84vw, min(62vh, 440px));
+  aspect-ratio: 420 / 448;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+.coin-bloom { top: 48%; width: 96%; filter: blur(34px); }
+.coin-gem { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; cursor: pointer; }
+
+.rim-progress, .rim-lock { stroke-linejoin: round; stroke-linecap: round; }
+.rim-lock { filter: drop-shadow(0 0 8px var(--accent)); transition: opacity 420ms ease; }
+.rim-head { filter: drop-shadow(0 0 10px var(--accent)); transition: opacity 420ms ease; }
+
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  will-change: transform;
+}
+.coin-face > * { grid-area: 1 / 1; }
+
+.face-name {
+  font-size: clamp(20px, 4.4vmin, 34px);
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+}
+
+.face-amount {
+  font-size: clamp(22px, 5.4vmin, 44px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  transform: translateY(-6%);
+}
+
+.face-clock {
+  font-size: clamp(26px, 7vmin, 56px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transform: translateY(4%);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+.face-glyph {
+  width: 26%;
+  height: auto;
+  transform: translateY(-14%);
+  filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.4));
+}
+.focus[data-stage='waiting'] .face-glyph { transform: translateY(-56%) scale(0.44); }
+.focus[data-stage='done'] .face-glyph { transform: translateY(-6%) scale(1.4); }
+
+/* The only control on the face. */
+.tick-btn, .verdict-btn {
+  position: absolute;
+  bottom: 16%;
+  width: clamp(52px, 12%, 74px);
+  aspect-ratio: 1;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: rgba(10, 13, 18, 0.55);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 26px -6px var(--accent);
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 260ms ease, background 260ms ease;
+}
+.tick-btn svg, .verdict-btn svg { width: 52%; height: 52%; stroke: currentColor; }
+.tick-btn:hover, .verdict-btn:hover { transform: scale(1.12); box-shadow: 0 0 40px -4px var(--accent); }
+.tick-btn:active, .verdict-btn:active { transform: scale(0.94); }
+
+.verdict {
+  position: absolute;
+  bottom: 14%;
+  display: flex;
+  gap: 18px;
+}
+.verdict-btn { position: static; }
+.verdict-btn.tick { border-color: #35c08e; color: #35c08e; box-shadow: 0 0 26px -6px #35c08e; }
+.verdict-btn.cross { border-color: #ff5a57; color: #ff5a57; box-shadow: 0 0 26px -6px #ff5a57; }
+
+.coin-ice {
+  position: absolute;
+  top: 4%;
+  right: -2%;
+  width: 17%;
+}
+
+/* ---- bursts ------------------------------------------------------------------------------------ */
+
+.burst { position: absolute; inset: 0; pointer-events: none; }
+.burst-ring, .burst-shard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  overflow: visible;
+  will-change: transform, opacity;
+}
+.burst-shard { width: 26px; height: 26px; }
+.spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+/* ---- one word struck across the window --------------------------------------------------------- */
+
+#cheer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.cheer-veil { position: absolute; inset: 0; background: rgba(6, 8, 12, 0.72); backdrop-filter: blur(3px); }
+.cheer-stage { position: relative; display: grid; place-items: center; }
+.cheer-word {
+  font-size: clamp(38px, 13vw, 168px);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  white-space: nowrap;
+  will-change: transform, opacity, filter;
+}
+
+/* ---- panels ------------------------------------------------------------------------------------- */
+
+.panel-back {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(6, 8, 12, 0.66);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.panel-back.up { opacity: 1; }
+
+.panel {
+  width: min(560px, 100%);
+  max-height: min(84vh, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(165deg, #1b2029, #12151b);
+  box-shadow: 0 40px 90px -40px #000;
+  transform: translateY(14px) scale(0.98);
+  transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.panel-back.up .panel { transform: none; }
+
+.panel h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+.panel-body { overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+.panel-foot { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
+.field { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.field > span { font-weight: 600; color: var(--text); }
+.row { display: flex; align-items: center; gap: 10px; }
+.row.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.row.grid label { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--muted); }
+
+input, textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #0d1117;
+  color: var(--text);
+  font: 400 13px/1.4 var(--ui);
+  font-variant-numeric: tabular-nums;
+  transition: border-color 200ms ease;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; }
+
+.unit { color: var(--muted); font-size: 12px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.presets button {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 11px/1 var(--ui);
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+.presets button:hover { color: var(--text); border-color: var(--muted); }
+
+.hint, .panel-note { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--muted); }
+.preview { margin: 0; padding: 10px 12px; border-radius: 9px; background: #0d1117; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.btn {
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: 600 12px/1 var(--ui);
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: #35c08e; border-color: #35c08e; color: #06210f; }
+.btn.danger { background: #ff5a57; border-color: #ff5a57; color: #2a0605; }
+
+.totals { display: flex; gap: 22px; flex-wrap: wrap; padding: 14px 16px; border-radius: 12px; background: #0d1117; }
+.totals div { display: flex; flex-direction: column; gap: 4px; }
+.totals span { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); }
+.totals b { font-size: 17px; font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow: auto; max-height: 40vh; border-radius: 12px; border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(42, 49, 61, 0.6); white-space: nowrap; }
+th { position: sticky; top: 0; background: #12161d; color: var(--muted); font-weight: 600; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.empty { text-align: center; color: var(--muted); padding: 22px; }
+
+/* ---- small screens: the same room, stacked ------------------------------------------------------ */
+
+@media (max-width: 620px) {
+  .menu { grid-auto-flow: row; gap: 16px; }
+  .card { width: min(74vw, 300px); aspect-ratio: 3 / 2.1; }
+  .gem-wrap { width: 46%; }
+  .row.grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 620px) and (min-height: 700px) {
+  .card { aspect-ratio: 5 / 4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}
