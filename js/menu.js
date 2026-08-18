@@ -98,7 +98,10 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
         r.setAttribute('width', Math.max(0, width - 2));
         r.setAttribute('height', Math.max(0, height - 2));
       }
-      const perimeter = 2 * (width + height);
+      // The rounded corners cut about 36 px off what 2·(w+h) would say, and a dash pattern that
+      // does not tile the path exactly leaves the light jumping — and a gap sitting on one edge —
+      // every time round. The element knows its own length; ask it.
+      const perimeter = c.edgeLight.getTotalLength?.() || 2 * (width + height);
       c.edgeLight.style.setProperty('--edge-len', perimeter);
       c.edgeLight.setAttribute('stroke-dasharray', `${perimeter * 0.22} ${perimeter}`);
     }
@@ -137,7 +140,9 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     c.card.style.setProperty('--beat', `${Math.round(beat)}ms`);
     c.card.style.setProperty('--bloom-opacity', shut ? 0 : 0.5 + windup * 0.42);
     c.card.style.setProperty('--bloom-scale', 1 + windup * 0.22);
-    c.edgeRect.style.stroke = alpha(shut ? '#8B95A5' : accent, shut ? 0.10 : 0.16);
+    // The border the light travels: drawn in full round the card, so the tier colour outlines the
+    // whole compartment rather than only wherever the light happens to be at that moment.
+    c.edgeRect.style.stroke = alpha(shut ? '#8B95A5' : accent, shut ? 0.12 : 0.34);
     c.edgeLight.style.stroke = shut ? 'transparent' : accent;
     c.edgeLight.style.setProperty('--edge-speed', `${Math.round(5200 - windup * 3200)}ms`);
 

@@ -4,9 +4,9 @@
 // the verdict is on disk the moment a step is banked, so closing the tab is not a way around the
 // question.
 
-import { plans, count, amountAt, VERSION } from './plans.js';
+import { plans, count, amountAt, VERSION, BONUS_PER_DAY } from './plans.js';
 import * as store from './state.js';
-import { track, bonus, remaining, setTrack, setBonus, totals } from './state.js';
+import { track, bonus, remaining, setTrack, setBonus, totals, today } from './state.js';
 import { accentOf, alpha, ICE } from './gem.js';
 import { proclaim, after, money } from './fx.js';
 import { createMenu } from './menu.js';
@@ -36,6 +36,13 @@ const focus = createFocus({
 room.appendChild(focus.root);
 
 const save = () => store.save(state);
+
+/** Midnight coming, in local time — where a bonus that has had its two goes today waits. */
+function tomorrow() {
+  const d = new Date();
+  d.setHours(24, 0, 0, 0);
+  return d;
+}
 
 // ---- drawing ----------------------------------------------------------------------------------
 
@@ -91,10 +98,15 @@ async function tick(currency, isBonus) {
   });
 
   if (isBonus) {
-    // Its own numbering, the same books — and the stone goes away for its own hidden while.
+    // Its own numbering, the same books — and the stone goes away for its own hidden while: an
+    // hour, or the rest of the day once it has been taken twice. Neither is ever announced.
+    const taken = line.takenToday + 1;
+    const back = taken >= BONUS_PER_DAY ? tomorrow() : new Date(Date.now() + line.plan.cooldown * 60000);
     setBonus(state, currency, {
       done: line.done + 1,
-      readyAt: new Date(Date.now() + line.plan.cooldown * 60000).toISOString()
+      readyAt: back.toISOString(),
+      day: today(),
+      today: taken
     });
   } else {
     const mins = line.plan.cooldown;
@@ -183,7 +195,7 @@ function checkWrap() {
     state.journeys++;
     for (const c of ['VND', 'USD']) {
       setTrack(state, c, { done: 0, unlockAt: null, awaitingVerdict: false });
-      setBonus(state, c, { done: 0, readyAt: null });
+      setBonus(state, c, { done: 0, readyAt: null, day: null, today: 0 });
     }
     save();
     const hold = proclaim('AGAIN', accentOf('VND', state.vnd, 0), true);

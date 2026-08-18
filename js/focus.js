@@ -132,6 +132,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   let revealed = false;         // the gem has been opened on this visit
   let state = null;
   let bonusLive = false;
+  let counted = null;           // which amount the face is currently showing, so it counts up once
 
   const line = () => (onBonus ? bonus(state, currency) : track(state, currency));
 
@@ -228,7 +229,16 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
       // Near-white, not the tier colour: the stone underneath is already wearing that colour, and
       // the one number the app ever shows has to be readable before it is decorative.
       amountText.style.color = lighten(accent, 0.9);
-      countUp(amountText, currency, amountAt(l.plan, l.done));
+      // Counted up once, when the amount on offer actually changes. paint() runs four times a
+      // second while any lock is draining, and starting the count again on each of those had the
+      // figure scrambling on the spot instead of arriving.
+      const key = `${currency}:${onBonus}:${l.done}`;
+      if (counted !== key) {
+        counted = key;
+        countUp(amountText, currency, amountAt(l.plan, l.done));
+      }
+    } else {
+      counted = null;
     }
 
     clockText.textContent = clock(left);

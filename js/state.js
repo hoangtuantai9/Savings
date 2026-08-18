@@ -30,6 +30,12 @@ export function blank() {
     // clock away.
     vndBonusReadyAt: null,
     usdBonusReadyAt: null,
+    // The day each bonus was last taken, and how many times it has been taken on that day. Two a
+    // day, per currency; the third does not come round until tomorrow.
+    vndBonusDay: null,
+    usdBonusDay: null,
+    vndBonusToday: 0,
+    usdBonusToday: 0,
     // When the lock expires. Persisted so closing the tab cannot skip the wait.
     vndUnlockAt: null,
     usdUnlockAt: null,
@@ -114,6 +120,9 @@ export function track(s, currency) {
   };
 }
 
+/** The calendar day, as the machine in front of you reckons it. */
+export const today = () => new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD, local
+
 /** The bonus ladder of one currency. Its clock is unrelated to the main track's. */
 export function bonus(s, currency) {
   const k = lower(currency) + 'Bonus';
@@ -121,7 +130,9 @@ export function bonus(s, currency) {
     currency,
     plan: s[k],
     done: s[k + 'Done'],
-    readyAt: s[k + 'ReadyAt'] ? new Date(s[k + 'ReadyAt']) : null
+    readyAt: s[k + 'ReadyAt'] ? new Date(s[k + 'ReadyAt']) : null,
+    // Yesterday's tally is not today's: a stored count only counts if it was set today.
+    takenToday: s[k + 'Day'] === today() ? (s[k + 'Today'] ?? 0) : 0
   };
 }
 

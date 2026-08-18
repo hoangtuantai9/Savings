@@ -14,10 +14,14 @@ export const VERSION = 7;
 // two ladders never fall into step and hand you both questions at once.
 export const VND_LOCK = 18, USD_LOCK = 25;
 
-// How long each bonus stays away once taken. These are never drawn anywhere: the whole point of a
-// bonus is that you cannot tell whether it is five minutes or fifty away. The two are coprime, so
-// the stones drift apart instead of surfacing together.
-export const VND_BONUS_LOCK = 59, USD_BONUS_LOCK = 73;
+// How long each bonus stays away once taken, and how many times a day it may be taken at all.
+// Neither is ever drawn anywhere: the whole point of a bonus is that you cannot tell whether it is
+// five minutes or fifty away, and a counter of what is left today would give the second one up as
+// surely as a clock gives the first.
+export const VND_BONUS_LOCK = 60, USD_BONUS_LOCK = 60;
+
+/** Twice a day, per currency. The third take of the day does not come round until tomorrow. */
+export const BONUS_PER_DAY = 2;
 
 const VND_STEPS = [
   // red — 17.900 ₫ → 292.960 ₫ (21 steps)

@@ -158,10 +158,13 @@ Columns C and D of the sheet are a second ladder each, both at ×1.20 — one be
 Neither sits anywhere on screen waiting to be used. **It shows up, or it does not** — an ice-blue stone appears
 beside that currency's gem on the menu and out past the rim on the coin's own screen. Tap it and that column opens.
 
-Behind each is a hidden clock, and they are **not the same clock**. Taking a VND bonus step puts that stone away for
-**59 minutes** and a USD one for **73** — coprime, so the two drift apart instead of surfacing together. Neither
-number is drawn anywhere: no countdown, no padlock, and no dimmed socket where the stone would be — an empty socket
-would give the game away just as surely as a clock would.
+Behind each is a hidden clock, and a hidden allowance. Taking a bonus step puts that stone away for **an hour**, and
+a stone may only be taken **twice in a day**; the second take of the day sends it away until tomorrow rather than
+until the hour is up. Each currency keeps its own tally, so VND having had its two goes says nothing about USD.
+
+Neither the clock nor the tally is drawn anywhere: no countdown, no padlock, no dimmed socket where the stone would
+be, and no count of what is left today. An empty socket would give the game away just as surely as a clock would, and
+a counter would give away the one thing the hour cannot — whether it is worth waiting at all.
 
 Both wear the same ice-blue, and they wear it precisely because red, amber and green all mean *this is how far you
 have come* — a bonus means nothing of the sort. Three more things follow from a bonus not being a normal step:
