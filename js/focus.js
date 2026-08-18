@@ -13,7 +13,7 @@
 
 import { count, amountAt } from './plans.js';
 import { track, bonus, remaining } from './state.js';
-import { stone, accentOf, blend, alpha, darken, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
+import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
 import { animate, done, pop, flip, bounce, ring, shards, sparks, countUp, clock, money, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
@@ -122,9 +122,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   ice.setAttribute('viewBox', '0 0 100 120');
   ice.style.display = 'none';
   stone(ice, { cx: 50, cy: 58, w: 30, h: 40, id: 'coin-ice' });
-  ice.style.setProperty('--crown', blend(ICE, '#ffffff', 0.62));
-  ice.style.setProperty('--mid', ICE);
-  ice.style.setProperty('--point', blend(ICE, '#000000', 0.42));
+  wear(ice, ICE);
   coin.appendChild(ice);
 
   // ---- what the screen is currently showing ----------------------------------------------------
@@ -187,9 +185,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     // cooling the menu card does, so the two screens never disagree about what a lock looks like.
     const cold = s === 'waiting';
     const worn = cold ? blend(accent, COLD, 0.84) : accent;
-    svg.style.setProperty('--crown', blend(worn, '#ffffff', cold ? 0.16 : 0.62));
-    svg.style.setProperty('--mid', worn);
-    svg.style.setProperty('--point', blend(worn, '#000000', cold ? 0.64 : 0.42));
+    wear(svg, worn, cold);
 
     coin.style.setProperty('--accent', accent);
     coin.style.setProperty('--bloom-opacity', s === 'waiting' ? 0.12 : 0.42);
@@ -224,7 +220,9 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     verdictRow.hidden = s !== 'verdict';
 
     nameText.textContent = currency;
-    nameText.style.color = alpha(accent, 0.9);
+    // The sealed face carries the same near-white the amount does: ice-blue lettering on an
+    // ice-blue stone was the bonus repeating the very mistake the amount had just stopped making.
+    nameText.style.color = lighten(accent, 0.9);
 
     if (s === 'revealed') {
       // Near-white, not the tier colour: the stone underneath is already wearing that colour, and
@@ -241,7 +239,10 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     else if (s === 'done') setGlyph(ICONS.crown, lighten(accent, 0.88), 'fill');
     else if (s === 'verdict') glyph.style.display = 'none';
 
+    // The ring carries the tier colour; the mark inside it is lifted well clear of that colour so
+    // the one control on the face is never something you have to look for.
     tickBtn.style.setProperty('--accent', accent);
+    tickBtn.style.color = lighten(accent, 0.5);
 
     // The bonus stone comes and goes on its own hidden clock, through the lock and everything else.
     const b = bonus(state, currency);

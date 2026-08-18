@@ -82,8 +82,34 @@ export function accentOf(currency, plan, index) {
 }
 
 /**
- * Builds one stone into an <svg>: top-lit body, pale facet, rim, and the sockets the caller lights
- * up later (glint, progress rim, lock rim, head). Returns the parts by name.
+ * Every tint one stone wears, worked out from a single colour. A real cut stone is not one gradient
+ * — it is a dozen flats, each catching the light at its own angle — so the light is fixed at upper
+ * left and each facet is given the value it would have under it.
+ */
+export function tint(colour, cold = false) {
+  return {
+    '--crown': lighten(colour, cold ? 0.16 : 0.62),
+    '--mid': colour,
+    '--point': darken(colour, cold ? 0.64 : 0.42),
+    // The crown: the table catches the most light, the left flat rather less, the right flat least.
+    '--f-table': lighten(colour, cold ? 0.34 : 0.72),
+    '--f-left': lighten(colour, cold ? 0.18 : 0.42),
+    '--f-right': darken(colour, cold ? 0.24 : 0.08),
+    // The pavilion, in shadow under the girdle, with the centre wedge catching a little back.
+    '--f-pav-left': darken(colour, cold ? 0.5 : 0.26),
+    '--f-pav-right': darken(colour, cold ? 0.66 : 0.48),
+    '--f-spine': lighten(colour, cold ? 0.06 : 0.24)
+  };
+}
+
+/** Applies a tint to whichever element carries the stone. */
+export function wear(node, colour, cold = false) {
+  for (const [k, v] of Object.entries(tint(colour, cold))) node.style.setProperty(k, v);
+}
+
+/**
+ * Builds one stone into an <svg>: six cut flats, a girdle, the sheen down the middle, the rim, and
+ * the sockets the caller lights up later (glint, progress rim, lock rim, head).
  */
 export function stone(svg, { cx, cy, w, h, id }) {
   const defs = el('defs', {}, svg);
@@ -94,9 +120,17 @@ export function stone(svg, { cx, cy, w, h, id }) {
   el('stop', { offset: '1', class: 'stop-point' }, body);
 
   const sheen = el('linearGradient', { id: `${id}-sheen`, x1: '0.5', y1: '0', x2: '0.5', y2: '1' }, defs);
-  el('stop', { offset: '0', 'stop-color': '#fff', 'stop-opacity': '0.40' }, sheen);
-  el('stop', { offset: '0.55', 'stop-color': '#fff', 'stop-opacity': '0.10' }, sheen);
-  el('stop', { offset: '1', 'stop-color': '#fff', 'stop-opacity': '0.28' }, sheen);
+  el('stop', { offset: '0', 'stop-color': '#fff', 'stop-opacity': '0.24' }, sheen);
+  el('stop', { offset: '0.55', 'stop-color': '#fff', 'stop-opacity': '0.05' }, sheen);
+  el('stop', { offset: '1', 'stop-color': '#fff', 'stop-opacity': '0.16' }, sheen);
+
+  // Laid over the flats: light gathering at the crown and falling away into the pavilion. Flat
+  // colour on every facet is what makes cut-glass artwork look like folded paper.
+  const shade = el('linearGradient', { id: `${id}-shade`, x1: '0.18', y1: '0', x2: '0.86', y2: '1' }, defs);
+  el('stop', { offset: '0', 'stop-color': '#fff', 'stop-opacity': '0.22' }, shade);
+  el('stop', { offset: '0.34', 'stop-color': '#fff', 'stop-opacity': '0.03' }, shade);
+  el('stop', { offset: '0.62', 'stop-color': '#000', 'stop-opacity': '0.06' }, shade);
+  el('stop', { offset: '1', 'stop-color': '#000', 'stop-opacity': '0.34' }, shade);
 
   // The band of light that crosses the face every few seconds. Clipped to the stone so it reads as
   // a glint travelling under the surface rather than a highlight laid on top of it.
@@ -110,19 +144,40 @@ export function stone(svg, { cx, cy, w, h, id }) {
 
   const g = el('g', { class: 'stone' }, svg);
   const face = el('path', { class: 'stone-body', d: outline(cx, cy, w, h), fill: `url(#${id}-body)` }, g);
-  el('path', { class: 'stone-facet', d: facet(cx, cy, w, h), fill: `url(#${id}-sheen)` }, g);
 
-  // The cuts. Without them the shape reads as a flat lozenge; with them the light has edges to
-  // break on, which is the whole difference between a diamond and a rhombus.
+  // The cut. Six flats meeting at the girdle: three on the crown, three on the pavilion, each with
+  // the value it would have under a light fixed at upper left. This is the whole difference between
+  // a diamond and a rhombus — a single gradient can only ever be a lozenge.
+  const T = [cx, cy - h], L = [cx - w, cy], R = [cx + w, cy], B = [cx, cy + h];
+  const l = [cx - w * 0.42, cy], r = [cx + w * 0.42, cy];
+  const poly = (pts, cls) => el('polygon', {
+    class: `facet ${cls}`, points: pts.map(p => p.join(',')).join(' ')
+  }, g);
+
+  poly([T, L, l], 'f-left');
+  poly([T, r, R], 'f-right');
+  poly([T, l, r], 'f-table');
+  poly([B, L, l], 'f-pav-left');
+  poly([B, r, R], 'f-pav-right');
+  poly([B, l, r], 'f-spine');
+
+  // The girdle, and the two edges the table is cut against: hairlines, and the stone reads as
+  // faceted glass rather than flat colour the moment they are there.
   el('path', {
     class: 'stone-cut', fill: 'none',
     d: [
-      `M ${cx} ${cy - h} L ${cx - w * 0.42} ${cy} L ${cx} ${cy + h}`,
-      `M ${cx} ${cy - h} L ${cx + w * 0.42} ${cy} L ${cx} ${cy + h}`,
-      `M ${cx - w} ${cy} L ${cx + w} ${cy}`,
-      `M ${cx - w * 0.66} ${cy - h * 0.34} L ${cx + w * 0.66} ${cy - h * 0.34}`
+      `M ${L[0]} ${L[1]} L ${R[0]} ${R[1]}`,
+      `M ${T[0]} ${T[1]} L ${l[0]} ${l[1]}`,
+      `M ${T[0]} ${T[1]} L ${r[0]} ${r[1]}`,
+      `M ${B[0]} ${B[1]} L ${l[0]} ${l[1]}`,
+      `M ${B[0]} ${B[1]} L ${r[0]} ${r[1]}`
     ].join(' ')
   }, g);
+
+  el('path', { class: 'stone-shade', d: outline(cx, cy, w, h), fill: `url(#${id}-shade)` }, g);
+
+  // One long highlight down the table, over the flats: the wet look a polished stone has.
+  el('path', { class: 'stone-facet', d: facet(cx, cy, w, h), fill: `url(#${id}-sheen)` }, g);
 
   // Two small stars that catch and let go, out of step with each other — the twinkle.
   const star = (x, y, r, delay) => {

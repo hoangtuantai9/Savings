@@ -164,11 +164,20 @@ html, body {
 .stop-mid   { stop-color: var(--mid, #ffb020); }
 .stop-point { stop-color: var(--point, #7a4f00); }
 
+/* The six flats. Each is one colour, and the light between them is what makes the shape read. */
+.facet { transition: fill 620ms ease; }
+.f-table     { fill: var(--f-table, #fff); }
+.f-left      { fill: var(--f-left, #ffc860); }
+.f-right     { fill: var(--f-right, #e09a18); }
+.f-pav-left  { fill: var(--f-pav-left, #b8801a); }
+.f-pav-right { fill: var(--f-pav-right, #7d5610); }
+.f-spine     { fill: var(--f-spine, #ffc367); }
+
 /* One shadow, under the whole stone. Hanging it off the body alone left the rim and the facets
    sitting on a shadow that was not theirs, which reads as a misprint rather than as a gem. */
 .stone { transform-origin: center; filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.55)); }
 .stone-body { transition: none; }
-.stone-rim { stroke-linejoin: round; stroke-width: 3; transition: stroke 620ms ease; }
+.stone-rim { stroke-linejoin: round; stroke-width: 2.2; transition: stroke 620ms ease; }
 
 .stone-cut {
   stroke: #fff;
@@ -347,7 +356,7 @@ html, body {
   box-shadow: 0 0 26px -6px var(--accent);
   transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 260ms ease, background 260ms ease;
 }
-.tick-btn svg, .verdict-btn svg { width: 54%; height: 54%; stroke: currentColor; filter: drop-shadow(0 0 9px currentColor); }
+.tick-btn svg, .verdict-btn svg { width: 58%; height: 58%; stroke: currentColor; filter: drop-shadow(0 0 9px currentColor); }
 .tick-btn:hover, .verdict-btn:hover { transform: scale(1.12); box-shadow: 0 0 40px -4px var(--accent); }
 .tick-btn:active, .verdict-btn:active { transform: scale(0.94); }
 

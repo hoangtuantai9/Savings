@@ -8,7 +8,7 @@
 
 import { plans, count, amountAt, toNextTier } from './plans.js';
 import { track, bonus, remaining } from './state.js';
-import { stone, accentOf, blend, alpha, darken, lighten, dash, ICE, el, outline, SVG } from './gem.js';
+import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, ICE, el, outline, SVG } from './gem.js';
 import { animate, pop, shiver, clock, EASE_OUT, done } from './fx.js';
 
 const COLD = '#3A4B63';          // where a locked stone is mixed to: cold, and no longer lit
@@ -76,9 +76,7 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     ice.setAttribute('viewBox', '0 0 100 120');
     ice.style.display = 'none';
     const iceParts = stone(ice, { cx: 50, cy: 58, w: 26, h: 36, id: `ice-${currency}` });
-    ice.style.setProperty('--crown', blend(ICE, '#ffffff', 0.62));
-    ice.style.setProperty('--mid', ICE);
-    ice.style.setProperty('--point', blend(ICE, '#000000', 0.42));
+    wear(ice, ICE);
     card.appendChild(ice);
 
     ice.addEventListener('click', e => { e.stopPropagation(); onBonus(currency); });
@@ -91,7 +89,10 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
   // The border rect has to match the card in pixels for the dash to travel it evenly.
   const fitEdges = () => {
     for (const c of Object.values(cards)) {
-      const { width, height } = c.card.getBoundingClientRect();
+      // offsetWidth is the laid-out size; getBoundingClientRect is that size after transforms,
+      // so reading it mid-zoom baked the animation's scale into the border and left it hanging
+      // off the card once the zoom had finished.
+      const width = c.card.offsetWidth, height = c.card.offsetHeight;
       if (!width) continue;
       for (const r of [c.edgeRect, c.edgeLight]) {
         r.setAttribute('width', Math.max(0, width - 2));
@@ -129,9 +130,7 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
 
     // Locked, the stone is mixed towards cold blue until the light has gone out of it.
     const worn = shut ? blend(accent, COLD, 0.84) : accent;
-    c.svg.style.setProperty('--crown', blend(worn, '#ffffff', shut ? 0.16 : 0.62));
-    c.svg.style.setProperty('--mid', worn);
-    c.svg.style.setProperty('--point', blend(worn, '#000000', shut ? 0.64 : 0.42));
+    wear(c.svg, worn, shut);
     c.parts.rim.style.stroke = alpha(shut ? '#9DB4CE' : '#ffffff', shut ? 0.22 : 0.5);
 
     c.card.style.setProperty('--accent', accent);
