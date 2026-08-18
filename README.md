@@ -130,23 +130,24 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
 | **VND** — 206 steps | 1–21 · `17,900 ₫` → `292,960 ₫` | 22–31 · `150,000 ₫` → `527,680 ₫` | 32–206 · peaks at `8,070,950 ₫` |
-| **USD** — 206 steps | 1–54 · `$0.20` → `$31.25` | 55–75 · `$15.00` → `$100.91` | 76–206 · peaks at `$814.03` |
+| **USD** — 206 steps | 1–54 · `$0.20` → `$31.25` | 55–75 · `$15.00` → `$100.91` | 76–206 · peaks at `$407.01` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — eleven in VND at ×1.15, eight in USD at ×1.10 — each starting over at a round
+Each column is really a stack of runs — twelve in VND at ×1.15, nine in USD at ×1.10 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
-as one long climb rather than a dozen separate ones. VND totals `372,680,940 ₫` and USD totals `$29,430.76` across
+as one long climb rather than a dozen separate ones. VND totals `372,680,940 ₫` and USD totals `$20,037.40` across
 all 206 steps.
 
 The VND amber band is deliberately the short one: its run stops after ten steps at `527,680 ₫`, and green then opens
 by dropping all the way back to `19,000 ₫` and taking thirty-six steps to climb out of it — the longest run in the
 sheet, and the gentlest.
 
-Two rough edges in the sheet are worth knowing about. Column B's last run is cut short at eighteen steps, so the USD
-ladder ends mid-climb on `$505.45` rather than at the top of a run. And one pair of column A arrives transposed —
-`4,614.59` typed above `4,012.69` at rows 201/202 — which would make the ladder step backwards; the run is a clean
-×1.15 either side of it, so `js/plans.js` swaps the pair back.
+Two rough edges in the sheet are worth knowing about, and the app carries both rather than tidying either away.
+Column B's last run is cut short at seventeen steps, so the USD ladder ends mid-climb on `$229.75` rather than at the
+top of a run. And one pair of column A is transposed — `4,614.59` typed above `4,012.69` at rows 201/202 — so step 202
+asks for less than step 201: the one place in either ladder where the next amount is smaller than the last. The sheet
+is the authority, so it is taken as written; say the word and the pair goes back the other way.
 
 ## The bonus stones
 
