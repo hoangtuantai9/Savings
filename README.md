@@ -171,8 +171,8 @@ have come* — a bonus means nothing of the sort. Three more things follow from 
   asking would announce that the hidden clock had just run out.
 - **It comes through the lock.** A stone can turn up while its track is mid-countdown. The clocks are unrelated.
 - **Its own numbering, the same books.** Each bonus counts independently of the main 206, but the money is real, so
-  it lands in the history and in that currency's total, labelled `bonus` rather than `step`. `Undo last step` walks
-  past bonus rows — they belong to a different ladder.
+  it lands in the history and in that currency's total, labelled `bonus` rather than `step`. A step taken back off a
+  main ladder by a cross walks past those rows — they belong to a different ladder.
 
 Once a bonus ladder is finished its stone simply never returns. No announcement.
 
@@ -195,28 +195,21 @@ track's lock setting and clamps progress to the new length.
 Nothing shows on screen at all — the menu is two cards and nothing else. Everything is reachable without cluttering
 it: **right-click a card** for that track's options, **Ctrl+H** for the books, **Ctrl+R** to start over.
 
-**Lock after ticking a step** — minutes to wait before the next amount unlocks. VND starts at `18` and USD at `25`,
-deliberately different so the two ladders never fall into step and hand you both questions at once. Presets for
-1 hour / 1 day / 1 week, and `0` disables the lock. Setting it to `0` also removes the verdict: with no wait to
-survive there is nothing to be asked about.
+**Lock after ticking a step** — minutes to wait before the next amount unlocks, and the only thing in the app that
+can be configured at all. VND starts at `18` and USD at `25`, deliberately different so the two ladders never fall
+into step and hand you both questions at once.
 
-**Schedule by multiplier** — first amount · multiplier per step · total steps · rounding. Step *n* =
-`first × multiplier^(n-1)`, rounded. This is only a fallback: both tracks ship with an explicit milestone list, and a
-list always wins over the formula.
+> It can be made **longer, never shorter**, and there is no off. Those two numbers are the floor, enforced when a save
+> is read as well as when the box is saved — a wait that can be turned down to nothing takes the verdict with it, and
+> then there is nothing left to have survived.
 
-**Or paste your own list** — one number per line, which overrides the formula entirely. Number input is lenient:
-`50,000`, `50.000`, `1234567` and `0.30` all parse the way you would expect.
+**The milestones are not editable.** Not the list, not a multiplier, not one figure of one step — they are generated
+from the spreadsheet and rebuilt from it every time a save is read, so a file that disagrees with the sheet is
+corrected rather than believed. To change a ladder, change `DataSavingFinal.csv` and regenerate.
 
-> Rewriting the list drops the colour bands with it — they describe the milestones they were written for, so a
-> hand-edited ladder falls back to one colour per currency. Leave the box alone and the bands stay.
-
-> If your spreadsheet is denominated in **thousands** (`57.50` meaning 57,500 ₫), multiply by 1000 before pasting.
-
-The preview under the box shows the first three amounts of the resulting schedule, live, so you can check the paste
-landed correctly.
-
-**Ticked by mistake?** — the same panel has `Undo last step`, which rolls that track back one step and clears its
-lock. It lives here rather than on the coin so a stray click cannot undo your progress.
+**Nor is there an undo.** A step banked is banked and a wait started is waited. The one thing that can take a step
+back off a ladder is answering **cross** when the gem asks whether you held out — which costs you that step, as it
+should.
 
 ## History
 

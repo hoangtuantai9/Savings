@@ -26,6 +26,13 @@ const VND_BONUS_LOCK = 45, USD_BONUS_LOCK = 45;
 export const BONUS_PER_DAY = 2;
 
 /**
+ * The wait a track was designed around, and the least it may ever be set to. The options panel can
+ * lengthen a lock but not shorten one: a wait that can be turned down to nothing takes the verdict
+ * with it, and then there is nothing left to have survived.
+ */
+export const lockFloor = currency => (currency === 'VND' ? VND_LOCK : USD_LOCK);
+
+/**
  * Where the first two colour bands end, read off the ladder itself. A run is where a column starts
  * over at a round number, and the first two runs each get a colour of their own; everything from
  * the third on is green, so the top of a ladder reads as one long climb.

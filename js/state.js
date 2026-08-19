@@ -4,7 +4,7 @@
 // seam the sync layer plugs into — one write path, one broadcast, so nothing can reach the disk
 // without also being offered to the other machines.
 
-import { plans, VERSION, count } from './plans.js';
+import { plans, VERSION, count, lockFloor } from './plans.js';
 import * as sync from './sync.js';
 
 const KEY = 'savings.data';
@@ -45,16 +45,24 @@ function blank() {
 }
 
 /**
- * Brings an older save onto the current ladders. The lock the user chose is kept; the amounts and
- * their colour tiers come from plans.js, and progress is clamped to the new length.
+ * Puts a saved file onto the ladders as they actually are. All four are rebuilt from plans.js every
+ * time, whatever the file claims they were: nothing about a ladder is editable any more, so a file
+ * that disagrees with the spreadsheet is a file that has been got at, not a file to be honoured.
+ *
+ * The one thing carried across is each track's wait, and only ever lengthened — a stored zero would
+ * otherwise buy a ladder with no waits and no verdicts, which is the loophole the options panel has
+ * just been shut on.
  */
 function migrate(s) {
-  if ((s.version ?? 0) >= VERSION) return s;
-
-  s.vnd = plans.vnd(s.vnd?.cooldown ?? plans.vnd().cooldown);
-  s.usd = plans.usd(s.usd?.cooldown ?? plans.usd().cooldown);
+  const wait = currency => {
+    const stored = Number(s[currency === 'VND' ? 'vnd' : 'usd']?.cooldown);
+    return Math.max(lockFloor(currency), Number.isFinite(stored) ? stored : 0);
+  };
+  s.vnd = plans.vnd(wait('VND'));
+  s.usd = plans.usd(wait('USD'));
   s.vndBonus = plans.vndBonus();
   s.usdBonus = plans.usdBonus();
+
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
   s.vndBonusDone = clamp(s.vndBonusDone, 0, count(s.vndBonus));

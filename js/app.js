@@ -199,7 +199,7 @@ function checkWrap() {
     const hold = proclaim('AGAIN', accentOf('VND', state.vnd, 0), true);
     after(hold, () => {
       busy = false;
-        if (focus.isOpen()) focus.paint();
+      if (focus.isOpen()) focus.paint();
       render();
     });
   });
@@ -209,17 +209,13 @@ function checkWrap() {
 
 function openSettings(currency) {
   settingsPanel(state, currency, {
-    apply: (cur, plan) => {
-      const key = cur === 'VND' ? 'vnd' : 'usd';
-      state[key] = plan;
-      // Progress is only ever clamped to the new ladder here, never moved: where a track stands is
-      // earned, and there is nothing in the app that will set it for you.
-      setTrack(state, cur, { done: Math.min(track(state, cur).done, count(plan)) });
+    // The only thing an option can change is how long the wait is. The ladder comes from the sheet
+    // and where a track stands on it is climbed, so neither is reachable from here.
+    apply: (cur, mins) => {
+      state[cur === 'VND' ? 'vnd' : 'usd'].cooldown = mins;
       save();
       render();
-      if (focus.isOpen() && focus.currency === cur) focus.paint();
-    },
-    onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); }
+    }
   });
 }
 

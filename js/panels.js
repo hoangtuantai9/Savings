@@ -5,29 +5,11 @@
 // a card and history is Ctrl+H. Nothing in here can move a track to a step of your choosing and
 // nothing can wipe the books — deliberately, so the ladder cannot be talked out of a wait.
 
-import { count, amountAt } from './plans.js';
+import { lockFloor } from './plans.js';
 import { totals } from './state.js';
 import { money } from './fx.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
-
-/**
- * Number input is lenient: 50,000 · 50.000 · 1234567 · 0.30 all parse the way you would expect.
- * A separator with exactly three digits behind it is grouping; anything else is a decimal point.
- */
-function parseNumber(raw) {
-  const s = String(raw).trim().replace(/[\s ₫$]/g, '');
-  if (!s) return NaN;
-  const last = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));
-  if (last < 0) return Number(s);
-
-  const tail = s.length - last - 1;
-  const grouping = tail === 3;
-  const cleaned = grouping
-    ? s.replace(/[.,]/g, '')
-    : s.slice(0, last).replace(/[.,]/g, '') + '.' + s.slice(last + 1);
-  return Number(cleaned);
-}
 
 /** A modal built from one template, so every panel in the app opens and closes the same way. */
 function panel(title) {
@@ -177,84 +159,44 @@ export function syncPanel({ status, email, onSignIn, onSignUp, onSignOut }) {
 }
 
 /**
- * One track's options. Each track's are its own — changing one never touches the other.
- * `apply` receives the new plan; `onUndo` rolls the track back one step and clears its lock.
+ * One track's options: the length of its wait, and nothing else. Each track's is its own — changing
+ * one never touches the other. `apply` receives the new number of minutes.
  */
-export function settingsPanel(state, currency, { apply, onUndo }) {
+export function settingsPanel(state, currency, { apply }) {
   const key = currency === 'VND' ? 'vnd' : 'usd';
-  const plan = state[key];
+  const floor = lockFloor(currency);
   const p = panel(`${currency} options`);
 
   p.body.innerHTML = `
     <label class="field">
       <span>Lock after ticking a step</span>
       <div class="row">
-        <input type="number" min="0" step="1" id="cooldown" value="${plan.cooldown}">
+        <input type="number" min="${floor}" step="1" id="cooldown"
+               value="${Math.max(floor, state[key].cooldown)}">
         <span class="unit">minutes</span>
       </div>
       <div class="presets">
-        <button type="button" data-mins="0">off</button>
+        <button type="button" data-mins="${floor}">${floor} — as designed</button>
         <button type="button" data-mins="60">1 hour</button>
         <button type="button" data-mins="1440">1 day</button>
         <button type="button" data-mins="10080">1 week</button>
       </div>
-      <p class="hint">0 also removes the verdict: with no wait to survive there is nothing to be asked about.</p>
+      <p class="hint">The wait can be made longer, never shorter — ${floor} minutes is the floor for
+      ${currency}, and there is no off. A wait that can be turned down to nothing takes the verdict with
+      it, and then there is nothing left to have survived.</p>
     </label>
 
-    <div class="field">
-      <span>Schedule by multiplier</span>
-      <div class="row grid">
-        <label>first<input type="text" id="start" value="${plan.start}"></label>
-        <label>×<input type="text" id="ratio" value="${plan.ratio}"></label>
-        <label>steps<input type="number" id="steps" min="1" value="${plan.steps}"></label>
-        <label>round<input type="text" id="round" value="${plan.roundTo}"></label>
-      </div>
-      <p class="hint">Step <i>n</i> = first × multiplier<sup>n-1</sup>. A pasted list always wins over this.</p>
-    </div>
+    <p class="panel-note">The milestones themselves are not editable, here or anywhere in the app: they
+    come from the spreadsheet, and where a track stands on them is climbed rather than set.</p>`;
 
-    <label class="field">
-      <span>Or paste your own list — one number per line</span>
-      <textarea id="custom" rows="6" spellcheck="false">${plan.custom.join('\n')}</textarea>
-      <p class="hint">Rewriting the list drops the colour bands with it — they describe the milestones they
-      were written for. If your sheet is in thousands (57.50 meaning 57,500 ₫), multiply by 1000 first.</p>
-    </label>
-
-    <p class="preview" id="preview"></p>`;
-
-  const el = id => $('#' + id, p.body);
+  const read = () => Math.max(floor, Math.round(Number($('#cooldown', p.body).value) || floor));
   for (const b of p.body.querySelectorAll('.presets button')) {
-    b.addEventListener('click', () => { el('cooldown').value = b.dataset.mins; });
+    b.addEventListener('click', () => { $('#cooldown', p.body).value = b.dataset.mins; });
   }
 
-  const build = () => {
-    const custom = el('custom').value.split(/\r?\n/).map(parseNumber).filter(n => Number.isFinite(n) && n > 0);
-    const sameList = custom.length === plan.custom.length && custom.every((v, i) => v === plan.custom[i]);
-    return {
-      custom,
-      // The bands describe the milestones they were written for, so a hand-edited ladder falls back
-      // to one colour per currency. Leave the box alone and the bands stay.
-      tierEnds: sameList ? plan.tierEnds.slice() : [],
-      cooldown: Math.max(0, Math.round(Number(el('cooldown').value) || 0)),
-      start: parseNumber(el('start').value) || plan.start,
-      ratio: parseNumber(el('ratio').value) || plan.ratio,
-      steps: Math.max(1, Math.round(Number(el('steps').value) || plan.steps)),
-      roundTo: parseNumber(el('round').value) || 0
-    };
-  };
-
-  const preview = () => {
-    const next = build();
-    const first = [0, 1, 2].map(i => money(currency, amountAt(next, i))).join('   ·   ');
-    el('preview').textContent = `${count(next)} steps — ${first} …`;
-  };
-  preview();
-  for (const node of p.body.querySelectorAll('input, textarea')) node.addEventListener('input', preview);
-
-  const undo = button('Undo last step');
-  undo.addEventListener('click', () => { p.close(); onUndo(currency); });
   const cancel = button('Cancel');
   cancel.addEventListener('click', p.close);
   const save = button('Save', 'primary');
-  save.addEventListener('click', () => { apply(currency, build()); p.close(); });
-  p.foot.append(undo, cancel, save);
+  save.addEventListener('click', () => { apply(currency, read()); p.close(); });
+  p.foot.append(cancel, save);
 }
