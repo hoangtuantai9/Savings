@@ -48,7 +48,6 @@ Everything is a click or a key; nothing is a menu.
 | **Right-click a card** | That track's options |
 | **Ctrl/⌘ + H** | History and totals |
 | **Ctrl/⌘ + L** | Sign in, so every device shares one set of books |
-| **Ctrl/⌘ + R** | Start both ladders over |
 
 Installed as a PWA it gets its own window and its own icon, with no address bar — on a desktop and on a phone alike.
 A tab, though, can be buried under another tab: if the amount due is meant to stay in front of you, install it rather
@@ -196,12 +195,6 @@ track's lock setting and clamps progress to the new length.
 Nothing shows on screen at all — the menu is two cards and nothing else. Everything is reachable without cluttering
 it: **right-click a card** for that track's options, **Ctrl+H** for the books, **Ctrl+R** to start over.
 
-**Standing on step** — where the track is on its ladder: the step it is about to ask you for. Under the box it says
-what that step costs and how many are banked behind it, because "step 5" on its own cannot tell you whether five have
-been saved or four have. Moving a track by hand clears whatever it was waiting on — the lock and the question both
-belonged to a step that is no longer in front of you — and leaves the history alone, since the money in it was really
-saved.
-
 **Lock after ticking a step** — minutes to wait before the next amount unlocks. VND starts at `18` and USD at `25`,
 deliberately different so the two ladders never fall into step and hand you both questions at once. Presets for
 1 hour / 1 day / 1 week, and `0` disables the lock. Setting it to `0` also removes the verdict: with no wait to
@@ -230,9 +223,10 @@ lock. It lives here rather than on the coin so a stray click cannot undo your pr
 **Ctrl+H** reveals every saved step **and the running totals**, so the app asks for confirmation before opening it —
 that number is the thing you are trying not to think about. Export to CSV from there if you want it in Excel.
 
-**Ctrl+R** returns both tracks to step 1, clears the locks and wipes history. It asks first. The same thing sits at
-the far left of either track's options, for when a keyboard shortcut is not to hand — a reset should take deliberate
-effort to reach, not be impossible to find.
+**There is no way to start over.** Nothing in the app sets a track to a step of your choosing, and nothing wipes the
+books — not a button, not a shortcut. A ladder that can be sent back to step 1 on a whim is a ladder that never has to
+be climbed, and a step that can be jumped to is a step nobody saved for. The only wipe the app performs is its own, at
+the top of all four ladders, after the crown and the burst.
 
 ## Data
 

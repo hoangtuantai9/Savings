@@ -9,8 +9,8 @@ import * as sync from './sync.js';
 
 const KEY = 'savings.data';
 
-/** A fresh, unclimbed set of ladders. */
-export function blank() {
+/** A fresh, unclimbed set of ladders. Only load() ever needs one. */
+function blank() {
   return {
     version: VERSION,
     vnd: plans.vnd(),

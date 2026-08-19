@@ -209,21 +209,17 @@ function checkWrap() {
 
 function openSettings(currency) {
   settingsPanel(state, currency, {
-    apply: (cur, plan, standing) => {
+    apply: (cur, plan) => {
       const key = cur === 'VND' ? 'vnd' : 'usd';
       state[key] = plan;
-      // `standing` is the step the track is about to be asked for, so the count banked is one less.
-      // Moving a track by hand clears whatever it was waiting on: the lock and the question both
-      // belong to a step that is no longer the one in front of you.
-      const done = Math.min(Math.max(0, standing - 1), count(plan));
-      const moved = done !== track(state, cur).done;
-      setTrack(state, cur, moved ? { done, unlockAt: null, awaitingVerdict: false } : { done });
+      // Progress is only ever clamped to the new ladder here, never moved: where a track stands is
+      // earned, and there is nothing in the app that will set it for you.
+      setTrack(state, cur, { done: Math.min(track(state, cur).done, count(plan)) });
       save();
       render();
-      if (focus.isOpen() && focus.currency === cur) { focus.paint(); }
+      if (focus.isOpen() && focus.currency === cur) focus.paint();
     },
-    onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); },
-    onReset: () => resetAll()
+    onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); }
   });
 }
 
@@ -233,15 +229,9 @@ function openHistory() {
     'Show me', () => historyPanel(state));
 }
 
-function resetAll() {
-  confirmPanel('Start over',
-    'Both ladders go back to step 1, the locks are cleared and the history is wiped. There is no undo.',
-    'Reset everything', () => {
-      state = store.blank();
-      save();
-      render();
-    });
-}
+// There is no way to start over from inside the app, and that is the point: a ladder you can send
+// back to step 1 on a whim is a ladder that never has to be climbed. The only wipe left is the one
+// the app performs itself, at the top of all four ladders, after the crown and the burst.
 
 // ---- the clock -----------------------------------------------------------------------------------
 
@@ -292,8 +282,8 @@ addEventListener('keydown', e => {
   if (e.target.matches('input, textarea')) return;
   const ctrl = e.ctrlKey || e.metaKey;
 
+  // Ctrl+R is left to the browser, where it means reload. It used to open the reset.
   if (ctrl && e.key.toLowerCase() === 'h') { e.preventDefault(); openHistory(); }
-  else if (ctrl && e.key.toLowerCase() === 'r') { e.preventDefault(); resetAll(); }
   else if (ctrl && e.key.toLowerCase() === 'l') { e.preventDefault(); openSync(); }
   else if (e.key === 'Escape' && focus.isOpen()) leaveFocus();
 });

@@ -2,8 +2,8 @@
 // questions the app asks before it does something you cannot take back.
 //
 // Nothing here shows on the menu — it is two cards and nothing else. Options are a right-click on
-// a card, history is Ctrl+H, and a reset is Ctrl+R or the last resort inside those options. It asks
-// before doing anything either way.
+// a card and history is Ctrl+H. Nothing in here can move a track to a step of your choosing and
+// nothing can wipe the books — deliberately, so the ladder cannot be talked out of a wait.
 
 import { count, amountAt } from './plans.js';
 import { totals } from './state.js';
@@ -180,21 +180,12 @@ export function syncPanel({ status, email, onSignIn, onSignUp, onSignOut }) {
  * One track's options. Each track's are its own — changing one never touches the other.
  * `apply` receives the new plan; `onUndo` rolls the track back one step and clears its lock.
  */
-export function settingsPanel(state, currency, { apply, onUndo, onReset }) {
+export function settingsPanel(state, currency, { apply, onUndo }) {
   const key = currency === 'VND' ? 'vnd' : 'usd';
   const plan = state[key];
   const p = panel(`${currency} options`);
 
   p.body.innerHTML = `
-    <label class="field">
-      <span>Standing on step</span>
-      <div class="row">
-        <input type="number" min="1" max="${count(plan)}" step="1" id="standing" value="${Math.min(state[key + 'Done'], count(plan) - 1) + 1}">
-        <span class="unit">of ${count(plan)}</span>
-      </div>
-      <p class="hint" id="standing-hint"></p>
-    </label>
-
     <label class="field">
       <span>Lock after ticking a step</span>
       <div class="row">
@@ -255,34 +246,15 @@ export function settingsPanel(state, currency, { apply, onUndo, onReset }) {
     const next = build();
     const first = [0, 1, 2].map(i => money(currency, amountAt(next, i))).join('   ·   ');
     el('preview').textContent = `${count(next)} steps — ${first} …`;
-
-    // Which step the track stands on, and therefore what it is about to ask for. Spelled out in
-    // money, because "step 5" on its own cannot say whether five have been banked or four have.
-    const standing = clampStep(el('standing').value, next);
-    const banked = standing - 1;
-    el('standing-hint').textContent =
-      `${money(currency, amountAt(next, banked))} due next — ${banked} step${banked === 1 ? '' : 's'} banked before it.`;
   };
-
-  const clampStep = (raw, plan) =>
-    Math.min(Math.max(1, Math.round(Number(raw) || 1)), count(plan));
   preview();
   for (const node of p.body.querySelectorAll('input, textarea')) node.addEventListener('input', preview);
-
-  // Ctrl+R reaches this too, but a reset that can only be reached by a keyboard shortcut is a reset
-  // half the people who need it cannot find. It still asks before doing anything.
-  const wipe = button('Start over — both tracks');
-  wipe.addEventListener('click', () => { p.close(); onReset(); });
 
   const undo = button('Undo last step');
   undo.addEventListener('click', () => { p.close(); onUndo(currency); });
   const cancel = button('Cancel');
   cancel.addEventListener('click', p.close);
   const save = button('Save', 'primary');
-  save.addEventListener('click', () => {
-    const next = build();
-    apply(currency, next, clampStep(el('standing').value, next));
-    p.close();
-  });
-  p.foot.append(wipe, undo, cancel, save);
+  save.addEventListener('click', () => { apply(currency, build()); p.close(); });
+  p.foot.append(undo, cancel, save);
 }
