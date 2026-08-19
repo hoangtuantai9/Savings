@@ -200,6 +200,12 @@ track's lock setting and clamps progress to the new length.
 Nothing shows on screen at all — the menu is two cards and nothing else. Everything is reachable without cluttering
 it: **right-click a card** for that track's options, **Ctrl+H** for the books, **Ctrl+R** to start over.
 
+**Standing on step** — where the track is on its ladder: the step it is about to ask you for. Under the box it says
+what that step costs and how many are banked behind it, because "step 5" on its own cannot tell you whether five have
+been saved or four have. Moving a track by hand clears whatever it was waiting on — the lock and the question both
+belonged to a step that is no longer in front of you — and leaves the history alone, since the money in it was really
+saved.
+
 **Lock after ticking a step** — minutes to wait before the next amount unlocks. VND starts at `18` and USD at `25`,
 deliberately different so the two ladders never fall into step and hand you both questions at once. Presets for
 1 hour / 1 day / 1 week, and `0` disables the lock. Setting it to `0` also removes the verdict: with no wait to

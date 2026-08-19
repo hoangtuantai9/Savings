@@ -186,6 +186,15 @@ export function settingsPanel(state, currency, { apply, onUndo }) {
 
   p.body.innerHTML = `
     <label class="field">
+      <span>Standing on step</span>
+      <div class="row">
+        <input type="number" min="1" max="${count(plan)}" step="1" id="standing" value="${Math.min(state[key + 'Done'], count(plan) - 1) + 1}">
+        <span class="unit">of ${count(plan)}</span>
+      </div>
+      <p class="hint" id="standing-hint"></p>
+    </label>
+
+    <label class="field">
       <span>Lock after ticking a step</span>
       <div class="row">
         <input type="number" min="0" step="1" id="cooldown" value="${plan.cooldown}">
@@ -245,7 +254,17 @@ export function settingsPanel(state, currency, { apply, onUndo }) {
     const next = build();
     const first = [0, 1, 2].map(i => money(currency, amountAt(next, i))).join('   ·   ');
     el('preview').textContent = `${count(next)} steps — ${first} …`;
+
+    // Which step the track stands on, and therefore what it is about to ask for. Spelled out in
+    // money, because "step 5" on its own cannot say whether five have been banked or four have.
+    const standing = clampStep(el('standing').value, next);
+    const banked = standing - 1;
+    el('standing-hint').textContent =
+      `${money(currency, amountAt(next, banked))} due next — ${banked} step${banked === 1 ? '' : 's'} banked before it.`;
   };
+
+  const clampStep = (raw, plan) =>
+    Math.min(Math.max(1, Math.round(Number(raw) || 1)), count(plan));
   preview();
   for (const node of p.body.querySelectorAll('input, textarea')) node.addEventListener('input', preview);
 
@@ -254,6 +273,10 @@ export function settingsPanel(state, currency, { apply, onUndo }) {
   const cancel = button('Cancel');
   cancel.addEventListener('click', p.close);
   const save = button('Save', 'primary');
-  save.addEventListener('click', () => { apply(currency, build()); p.close(); });
+  save.addEventListener('click', () => {
+    const next = build();
+    apply(currency, next, clampStep(el('standing').value, next));
+    p.close();
+  });
   p.foot.append(undo, cancel, save);
 }

@@ -212,13 +212,18 @@ function checkWrap() {
 
 function openSettings(currency) {
   settingsPanel(state, currency, {
-    apply: (cur, plan) => {
+    apply: (cur, plan, standing) => {
       const key = cur === 'VND' ? 'vnd' : 'usd';
       state[key] = plan;
-      const done = Math.min(track(state, cur).done, count(plan));
-      setTrack(state, cur, { done });
+      // `standing` is the step the track is about to be asked for, so the count banked is one less.
+      // Moving a track by hand clears whatever it was waiting on: the lock and the question both
+      // belong to a step that is no longer the one in front of you.
+      const done = Math.min(Math.max(0, standing - 1), count(plan));
+      const moved = done !== track(state, cur).done;
+      setTrack(state, cur, moved ? { done, unlockAt: null, awaitingVerdict: false } : { done });
       save();
       render();
+      if (focus.isOpen() && focus.currency === cur) { focus.revealed = false; focus.paint(); }
     },
     onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); }
   });
