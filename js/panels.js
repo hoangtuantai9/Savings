@@ -2,7 +2,8 @@
 // questions the app asks before it does something you cannot take back.
 //
 // Nothing here shows on the menu — it is two cards and nothing else. Options are a right-click on
-// a card, history is Ctrl+H, and a reset is Ctrl+R with no button anywhere.
+// a card, history is Ctrl+H, and a reset is Ctrl+R or the last resort inside those options. It asks
+// before doing anything either way.
 
 import { count, amountAt } from './plans.js';
 import { totals } from './state.js';
@@ -179,7 +180,7 @@ export function syncPanel({ status, email, onSignIn, onSignUp, onSignOut }) {
  * One track's options. Each track's are its own — changing one never touches the other.
  * `apply` receives the new plan; `onUndo` rolls the track back one step and clears its lock.
  */
-export function settingsPanel(state, currency, { apply, onUndo }) {
+export function settingsPanel(state, currency, { apply, onUndo, onReset }) {
   const key = currency === 'VND' ? 'vnd' : 'usd';
   const plan = state[key];
   const p = panel(`${currency} options`);
@@ -268,6 +269,11 @@ export function settingsPanel(state, currency, { apply, onUndo }) {
   preview();
   for (const node of p.body.querySelectorAll('input, textarea')) node.addEventListener('input', preview);
 
+  // Ctrl+R reaches this too, but a reset that can only be reached by a keyboard shortcut is a reset
+  // half the people who need it cannot find. It still asks before doing anything.
+  const wipe = button('Start over — both tracks');
+  wipe.addEventListener('click', () => { p.close(); onReset(); });
+
   const undo = button('Undo last step');
   undo.addEventListener('click', () => { p.close(); onUndo(currency); });
   const cancel = button('Cancel');
@@ -278,5 +284,5 @@ export function settingsPanel(state, currency, { apply, onUndo }) {
     apply(currency, next, clampStep(el('standing').value, next));
     p.close();
   });
-  p.foot.append(undo, cancel, save);
+  p.foot.append(wipe, undo, cancel, save);
 }

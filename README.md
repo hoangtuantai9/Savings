@@ -234,8 +234,9 @@ lock. It lives here rather than on the coin so a stray click cannot undo your pr
 **Ctrl+H** reveals every saved step **and the running totals**, so the app asks for confirmation before opening it —
 that number is the thing you are trying not to think about. Export to CSV from there if you want it in Excel.
 
-**Ctrl+R** returns both tracks to step 1, clears the locks and wipes history. It asks first, and there is no button
-for it — a reset should take deliberate effort to reach.
+**Ctrl+R** returns both tracks to step 1, clears the locks and wipes history. It asks first. The same thing sits at
+the far left of either track's options, for when a keyboard shortcut is not to hand — a reset should take deliberate
+effort to reach, not be impossible to find.
 
 ## Data
 

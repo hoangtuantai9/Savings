@@ -225,7 +225,8 @@ function openSettings(currency) {
       render();
       if (focus.isOpen() && focus.currency === cur) { focus.revealed = false; focus.paint(); }
     },
-    onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); }
+    onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); },
+    onReset: () => resetAll()
   });
 }
 
