@@ -79,11 +79,10 @@ card's border speeds up to match — all of it scaling with how close you are, a
 tick actually changes the colour. The last band counts down to the end of the ladder the same way.
 
 **Pick one** — the menu rushes past the camera while that currency's screen zooms in behind it, tilting the last few
-degrees into place. The gem lands closed, then opens on its own.
+degrees into place, with the amount already counting up on its face.
 
 | Stage | What you see |
 |---|---|
-| **Sealed** | The currency name |
 | **Revealed** | The amount, counting up from zero, and a round tick |
 | **Saved** | A shockwave, five diamonds flying outward, an accent flash and a big tick |
 | **Waiting** | A padlock, a big `17:58` countdown, and a glowing head riding the draining edge |
@@ -116,8 +115,6 @@ below and accumulates that one again.
 The rim traces the diamond twice: dimly for progress through the plan, brightly for the lock draining away — both
 drawn by dashing an exact fraction of the perimeter, so the head sits precisely where the time says it should.
 Progress is only ever shown as geometry; no numbers escape except the one amount you are working on.
-
-Tapping a revealed gem flips it shut again without ticking it.
 
 The two tracks are fully independent. Save VND today and leave USD alone; each has its own schedule and its own lock.
 

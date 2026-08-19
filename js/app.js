@@ -124,7 +124,7 @@ async function tick(currency, isBonus) {
   busy = false;
 
   render();
-  if (isBonus) { focus.revealed = false; focus.paint(); }
+  if (isBonus) { focus.paint(); }
   checkWrap();
 }
 
@@ -143,15 +143,13 @@ async function answer(currency, held) {
     const nowColour = accentOf(currency, t.plan, t.done);
     busy = true;
     const hold = proclaim('UNLOCKED', nowColour, before !== nowColour);
-    after(hold, () => { busy = false; focus.revealed = false; focus.paint(); render(); });
-    focus.revealed = false;
+    after(hold, () => { busy = false; focus.paint(); render(); });
     focus.paint();
   } else {
     busy = true;
     await focus.celebrateUndo(accentOf(currency, t.plan, Math.max(0, t.done - 1)));
     rollBack(currency);
     busy = false;
-    focus.revealed = false;
     focus.paint();
     render();
   }
@@ -201,8 +199,7 @@ function checkWrap() {
     const hold = proclaim('AGAIN', accentOf('VND', state.vnd, 0), true);
     after(hold, () => {
       busy = false;
-      focus.revealed = false;
-      if (focus.isOpen()) focus.paint();
+        if (focus.isOpen()) focus.paint();
       render();
     });
   });
@@ -223,7 +220,7 @@ function openSettings(currency) {
       setTrack(state, cur, moved ? { done, unlockAt: null, awaitingVerdict: false } : { done });
       save();
       render();
-      if (focus.isOpen() && focus.currency === cur) { focus.revealed = false; focus.paint(); }
+      if (focus.isOpen() && focus.currency === cur) { focus.paint(); }
     },
     onUndo: cur => { rollBack(cur); render(); if (focus.isOpen()) focus.paint(); },
     onReset: () => resetAll()

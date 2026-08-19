@@ -330,13 +330,6 @@ html, body {
 }
 .coin-face > * { grid-area: 1 / 1; }
 
-.face-name {
-  font-size: clamp(20px, 4.4vmin, 34px);
-  font-weight: 700;
-  letter-spacing: 0.5em;
-  text-indent: 0.5em;
-}
-
 /* The amount lands on the widest part of the stone. It is set in near-white rather than the tier
    colour: the stone under it is already that colour, and colour on colour cannot be read. */
 .face-amount {

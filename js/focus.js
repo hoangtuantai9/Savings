@@ -1,7 +1,6 @@
 // One currency's own screen. Everything the app will ever tell you about money is here, and only
 // ever one figure of it: the amount due right now.
 //
-//   Sealed    the currency name
 //   Revealed  the amount, counting up from zero, and a round tick
 //   Saved     a shockwave, five diamonds flying outward, an accent flash and a big tick
 //   Waiting   a padlock, a big countdown, and a glowing head riding the draining edge
@@ -14,7 +13,7 @@
 import { count, amountAt } from './plans.js';
 import { track, bonus, remaining } from './state.js';
 import { stone, wear, accentOf, blend, alpha, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
-import { animate, done, pop, flip, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
+import { animate, done, pop, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
 const G = { cx: 210, cy: 218, w: 132, h: 176 };
@@ -73,10 +72,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   faceWrap.className = 'coin-face';
   coin.appendChild(faceWrap);
 
-  const nameText = document.createElement('div');
-  nameText.className = 'face-name';
-  faceWrap.appendChild(nameText);
-
   const amountText = document.createElement('div');
   amountText.className = 'face-amount';
   faceWrap.appendChild(amountText);
@@ -129,20 +124,15 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
 
   let currency = 'VND';
   let onBonus = false;          // the face has been turned over to the bonus ladder
-  let revealed = false;         // the gem has been opened on this visit
   let state = null;
   let bonusLive = false;
   let counted = null;           // which amount the face is currently showing, so it counts up once
 
   const line = () => (onBonus ? bonus(state, currency) : track(state, currency));
 
-  /** Sealed → revealed, and back again: tapping a revealed gem flips it shut without ticking it. */
-  parts.g.addEventListener('click', () => {
-    const s = stage();
-    if (s === 'sealed') { revealed = true; flipFace(); }
-    else if (s === 'revealed') { revealed = false; flipFace(); }
-  });
-  svg.addEventListener('click', e => { if (e.target === svg) parts.g.dispatchEvent(new Event('click')); });
+  // The stone itself is not a control. It used to turn over between the amount and the currency's name,
+  // which meant a tap on the figure hid it behind a word the menu had already said and the ₫ or $
+  // says again. The amount is simply always up.
 
   ice.addEventListener('click', e => {
     e.stopPropagation();
@@ -164,10 +154,8 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
       // it is, is this screen's to say.
       if (t.awaitingVerdict) return 'verdict';
     }
-    return revealed ? 'revealed' : 'sealed';
+    return 'revealed';
   }
-
-  const flipFace = () => flip(faceWrap, () => paint());
 
   /** Draws the whole screen from the state. Called on open, on every tick and once a second. */
   function paint() {
@@ -213,17 +201,11 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     }
 
     // The face itself: one thing at a time.
-    nameText.hidden = s !== 'sealed';
     amountText.hidden = !(s === 'revealed' || s === 'saved');
     clockText.hidden = s !== 'waiting';
     glyph.style.display = ['waiting', 'verdict', 'done', 'saved'].includes(s) ? '' : 'none';
     tickBtn.hidden = s !== 'revealed';
     verdictRow.hidden = s !== 'verdict';
-
-    nameText.textContent = currency;
-    // The sealed face carries the same near-white the amount does: ice-blue lettering on an
-    // ice-blue stone was the bonus repeating the very mistake the amount had just stopped making.
-    nameText.style.color = lighten(accent, 0.9);
 
     if (s === 'revealed') {
       // Near-white, not the tier colour: the stone underneath is already wearing that colour, and
@@ -312,8 +294,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     state = next;
     currency = cur;
     onBonus = !!asBonus;
-    // The gem lands closed, then opens on its own — unless there is a wait or a question first.
-    revealed = false;
     bonusLive = false;
     ice.style.display = 'none';
     root.hidden = false;
@@ -322,7 +302,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
       { opacity: 0, transform: 'scale(0.62) rotateX(14deg)' },
       { opacity: 1, transform: 'scale(1) rotateX(0deg)' }
     ], { duration: 460, easing: EASE_OUT }));
-    if (stage() === 'sealed') { revealed = true; flipFace(); }
     if (stage() === 'verdict') askVerdict(accentOf(currency, line().plan, line().done));
   }
 
@@ -343,7 +322,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     celebrateSave, celebrateUndo, askVerdict,
     get currency() { return currency; },
     get onBonus() { return onBonus; },
-    set revealed(v) { revealed = v; },
     isOpen: () => !root.hidden
   };
 }

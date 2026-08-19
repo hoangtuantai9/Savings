@@ -69,15 +69,6 @@ export function pop(node, live) {
   return a;
 }
 
-/** Squash-and-restore flip; `swap` runs while the face is edge-on. */
-export async function flip(node, swap) {
-  await done(animate(node, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }],
-    { duration: 160, easing: EASE_IN }));
-  swap();
-  return done(animate(node, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }],
-    { duration: 260, easing: EASE_OUT }));
-}
-
 /**
  * One shockwave: a diamond ring growing outward as it fades. Every burst in the app is a few of
  * these, staggered. `dir` of -1 falls inward instead — the shape a step being taken back makes.
