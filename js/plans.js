@@ -10,7 +10,32 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 10;
+export const VERSION = 12;
+
+/**
+ * The one re-peg that came with this version, and the only thing in the app that can move a track
+ * without it being climbed.
+ *
+ * The re-cut sheet moved every run boundary in column A — the old ladder's step 43 was 1.433.570 ₫
+ * and the new one's is 50.000 ₫ — so where a saved file stood on the old column means nothing on
+ * the new one. Rather than leave the VND track pointing at a rung that has moved under it, a file
+ * written before this version has it put back to step 6 of run 1: `done: 5`, so 30.160 ₫ is the
+ * amount asked next.
+ *
+ * It fires once per set of books, not once per load — the version stamped on the way out of
+ * migrate() is what stops it firing again, and a file already at this version is left where it
+ * stands. A fresh set of books is not re-pegged either: it starts at step 1 like any other climb.
+ *
+ * The books are not touched. History and the totals survive this the same way they survive a wrap:
+ * the steps were saved and the money is real. Only the milestone moves.
+ *
+ * A re-peg has to be pegged to the version that carries it, and the version has to be bumped in the
+ * same breath. This one was first written as 11 while VERSION was already 11, which made it a no-op
+ * against every file the new tables had touched: migrate() stamps the version on its way out, so a
+ * set of books that had merely been opened was already at 11 and read as "re-peg done". Bumping to
+ * 12 is what gives the condition below something left to be true about.
+ */
+export const VND_REPEG = { version: 12, done: 5 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once.
@@ -47,24 +72,23 @@ function bandEnds(steps) {
 }
 
 const VND_STEPS = [
-  // red — run 1: steps 1-47, 17.900 d -> 2.176.260 d
+  // red — run 1: steps 1-42, 17.900 d -> 1.291.500 d
   17_900, 19_870, 22_050, 24_480, 27_170, 30_160, 33_480, 37_160, 41_250,
   45_790, 50_830, 56_420, 62_620, 69_510, 77_160, 85_640, 95_070, 105_520,
   117_130, 130_010, 144_320, 160_190, 177_810, 197_370, 219_080, 243_180, 269_930,
   299_620, 332_580, 369_160, 409_770, 454_850, 504_880, 560_420, 622_060, 690_490,
-  766_440, 850_750, 944_340, 1_048_210, 1_163_520, 1_291_500, 1_433_570, 1_591_260, 1_766_300,
-  1_960_590, 2_176_260,
-  // amber — run 2: steps 48-93, 50.000 d -> 5.476.510 d
+  766_440, 850_750, 944_340, 1_048_210, 1_163_520, 1_291_500,
+  // amber — run 2: steps 43-85, 50.000 d -> 4.004.380 d
   50_000, 55_500, 61_610, 68_380, 75_900, 84_250, 93_520, 103_810, 115_230,
   127_900, 141_970, 157_590, 174_920, 194_160, 215_520, 239_230, 265_540, 294_750,
   327_180, 363_170, 403_120, 447_460, 496_680, 551_310, 611_960, 679_270, 753_990,
   836_930, 929_000, 1_031_180, 1_144_610, 1_270_520, 1_410_280, 1_565_410, 1_737_610, 1_928_740,
-  2_140_900, 2_376_400, 2_637_810, 2_927_970, 3_250_040, 3_607_550, 4_004_380, 4_444_860, 4_933_790,
-  5_476_510,
-  // green — run 3: steps 94-117, 500.000 d -> 5.513.130 d
-  500_000, 555_000, 616_050, 683_820, 759_040, 842_530, 935_210, 1_038_080, 1_152_270,
-  1_279_020, 1_419_710, 1_575_880, 1_749_230, 1_941_640, 2_155_220, 2_392_290, 2_655_450, 2_947_550,
-  3_271_780, 3_631_670, 4_031_160, 4_474_580, 4_966_790, 5_513_130,
+  2_140_900, 2_376_400, 2_637_810, 2_927_970, 3_250_040, 3_607_550, 4_004_380,
+  // green — run 3: steps 86-117, 300.000 d -> 7.623.130 d
+  300_000, 333_000, 369_630, 410_290, 455_420, 505_520, 561_120, 622_850, 691_360,
+  767_410, 851_830, 945_530, 1_049_540, 1_164_980, 1_293_130, 1_435_380, 1_593_270, 1_768_530,
+  1_963_070, 2_179_000, 2_418_690, 2_684_750, 2_980_070, 3_307_880, 3_671_750, 4_075_640, 4_523_960,
+  5_021_590, 5_573_970, 6_187_110, 6_867_690, 7_623_130,
   // green — run 4: steps 118-141, 500.000 d -> 5.513.130 d
   500_000, 555_000, 616_050, 683_820, 759_040, 842_530, 935_210, 1_038_080, 1_152_270,
   1_279_020, 1_419_710, 1_575_880, 1_749_230, 1_941_640, 2_155_220, 2_392_290, 2_655_450, 2_947_550,

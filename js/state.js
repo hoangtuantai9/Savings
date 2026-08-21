@@ -4,7 +4,7 @@
 // seam the sync layer plugs into — one write path, one broadcast, so nothing can reach the disk
 // without also being offered to the other machines.
 
-import { plans, VERSION, count, lockFloor } from './plans.js';
+import { plans, VERSION, VND_REPEG, count, lockFloor } from './plans.js';
 import * as sync from './sync.js';
 
 const KEY = 'savings.data';
@@ -52,6 +52,10 @@ function blank() {
  * The one thing carried across is each track's wait, and only ever lengthened — a stored zero would
  * otherwise buy a ladder with no waits and no verdicts, which is the loophole the options panel has
  * just been shut on.
+ *
+ * Where a track stands is carried across too, and is the one figure this function will move of its
+ * own accord: see VND_REPEG in plans.js. Every document the app believes comes through here, so
+ * that is the only place a re-peg has to be written down.
  */
 function migrate(s) {
   const wait = currency => {
@@ -63,6 +67,16 @@ function migrate(s) {
   s.vndBonus = plans.vndBonus();
   s.usdBonus = plans.usdBonus();
 
+  // The re-peg that came with this ladder version. A file written before it is pointing at a VND
+  // rung that has since moved, so the track goes back to where the new sheet says the climb should
+  // stand — and its wait goes with it, since the wait belonged to a step that is no longer there.
+  // Clamped below like any other stored position, so a re-peg past the end of a ladder cannot land.
+  if ((s.version ?? 0) < VND_REPEG.version) {
+    s.vndDone = VND_REPEG.done;
+    s.vndUnlockAt = null;
+    s.vndAwaitingVerdict = false;
+  }
+
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
   s.vndBonusDone = clamp(s.vndBonusDone, 0, count(s.vndBonus));
@@ -73,10 +87,21 @@ function migrate(s) {
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v || 0));
 
+/**
+ * A document from anywhere but this function's own output — another tab, or another machine over
+ * sync — put onto the ladders as they actually are before anything is allowed to believe it.
+ *
+ * A remote document used to be adopted as it arrived, which meant a phone that had not been opened
+ * since the sheet was re-cut could push its copy of the old column A back over the new one, and
+ * take the re-peg with it. A saved file is not trusted; there is no reason a document that has been
+ * over the wire should be.
+ */
+export const normalise = doc => migrate({ ...blank(), ...doc });
+
 export function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return migrate({ ...blank(), ...JSON.parse(raw) });
+    if (raw) return normalise(JSON.parse(raw));
   } catch {
     // Corrupt entry: keep a copy and start fresh rather than refusing to open.
     try { localStorage.setItem(KEY + '.bak', localStorage.getItem(KEY) ?? ''); } catch { /* full */ }
@@ -98,7 +123,7 @@ export function save(state) {
 export function watchOtherTabs(apply) {
   addEventListener('storage', e => {
     if (e.key === KEY && e.newValue) {
-      try { apply(migrate({ ...blank(), ...JSON.parse(e.newValue) })); } catch { /* ignore */ }
+      try { apply(normalise(JSON.parse(e.newValue))); } catch { /* ignore */ }
     }
   });
 }

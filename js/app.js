@@ -290,11 +290,14 @@ store.watchOtherTabs(next => { state = next; render(); });
 // ---- the same books, on another machine ------------------------------------------------------
 
 /**
- * A document arriving from elsewhere. It is only ever adopted between moments — a burst mid-flight
- * would swap the ladder out from under a celebration — and only if it is the one to keep.
+ * A document arriving from elsewhere. It is put onto the ladders as they actually are before it is
+ * weighed against this device's copy — a machine that has not been opened since the sheet was
+ * re-cut is carrying an out-of-date column, and winning the revision count does not make it right.
+ * It is only ever adopted between moments — a burst mid-flight would swap the ladder out from under
+ * a celebration — and only if it is the one to keep.
  */
 function adopt(remote) {
-  const kept = sync.pick(state, remote);
+  const kept = sync.pick(state, store.normalise(remote));
   if (kept === state) return;
   const take = () => { state = kept; store.save(state); render(); if (focus.isOpen()) focus.paint(); };
   busy ? after(600, () => (busy ? after(1200, take) : take())) : take();

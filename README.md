@@ -125,24 +125,28 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **VND** — 206 steps | 1–31 · `17,900 ₫` → `409,770 ₫` | 32–73 · `30,000 ₫` → `2,164,530 ₫` | 74–206 · peaks at `9,933,570 ₫` |
-| **USD** — 206 steps | 1–54 · `$0.20` → `$31.25` | 55–75 · `$15.00` → `$100.91` | 76–206 · peaks at `$407.01` |
+| **VND** — 206 steps | 1–42 · `17,900 ₫` → `1,291,500 ₫` | 43–85 · `50,000 ₫` → `4,004,380 ₫` | 86–206 · peaks at `9,933,570 ₫` |
+| **USD** — 206 steps | 1–75 · `$0.10` → `$115.63` | 76–96 · `$30.00` → `$201.82` | 97–206 · peaks at `$407.01` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — eight in VND at ×1.11, nine in USD at ×1.10 — each starting over at a round
+Each column is really a stack of runs — seven in VND at ×1.11, eight in USD at ×1.10 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
 as one long climb rather than a dozen separate ones. The bands are read off the ladder rather than written down: the
-first two runs end where they end, and everything past them is green. VND totals `403,288,310 ₫` and USD totals
-`$20,037.40` across
+first two runs end where they end, and everything past them is green. VND totals `417,342,350 ₫` and USD totals
+`$20,006.51` across
 all 206 steps.
 
-The VND amber band is the long one: forty-two steps from `30,000 ₫` to `2,164,530 ₫`, the longest run in the sheet.
-Red before it is thirty-one steps, so more than a third of the ladder is spent in the first two colours.
+The VND amber band is the long one: forty-three steps from `50,000 ₫` to `4,004,380 ₫`, the longest run in column A.
+Red before it is forty-two steps, so more than a third of the VND ladder is spent in the first two colours. Column B
+is the other way round — its red run alone is seventy-five steps, the longest run in the sheet, and amber past it only
+twenty-one.
 
-One rough edge in the sheet is worth knowing about, and the app carries it rather than tidying it away: column B's
-last run is cut short at seventeen steps, so the USD ladder ends mid-climb on `$229.75` rather than at the top of a
-run. Column A climbs cleanly the whole way — every step asks for more than the one before it.
+One rough edge in the sheet is worth knowing about, and the app carries it rather than tidying it away: both main
+columns stop mid-run. Column A’s last run is cut to nineteen steps of twenty-three, so the VND ladder ends on
+`6,543,550 ₫` rather than the `9,933,570 ₫` its two previous runs reached; column B’s is cut to seventeen, ending on
+`$229.75`. Inside a run, though, every step asks for more than the one before it — the only figure that ever goes
+down is the first of a new run, which is what marks the boundary.
 
 ## The bonus stones
 
@@ -181,7 +185,7 @@ Once a bonus ladder is finished its stone simply never returns. No announcement.
 There is no dead end at the top. Once **all four ladders are finished** — VND and USD, main and bonus, with no
 verdict still owed — the app holds the finished screens for about three seconds, so the crown and its burst land as
 an ending, then strikes one word across the window: `AGAIN`. Every track goes back to its first milestone, both locks
-and both hidden bonus clocks are cleared, and the climb starts over from `17,900 ₫` and `$0.20`.
+and both hidden bonus clocks are cleared, and the climb starts over from `17,900 ₫` and `$0.10`.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
 so a second pass adds to the first rather than replacing it. Only the milestones start over. `Ctrl+R` is still the
@@ -189,6 +193,31 @@ one thing that wipes the history itself.
 
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
 track's lock setting and clamps progress to the new length.
+
+### Re-pegging a track
+
+Recutting a column moves its run boundaries, and then where a saved file stood on the old ladder means nothing on the
+new one — the old column A had `1,433,570 ₫` at step 43, the recut one has `50,000 ₫`. So a version bump can carry a
+one-off **re-peg**: `VND_REPEG` in `js/plans.js` names a version and a step, and any document written before that
+version has its VND track put there instead of left pointing at a rung that has moved. It currently reads
+`{ version: 12, done: 5 }` — **step 6 of run 1, `30,160 ₫`**.
+
+Peg it to the version that carries it, and bump `VERSION` in the same breath. A re-peg written against a version the
+sheet had *already* been published under is a no-op: `migrate()` stamps the version on its way out, so a set of books
+that had merely been opened since the recut is already at that number and reads as "re-peg done".
+
+It fires **once per set of books, not once per load**: the version stamped on the way out is what stops it firing
+again, and a document already at that version is left where it stands. A fresh set of books is not re-pegged either —
+it starts at step 1 like any other climb. The track's lock and any verdict it owed are cleared with it, since both
+belonged to a step that is no longer there. **The books are not touched** — history and the totals survive a re-peg
+the same way they survive a wrap.
+
+This is the only thing in the app that can move a track without it being climbed, and it is deliberately not reachable
+from the app: it is a line in the source, applied by the code that reads a save, not a button.
+
+Every document the app believes goes through that same reader — including one arriving over sync. A phone that had not
+been opened since the sheet was recut used to be able to push its copy of the old column back over the new one, and
+take the re-peg with it; winning the revision count does not make a document right.
 
 ## Options
 
