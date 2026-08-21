@@ -9,8 +9,8 @@
 // before putting anything real in here — the SQL is in README.md under "Syncing".
 
 export const SUPABASE = {
-  url: '',        // https://<project>.supabase.co
-  anonKey: ''     // the anon / publishable key from Project Settings → API
+  url: 'https://nebhmyfqdeomkjicjnww.supabase.co',
+  anonKey: 'sb_publishable_Ck_lE_14054vvkLBNOX95g_yMuxeULI'   // publishable key: public by design; RLS is what keeps the books private
 };
 
 export const configured = () => Boolean(SUPABASE.url && SUPABASE.anonKey);
