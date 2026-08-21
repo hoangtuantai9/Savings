@@ -4,10 +4,22 @@
 // seam the sync layer plugs into — one write path, one broadcast, so nothing can reach the disk
 // without also being offered to the other machines.
 
-import { plans, VERSION, VND_REPEG, count, lockFloor } from './plans.js';
+import { plans, VERSION, count, lockFloor } from './plans.js';
 import * as sync from './sync.js';
 
 const KEY = 'savings.data';
+
+/**
+ * The version at which every ladder was sent back to its first milestone, and the only thing in the
+ * app that can move a track without it being climbed.
+ *
+ * A number rather than an import, deliberately. Two generations of this folder can be mixed in a
+ * browser's HTTP cache for as long as the cache lasts, and a module that asks plans.js for a name it
+ * has not got yet takes the whole graph down with it — a white window rather than a stale one. This
+ * file already asks plans.js only for names every generation of it has had, so the one figure that
+ * changes with each reset lives here, next to the code that reads it.
+ */
+const JOURNEY_RESET_AT = 13;
 
 /** A fresh, unclimbed set of ladders. Only load() ever needs one. */
 function blank() {
@@ -54,8 +66,8 @@ function blank() {
  * just been shut on.
  *
  * Where a track stands is carried across too, and is the one figure this function will move of its
- * own accord: see VND_REPEG in plans.js. Every document the app believes comes through here, so
- * that is the only place a re-peg has to be written down.
+ * own accord: see JOURNEY_RESET_AT above. Every document the app believes comes through here, so
+ * that is the only place a reset has to be written down.
  */
 function migrate(s) {
   const wait = currency => {
@@ -67,14 +79,23 @@ function migrate(s) {
   s.vndBonus = plans.vndBonus();
   s.usdBonus = plans.usdBonus();
 
-  // The re-peg that came with this ladder version. A file written before it is pointing at a VND
-  // rung that has since moved, so the track goes back to where the new sheet says the climb should
-  // stand — and its wait goes with it, since the wait belonged to a step that is no longer there.
-  // Clamped below like any other stored position, so a re-peg past the end of a ladder cannot land.
-  if ((s.version ?? 0) < VND_REPEG.version) {
-    s.vndDone = VND_REPEG.done;
-    s.vndUnlockAt = null;
-    s.vndAwaitingVerdict = false;
+  // A new journey. Every ladder goes back to its first milestone — both main tracks and both
+  // bonuses — and every clock with them: the waits, the verdicts they were owed, the hidden bonus
+  // clocks and today's bonus tally. All of it belonged to a climb that is over.
+  //
+  // The books are not touched, the same way they are not touched by a wrap: the steps were saved
+  // and the money is real, so the new pass adds to the old one rather than replacing it. `journeys`
+  // is not touched either — it counts ladders finished, and this pass was not finished.
+  if ((s.version ?? 0) < JOURNEY_RESET_AT) {
+    for (const c of ['vnd', 'usd']) {
+      s[c + 'Done'] = 0;
+      s[c + 'UnlockAt'] = null;
+      s[c + 'AwaitingVerdict'] = false;
+      s[c + 'BonusDone'] = 0;
+      s[c + 'BonusReadyAt'] = null;
+      s[c + 'BonusDay'] = null;
+      s[c + 'BonusToday'] = 0;
+    }
   }
 
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));

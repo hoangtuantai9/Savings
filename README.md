@@ -194,30 +194,38 @@ one thing that wipes the history itself.
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
 track's lock setting and clamps progress to the new length.
 
-### Re-pegging a track
+### Starting a new journey from the source
 
-Recutting a column moves its run boundaries, and then where a saved file stood on the old ladder means nothing on the
-new one — the old column A had `1,433,570 ₫` at step 43, the recut one has `50,000 ₫`. So a version bump can carry a
-one-off **re-peg**: `VND_REPEG` in `js/plans.js` names a version and a step, and any document written before that
-version has its VND track put there instead of left pointing at a rung that has moved. It currently reads
-`{ version: 12, done: 5 }` — **step 6 of run 1, `30,160 ₫`**.
+A version bump can carry a one-off **reset**, and it is the only thing in the app that can move a track without it
+being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
+every ladder sent back to its first milestone — both main tracks and both bonuses — and every clock with them: the
+waits, the verdicts they were owed, the hidden bonus clocks and the day's bonus tally. All of it belonged to a climb
+that is over. It currently reads `13`.
 
-Peg it to the version that carries it, and bump `VERSION` in the same breath. A re-peg written against a version the
-sheet had *already* been published under is a no-op: `migrate()` stamps the version on its way out, so a set of books
-that had merely been opened since the recut is already at that number and reads as "re-peg done".
+It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
+it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by
+it — it starts at step 1 anyway.
 
-It fires **once per set of books, not once per load**: the version stamped on the way out is what stops it firing
-again, and a document already at that version is left where it stands. A fresh set of books is not re-pegged either —
-it starts at step 1 like any other climb. The track's lock and any verdict it owed are cleared with it, since both
-belonged to a step that is no longer there. **The books are not touched** — history and the totals survive a re-peg
-the same way they survive a wrap.
+**The books are not touched**, the same way a wrap does not touch them: history and the totals survive, so the new pass
+adds to the old one rather than replacing it. `journeys` is not touched either — it counts ladders *finished*, and a
+reset is not a finish. Each track's lock setting survives as well; only where it stands is moved.
 
-This is the only thing in the app that can move a track without it being climbed, and it is deliberately not reachable
-from the app: it is a line in the source, applied by the code that reads a save, not a button.
+Two things to get right when writing one:
 
-Every document the app believes goes through that same reader — including one arriving over sync. A phone that had not
-been opened since the sheet was recut used to be able to push its copy of the old column back over the new one, and
-take the re-peg with it; winning the revision count does not make a document right.
+**Peg it to the version that carries it, and bump `VERSION` in the same breath.** A reset written against a version the
+app has *already* been published under is a no-op: `migrate()` stamps the version on its way out, so a set of books
+that had merely been opened is already at that number and reads as "reset done".
+
+**Do not reach into `plans.js` for it.** The figure lives in `state.js`, next to the code that reads it. Two
+generations of this folder can sit mixed in a browser's HTTP cache for as long as the cache lasts, and a module that
+asks `plans.js` for a name it has not got yet takes the whole graph down — a white window, not a stale one. That is
+what `VND_REPEG` is still doing in `plans.js`: nothing, except being findable by a `state.js` that a browser has
+not let go of yet. Delete it once the caches have turned over.
+
+The reset is deliberately not reachable from the app: it is a line in the source, applied by the code that reads a
+save, not a button. Every document the app believes goes through that reader — including one arriving over sync. A
+phone that had not been opened since the change used to be able to push its copy back over the new one and take the
+reset with it; winning the revision count does not make a document right.
 
 ## Options
 

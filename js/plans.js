@@ -10,32 +10,21 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 12;
+export const VERSION = 13;
 
 /**
- * The one re-peg that came with this version, and the only thing in the app that can move a track
- * without it being climbed.
+ * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
+ * imports this name, and a module that cannot find an import it asks for takes the whole graph down
+ * with it — a white window, not a degraded app. Removing an export is as breaking as adding one
+ * while two generations of the same folder can still be mixed, so it outlives its own purpose by a
+ * deploy. Delete it once the caches have turned over.
  *
- * The re-cut sheet moved every run boundary in column A — the old ladder's step 43 was 1.433.570 ₫
- * and the new one's is 50.000 ₫ — so where a saved file stood on the old column means nothing on
- * the new one. Rather than leave the VND track pointing at a rung that has moved under it, a file
- * written before this version has it put back to step 6 of run 1: `done: 5`, so 30.160 ₫ is the
- * amount asked next.
- *
- * It fires once per set of books, not once per load — the version stamped on the way out of
- * migrate() is what stops it firing again, and a file already at this version is left where it
- * stands. A fresh set of books is not re-pegged either: it starts at step 1 like any other climb.
- *
- * The books are not touched. History and the totals survive this the same way they survive a wrap:
- * the steps were saved and the money is real. Only the milestone moves.
- *
- * A re-peg has to be pegged to the version that carries it, and the version has to be bumped in the
- * same breath. This one was first written as 11 while VERSION was already 11, which made it a no-op
- * against every file the new tables had touched: migrate() stamps the version on its way out, so a
- * set of books that had merely been opened was already at 11 and read as "re-peg done". Bumping to
- * 12 is what gives the condition below something left to be true about.
+ * The shape is chosen so that an older state.js reading it does something harmless rather than
+ * something wrong: it looks for `.version` and `.done`, finds a version it has not seen and a
+ * `done` of zero, and puts the VND track back to step 1 — a subset of the reset below, never a
+ * contradiction of it.
  */
-export const VND_REPEG = { version: 12, done: 5 };
+export const VND_REPEG = { version: 13, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once.
