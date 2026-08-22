@@ -200,7 +200,7 @@ A version bump can carry a one-off **reset**, and it is the only thing in the ap
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
 every ladder sent back to its first milestone — both main tracks and both bonuses — and every clock with them: the
 waits, the verdicts they were owed, the hidden bonus clocks and the day's bonus tally. All of it belonged to a climb
-that is over. It currently reads `13`.
+that is over. It currently reads `14`.
 
 It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
 it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by

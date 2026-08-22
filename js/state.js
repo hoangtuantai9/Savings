@@ -19,7 +19,7 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  */
-const JOURNEY_RESET_AT = 13;
+const JOURNEY_RESET_AT = 14;
 
 /** A fresh, unclimbed set of ladders. Only load() ever needs one. */
 function blank() {

@@ -10,7 +10,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 13;
+export const VERSION = 14;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -24,7 +24,7 @@ export const VERSION = 13;
  * `done` of zero, and puts the VND track back to step 1 — a subset of the reset below, never a
  * contradiction of it.
  */
-export const VND_REPEG = { version: 13, done: 0 };
+export const VND_REPEG = { version: 14, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once.
