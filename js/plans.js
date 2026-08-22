@@ -1,6 +1,6 @@
 // The four ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
 // 183 steps each; columns C and D are the bonuses behind them.
-// The sheet keeps VND in thousands ("25,00" = 25.000 ₫), so every VND figure is stored ×1000 —
+// The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
 // These tables are generated from the sheet and are not edited by hand. Where the sheet and the
@@ -10,7 +10,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 16;
+export const VERSION = 17;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -24,7 +24,7 @@ export const VERSION = 16;
  * `done` of zero, and puts the VND track back to step 1 — a subset of the reset below, never a
  * contradiction of it.
  */
-export const VND_REPEG = { version: 16, done: 0 };
+export const VND_REPEG = { version: 17, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once.
@@ -61,12 +61,12 @@ function bandEnds(steps) {
 }
 
 const VND_STEPS = [
-  // red — run 1: steps 1-40, 25.000 d -> 1.028.620 d
-  25_000, 27_500, 30_250, 33_280, 36_600, 40_260, 44_290, 48_720, 53_590,
-  58_950, 64_840, 71_330, 78_460, 86_310, 94_940, 104_430, 114_870, 126_360,
-  139_000, 152_900, 168_190, 185_010, 203_510, 223_860, 246_240, 270_870, 297_950,
-  327_750, 360_520, 396_580, 436_240, 479_860, 527_840, 580_630, 638_690, 702_560,
-  772_820, 850_100, 935_110, 1_028_620,
+  // red — run 1: steps 1-40, 20.000 d -> 822.900 d
+  20_000, 22_000, 24_200, 26_620, 29_280, 32_210, 35_430, 38_970, 42_870,
+  47_160, 51_870, 57_060, 62_770, 69_050, 75_950, 83_540, 91_900, 101_090,
+  111_200, 122_320, 134_550, 148_000, 162_810, 179_090, 196_990, 216_690, 238_360,
+  262_200, 288_420, 317_260, 348_990, 383_890, 422_280, 464_500, 510_950, 562_050,
+  618_250, 680_080, 748_090, 822_900,
   // amber — run 2: steps 41-78, 150.000 d -> 5.100.590 d
   150_000, 165_000, 181_500, 199_650, 219_620, 241_580, 265_730, 292_310, 321_540,
   353_690, 389_060, 427_970, 470_760, 517_840, 569_620, 626_590, 689_250, 758_170,
@@ -93,37 +93,39 @@ const VND_STEPS = [
 ];
 
 const USD_STEPS = [
-  // red — run 1: steps 1-67, $0.50 -> $80.34
-  0.50, 0.54, 0.58, 0.63, 0.68, 0.73, 0.79, 0.86, 0.93,
-  1.00, 1.08, 1.17, 1.26, 1.36, 1.47, 1.59, 1.71, 1.85,
-  2.00, 2.16, 2.33, 2.52, 2.72, 2.94, 3.17, 3.42, 3.70,
-  3.99, 4.31, 4.66, 5.03, 5.43, 5.87, 6.34, 6.85, 7.39,
-  7.98, 8.62, 9.31, 10.06, 10.86, 11.73, 12.67, 13.68, 14.78,
-  15.96, 17.24, 18.62, 20.11, 21.71, 23.45, 25.33, 27.35, 29.54,
-  31.90, 34.46, 37.21, 40.19, 43.41, 46.88, 50.63, 54.68, 59.05,
-  63.78, 68.88, 74.39, 80.34,
-  // amber — run 2: steps 68-91, $50.00 -> $293.57
+  // red — run 1: steps 1-71, $0.30 -> $62.99
+  0.30, 0.32, 0.35, 0.38, 0.41, 0.44, 0.48, 0.51, 0.56,
+  0.60, 0.65, 0.70, 0.76, 0.82, 0.88, 0.95, 1.03, 1.11,
+  1.20, 1.29, 1.40, 1.51, 1.63, 1.76, 1.90, 2.05, 2.22,
+  2.40, 2.59, 2.80, 3.02, 3.26, 3.52, 3.80, 4.11, 4.44,
+  4.79, 5.17, 5.59, 6.03, 6.52, 7.04, 7.60, 8.21, 8.87,
+  9.58, 10.34, 11.17, 12.06, 13.03, 14.07, 15.20, 16.41, 17.72,
+  19.14, 20.67, 22.33, 24.11, 26.04, 28.13, 30.38, 32.81, 35.43,
+  38.27, 41.33, 44.63, 48.20, 50.00, 54.00, 58.32, 62.99,
+  // amber — run 2: steps 72-88, $30.00 -> $102.78
+  30.00, 32.40, 34.99, 37.79, 40.81, 44.08, 47.61, 51.41, 55.53,
+  59.97, 64.77, 69.95, 75.55, 81.59, 88.12, 95.17, 102.78,
+  // green — run 3: steps 89-107, $50.00 -> $199.80
+  50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
+  99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
+  199.80,
+  // green — run 4: steps 108-131, $50.00 -> $293.57
   50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
   99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
   199.80, 215.79, 233.05, 251.69, 271.83, 293.57,
-  // green — run 3: steps 92-116, $50.00 -> $317.06
-  50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
-  99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
-  199.80, 215.79, 233.05, 251.69, 271.83, 293.57, 317.06,
-  // green — run 4: steps 117-147, $50.00 -> $503.13
+  // green — run 5: steps 132-159, $50.00 -> $399.40
   50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
   99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
   199.80, 215.79, 233.05, 251.69, 271.83, 293.57, 317.06, 342.42, 369.82,
-  399.40, 431.36, 465.86, 503.13,
-  // green — run 5: steps 148-183, $50.00 -> $739.27
-  50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
-  99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
-  199.80, 215.79, 233.05, 251.69, 271.83, 293.57, 317.06, 342.42, 369.82,
-  399.40, 431.36, 465.86, 503.13, 543.38, 586.85, 633.80, 684.51, 739.27
+  399.40,
+  // green — run 6: steps 160-183, $80.00 -> $469.72
+  80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
+  159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
+  319.68, 345.26, 372.88, 402.71, 434.92, 469.72
 ];
 
-// Column C — 100 steps at ×1.20, opening below the main VND ladder and overtaking it by step four:
-// by step ten it asks 92.360 ₫ where the main ladder asks 58.950 ₫.
+// Column C — 100 steps at ×1.20, opening below the main VND ladder and overtaking it by step three:
+// by step ten it asks 92.360 ₫ where the main ladder asks 47.160 ₫.
 const VND_BONUS_STEPS = [
   // run 1: steps 1-25, 17.900 d -> 1.422.990 d
   17_900, 21_480, 25_780, 30_930, 37_120, 44_540, 53_450, 64_140, 76_970,
@@ -175,11 +177,11 @@ export const plans = {
   vnd: (cooldown = VND_LOCK) => ({
     custom: VND_STEPS.slice(), tierEnds: bandEnds(VND_STEPS), cooldown,
     // Only a fallback for the options dialog, should the list ever be cleared.
-    start: 25000, ratio: 1.10, steps: VND_STEPS.length, roundTo: 10
+    start: 20000, ratio: 1.10, steps: VND_STEPS.length, roundTo: 10
   }),
   usd: (cooldown = USD_LOCK) => ({
     custom: USD_STEPS.slice(), tierEnds: bandEnds(USD_STEPS), cooldown,
-    start: 0.50, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
+    start: 0.30, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
   }),
   // No tiers on either bonus: one colour of its own, deliberately outside the red-amber-green
   // scale, so an ice stone can never be mistaken for having just been promoted.

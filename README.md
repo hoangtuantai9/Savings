@@ -125,27 +125,33 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **VND** — 183 steps | 1–40 · `25,000 ₫` → `1,028,620 ₫` | 41–78 · `150,000 ₫` → `5,100,590 ₫` | 79–183 · peaks at `12,690,470 ₫` |
-| **USD** — 183 steps | 1–67 · `$0.50` → `$80.34` | 68–91 · `$50.00` → `$293.57` | 92–183 · peaks at `$739.27` |
+| **VND** — 183 steps | 1–40 · `20,000 ₫` → `822,900 ₫` | 41–78 · `150,000 ₫` → `5,100,590 ₫` | 79–183 · peaks at `12,690,470 ₫` |
+| **USD** — 183 steps | 1–71 · `$0.30` → `$62.99` | 72–88 · `$30.00` → `$102.78` | 89–183 · peaks at `$469.72` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — six in VND at ×1.10, five in USD at ×1.08 — each starting over at a round
+Each column is really a stack of runs — six in VND at ×1.10, six in USD at ×1.08 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
 as one long climb rather than a dozen separate ones. The bands are read off the ladder rather than written down: the
-first two runs end where they end, and everything past them is green. VND totals `403,795,400 ₫` and USD totals
-`$23,594.33` across
+first two runs end where they end, and everything past them is green. VND totals `401,582,410 ₫` and USD totals
+`$17,403.56` across
 all 183 steps.
 
-The two VND bands are near enough the same length: red is forty steps from `25,000 ₫` to `1,028,620 ₫` — the longest
+The two VND bands are near enough the same length: red is forty steps from `20,000 ₫` to `822,900 ₫` — the longest
 run in column A — and amber thirty-eight from `150,000 ₫` to `5,100,590 ₫`. Between them they take up forty-three per
 cent of the ladder, so a VND climb spends most of its first half changing colour. Column B is lopsided the other way:
-its red run alone is sixty-seven steps, the longest run in the sheet, and amber past it only twenty-four.
+its red run alone is seventy-one steps, the longest run in the sheet, and amber past it only seventeen.
 
-Both main columns now finish at the top of their tallest run rather than being cut off part-way through one, so each
-ladder ends on its own highest figure — `12,690,470 ₫` in column A and `$739.27` in column B. Inside a run every step
-asks for more than the one before it; the only figure that ever goes down is the first of a new run, which is what
-marks the boundary. Column B does that plainly at step 68, dropping from `$80.34` back to `$50.00`.
+Both main columns finish on their own highest figure rather than being cut off part-way through a climb —
+`12,690,470 ₫` in column A and `$469.72` in column B. Inside a run every step asks for more than the one before it;
+the only figure that ever goes down is the first of a new run, which is what marks the boundary. Column B does that
+plainly at step 72, dropping from `$62.99` back to `$30.00`.
+
+**One run the bands cannot see.** Column B also starts over at step 68 — `$48.20` is followed by a round `$50.00` —
+but it starts over *upward*, and `bandEnds()` only knows a boundary by a step that goes down. The app therefore reads
+steps 1–71 as one red run rather than ending red at 67. Nothing is mis-transcribed; the ladder asks for exactly what
+the sheet says at every step. It is only where the colour changes that differs from how the sheet looks to a reader.
+If red is meant to end at 67, the sheet has to say so the way every other boundary does — by going down.
 
 ## The bonus stones
 
@@ -184,7 +190,7 @@ Once a bonus ladder is finished its stone simply never returns. No announcement.
 There is no dead end at the top. Once **all four ladders are finished** — VND and USD, main and bonus, with no
 verdict still owed — the app holds the finished screens for about three seconds, so the crown and its burst land as
 an ending, then strikes one word across the window: `AGAIN`. Every track goes back to its first milestone, both locks
-and both hidden bonus clocks are cleared, and the climb starts over from `25,000 ₫` and `$0.50`.
+and both hidden bonus clocks are cleared, and the climb starts over from `20,000 ₫` and `$0.30`.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
 so a second pass adds to the first rather than replacing it. Only the milestones start over. Nothing inside the app
