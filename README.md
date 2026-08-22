@@ -125,28 +125,27 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **VND** — 206 steps | 1–42 · `17,900 ₫` → `1,291,500 ₫` | 43–85 · `50,000 ₫` → `4,004,380 ₫` | 86–206 · peaks at `9,933,570 ₫` |
-| **USD** — 206 steps | 1–75 · `$0.10` → `$115.63` | 76–96 · `$30.00` → `$201.82` | 97–206 · peaks at `$407.01` |
+| **VND** — 183 steps | 1–40 · `25,000 ₫` → `1,028,620 ₫` | 41–78 · `150,000 ₫` → `5,100,590 ₫` | 79–183 · peaks at `12,690,470 ₫` |
+| **USD** — 183 steps | 1–67 · `$0.50` → `$80.34` | 68–91 · `$50.00` → `$293.57` | 92–183 · peaks at `$739.27` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — seven in VND at ×1.11, eight in USD at ×1.10 — each starting over at a round
+Each column is really a stack of runs — six in VND at ×1.10, five in USD at ×1.08 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
 as one long climb rather than a dozen separate ones. The bands are read off the ladder rather than written down: the
-first two runs end where they end, and everything past them is green. VND totals `417,342,350 ₫` and USD totals
-`$20,006.51` across
-all 206 steps.
+first two runs end where they end, and everything past them is green. VND totals `403,795,400 ₫` and USD totals
+`$23,594.33` across
+all 183 steps.
 
-The VND amber band is the long one: forty-three steps from `50,000 ₫` to `4,004,380 ₫`, the longest run in column A.
-Red before it is forty-two steps, so more than a third of the VND ladder is spent in the first two colours. Column B
-is the other way round — its red run alone is seventy-five steps, the longest run in the sheet, and amber past it only
-twenty-one.
+The two VND bands are near enough the same length: red is forty steps from `25,000 ₫` to `1,028,620 ₫` — the longest
+run in column A — and amber thirty-eight from `150,000 ₫` to `5,100,590 ₫`. Between them they take up forty-three per
+cent of the ladder, so a VND climb spends most of its first half changing colour. Column B is lopsided the other way:
+its red run alone is sixty-seven steps, the longest run in the sheet, and amber past it only twenty-four.
 
-One rough edge in the sheet is worth knowing about, and the app carries it rather than tidying it away: both main
-columns stop mid-run. Column A’s last run is cut to nineteen steps of twenty-three, so the VND ladder ends on
-`6,543,550 ₫` rather than the `9,933,570 ₫` its two previous runs reached; column B’s is cut to seventeen, ending on
-`$229.75`. Inside a run, though, every step asks for more than the one before it — the only figure that ever goes
-down is the first of a new run, which is what marks the boundary.
+Both main columns now finish at the top of their tallest run rather than being cut off part-way through one, so each
+ladder ends on its own highest figure — `12,690,470 ₫` in column A and `$739.27` in column B. Inside a run every step
+asks for more than the one before it; the only figure that ever goes down is the first of a new run, which is what
+marks the boundary. Column B does that plainly at step 68, dropping from `$80.34` back to `$50.00`.
 
 ## The bonus stones
 
@@ -174,7 +173,7 @@ have come* — a bonus means nothing of the sort. Three more things follow from 
 - **No lock and no verdict.** Ticking one does not start that track's wait and does not ask whether you held out —
   asking would announce that the hidden clock had just run out.
 - **It comes through the lock.** A stone can turn up while its track is mid-countdown. The clocks are unrelated.
-- **Its own numbering, the same books.** Each bonus counts independently of the main 206, but the money is real, so
+- **Its own numbering, the same books.** Each bonus counts independently of the main 183, but the money is real, so
   it lands in the history and in that currency's total, labelled `bonus` rather than `step`. A step taken back off a
   main ladder by a cross walks past those rows — they belong to a different ladder.
 
@@ -185,11 +184,13 @@ Once a bonus ladder is finished its stone simply never returns. No announcement.
 There is no dead end at the top. Once **all four ladders are finished** — VND and USD, main and bonus, with no
 verdict still owed — the app holds the finished screens for about three seconds, so the crown and its burst land as
 an ending, then strikes one word across the window: `AGAIN`. Every track goes back to its first milestone, both locks
-and both hidden bonus clocks are cleared, and the climb starts over from `17,900 ₫` and `$0.10`.
+and both hidden bonus clocks are cleared, and the climb starts over from `25,000 ₫` and `$0.50`.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
-so a second pass adds to the first rather than replacing it. Only the milestones start over. `Ctrl+R` is still the
-one thing that wipes the history itself.
+so a second pass adds to the first rather than replacing it. Only the milestones start over. Nothing inside the app
+wipes the history at all any more — `Ctrl+R` went back to the browser, where it means reload. The books outlive the
+wrap and they outlive a journey reset; the only thing that empties them is a line written into the source on purpose,
+under [Emptying the books](#emptying-the-books).
 
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
 track's lock setting and clamps progress to the new length.
@@ -200,7 +201,7 @@ A version bump can carry a one-off **reset**, and it is the only thing in the ap
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
 every ladder sent back to its first milestone — both main tracks and both bonuses — and every clock with them: the
 waits, the verdicts they were owed, the hidden bonus clocks and the day's bonus tally. All of it belonged to a climb
-that is over. It currently reads `14`.
+that is over. It currently reads `16`.
 
 It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
 it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by
@@ -208,7 +209,8 @@ it — it starts at step 1 anyway.
 
 **The books are not touched**, the same way a wrap does not touch them: history and the totals survive, so the new pass
 adds to the old one rather than replacing it. `journeys` is not touched either — it counts ladders *finished*, and a
-reset is not a finish. Each track's lock setting survives as well; only where it stands is moved.
+reset is not a finish. Each track's lock setting survives as well; only where it stands is moved — unless a wipe has
+been asked for by name, which is the next section and a different constant.
 
 Two things to get right when writing one:
 
@@ -227,10 +229,28 @@ save, not a button. Every document the app believes goes through that reader —
 phone that had not been opened since the change used to be able to push its copy back over the new one and take the
 reset with it; winning the revision count does not make a document right.
 
+### Emptying the books
+
+`BOOKS_WIPE_AT`, also in `js/state.js`, is the one figure that can take money already banked back off the history.
+Any document written before the version it names has its history emptied, its totals with it, and `journeys` set back
+to zero. It currently reads `16` — the same version as the reset above, because a clean sheet was asked for.
+
+**It is a separate constant on purpose, and it should stay behind when `JOURNEY_RESET_AT` next moves.** A journey reset
+says *this climb is over*; a wipe says *there was no climb*. Only the first of those should be inherited by the next
+re-cut of the sheet, and folding them into one number is the single mistake the books cannot come back from. If you
+are re-cutting the ladder and nobody has asked for a wipe, move `JOURNEY_RESET_AT` and leave this one alone.
+
+Like the reset, it fires once per set of books — the version stamped on the way out of `migrate()` stops it — and it
+runs inside the same reader, so a device that has not been opened since cannot push the old history back in: its
+document is emptied on arrival, before it is weighed against anything.
+
+There is still no way to do this from inside the app, and no plan to add one.
+
 ## Options
 
 Nothing shows on screen at all — the menu is two cards and nothing else. Everything is reachable without cluttering
-it: **right-click a card** for that track's options, **Ctrl+H** for the books, **Ctrl+R** to start over.
+it: **right-click a card** for that track's options, **Ctrl+H** for the books, **Ctrl+L** for the shared books. There
+is no start-over key — `Ctrl+R` went back to the browser, where it means reload.
 
 **Lock after ticking a step** — minutes to wait before the next amount unlocks, and the only thing in the app that
 can be configured at all. VND starts at `18` and USD at `25`, deliberately different so the two ladders never fall

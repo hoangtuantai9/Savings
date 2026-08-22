@@ -19,7 +19,22 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  */
-const JOURNEY_RESET_AT = 14;
+const JOURNEY_RESET_AT = 16;
+
+/**
+ * The version at which the books themselves were emptied, and the only thing in the app that can
+ * take a saved step back off the history without a cross being answered.
+ *
+ * Kept apart from JOURNEY_RESET_AT on purpose, even though the two happen to name the same version
+ * today. A journey reset means "this climb is over"; a wipe means "there was no climb" — and only
+ * one of those should be inherited by the next re-cut of the sheet. Leaving this figure behind when
+ * JOURNEY_RESET_AT next moves is the whole point: a reset that quietly took the money with it would
+ * be the one mistake the books cannot come back from.
+ *
+ * Set to the version above only because it was asked for. If you are re-cutting the sheet and have
+ * no such instruction, move JOURNEY_RESET_AT and leave this one where it stands.
+ */
+const BOOKS_WIPE_AT = 16;
 
 /** A fresh, unclimbed set of ladders. Only load() ever needs one. */
 function blank() {
@@ -68,6 +83,11 @@ function blank() {
  * Where a track stands is carried across too, and is the one figure this function will move of its
  * own accord: see JOURNEY_RESET_AT above. Every document the app believes comes through here, so
  * that is the only place a reset has to be written down.
+ *
+ * The books are the exception to the exception. They normally survive everything — a wrap, a reset,
+ * a re-cut sheet — and BOOKS_WIPE_AT is the one figure that can empty them. It is set only when a
+ * clean sheet has actually been asked for, and it is deliberately not the same constant as the one
+ * above, so that moving a journey reset can never take the money with it by accident.
  */
 function migrate(s) {
   const wait = currency => {
@@ -96,6 +116,19 @@ function migrate(s) {
       s[c + 'BonusDay'] = null;
       s[c + 'BonusToday'] = 0;
     }
+  }
+
+  // A clean sheet, asked for by name: the history goes with the milestones, and the totals drawn
+  // off it go to zero with them. `journeys` too — a count of ladders finished means nothing once
+  // the record of finishing them is gone.
+  //
+  // This is the one place in the app where money already banked leaves the books, and it fires
+  // once: the version stamped at the foot of this function is what stops it a second time. A
+  // document arriving over sync from a machine that has not seen this version yet comes through
+  // here before it is weighed against anything, so it cannot carry the old books back in.
+  if ((s.version ?? 0) < BOOKS_WIPE_AT) {
+    s.history = [];
+    s.journeys = 0;
   }
 
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
