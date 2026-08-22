@@ -19,7 +19,7 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  */
-const JOURNEY_RESET_AT = 16;
+const JOURNEY_RESET_AT = 18;
 
 /**
  * The version at which the books themselves were emptied, and the only thing in the app that can
@@ -34,7 +34,7 @@ const JOURNEY_RESET_AT = 16;
  * Set to the version above only because it was asked for. If you are re-cutting the sheet and have
  * no such instruction, move JOURNEY_RESET_AT and leave this one where it stands.
  */
-const BOOKS_WIPE_AT = 16;
+const BOOKS_WIPE_AT = 18;
 
 /** A fresh, unclimbed set of ladders. Only load() ever needs one. */
 function blank() {
