@@ -19,20 +19,20 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  */
-const JOURNEY_RESET_AT = 18;
+const JOURNEY_RESET_AT = 19;
 
 /**
  * The version at which the books themselves were emptied, and the only thing in the app that can
  * take a saved step back off the history without a cross being answered.
  *
- * Kept apart from JOURNEY_RESET_AT on purpose, even though the two happen to name the same version
- * today. A journey reset means "this climb is over"; a wipe means "there was no climb" — and only
- * one of those should be inherited by the next re-cut of the sheet. Leaving this figure behind when
- * JOURNEY_RESET_AT next moves is the whole point: a reset that quietly took the money with it would
- * be the one mistake the books cannot come back from.
+ * Kept apart from JOURNEY_RESET_AT on purpose, and now a version behind it: the sheet has been
+ * re-cut and every ladder sent back to its first milestone, but nobody asked for the money to go
+ * with it. A journey reset means "this climb is over"; a wipe means "there was no climb" — and only
+ * one of those should be inherited by the next re-cut of the sheet. Staying at 18 while the reset
+ * above moved to 19 is exactly what that separation is for: a reset that quietly took the books
+ * with it would be the one mistake they cannot come back from.
  *
- * Set to the version above only because it was asked for. If you are re-cutting the sheet and have
- * no such instruction, move JOURNEY_RESET_AT and leave this one where it stands.
+ * Move this only on an instruction to empty the books by name.
  */
 const BOOKS_WIPE_AT = 18;
 

@@ -125,27 +125,30 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **VND** — 183 steps | 1–40 · `20,000 ₫` → `822,900 ₫` | 41–78 · `150,000 ₫` → `5,100,590 ₫` | 79–183 · peaks at `12,690,470 ₫` |
-| **USD** — 183 steps | 1–71 · `$0.30` → `$62.99` | 72–88 · `$30.00` → `$102.78` | 89–183 · peaks at `$469.72` |
+| **VND** — 209 steps | 1–35 · `20,000 ₫` → `510,950 ₫` | 36–59 · `400,000 ₫` → `3,581,720 ₫` | 60–209 · peaks at `8,954,300 ₫` |
+| **USD** — 209 steps | 1–71 · `$0.30` → `$62.99` | 72–88 · `$30.00` → `$102.78` | 89–209 · peaks at `$503.38` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — six in VND at ×1.10, six in USD at ×1.08 — each starting over at a round
+Each column is really a stack of runs — eight in VND at ×1.10, eight in USD at ×1.08 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
 as one long climb rather than a dozen separate ones. The bands are read off the ladder rather than written down: the
-first two runs end where they end, and everything past them is green. VND totals `401,582,410 ₫` and USD totals
-`$17,403.56` across
-all 183 steps.
+first two runs end where they end, and everything past them is green. VND totals `442,697,310 ₫` and USD totals
+`$22,187.88` across
+all 209 steps.
 
-The two VND bands are near enough the same length: red is forty steps from `20,000 ₫` to `822,900 ₫` — the longest
-run in column A — and amber thirty-eight from `150,000 ₫` to `5,100,590 ₫`. Between them they take up forty-three per
-cent of the ladder, so a VND climb spends most of its first half changing colour. Column B is lopsided the other way:
-its red run alone is seventy-one steps, the longest run in the sheet, and amber past it only seventeen.
+The two coloured bands sit early in column A: red is thirty-five steps from `20,000 ₫` to `510,950 ₫` — the longest
+run in the column — and amber twenty-four from `400,000 ₫` to `3,581,720 ₫`. Between them they take up twenty-eight
+per cent of the ladder, so a VND climb turns green inside its first third and stays there. Column B is weighted the
+other way: its red run alone is seventy-one steps, the longest run in the sheet, and amber past it only seventeen —
+forty-two per cent of the column before it goes green.
 
-Both main columns finish on their own highest figure rather than being cut off part-way through a climb —
-`12,690,470 ₫` in column A and `$469.72` in column B. Inside a run every step asks for more than the one before it;
-the only figure that ever goes down is the first of a new run, which is what marks the boundary. Column B does that
-plainly at step 72, dropping from `$62.99` back to `$30.00`.
+Column A finishes on its own highest figure, `8,954,300 ₫`, rather than being cut off part-way through a climb.
+Column B does not: its highest step is `$503.38` at 194, and the last run restarts at `$120.00` and reaches only
+`$352.46` by 209 — fifteen steps where the runs around it have twenty-two, so it stops short of the peak behind it.
+Inside a run every step asks for more than the one before it; the only figure that ever goes down is the first of a
+new run, which is what marks the boundary. Column B does that plainly at step 72, dropping from `$62.99` back to
+`$30.00`.
 
 **One run the bands cannot see.** Column B also starts over at step 68 — `$48.20` is followed by a round `$50.00` —
 but it starts over *upward*, and `bandEnds()` only knows a boundary by a step that goes down. The app therefore reads
@@ -179,7 +182,7 @@ have come* — a bonus means nothing of the sort. Three more things follow from 
 - **No lock and no verdict.** Ticking one does not start that track's wait and does not ask whether you held out —
   asking would announce that the hidden clock had just run out.
 - **It comes through the lock.** A stone can turn up while its track is mid-countdown. The clocks are unrelated.
-- **Its own numbering, the same books.** Each bonus counts independently of the main 183, but the money is real, so
+- **Its own numbering, the same books.** Each bonus counts independently of the main 209, but the money is real, so
   it lands in the history and in that currency's total, labelled `bonus` rather than `step`. A step taken back off a
   main ladder by a cross walks past those rows — they belong to a different ladder.
 
@@ -207,7 +210,8 @@ A version bump can carry a one-off **reset**, and it is the only thing in the ap
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
 every ladder sent back to its first milestone — both main tracks and both bonuses — and every clock with them: the
 waits, the verdicts they were owed, the hidden bonus clocks and the day's bonus tally. All of it belonged to a climb
-that is over. It currently reads `18`.
+that is over. It currently reads `19` — the version that carries the re-cut sheet, because a fresh start on the new
+ladder was asked for along with it.
 
 It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
 it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by
@@ -239,9 +243,11 @@ reset with it; winning the revision count does not make a document right.
 
 `BOOKS_WIPE_AT`, also in `js/state.js`, is the one figure that can take money already banked back off the history.
 Any document written before the version it names has its history emptied, its totals with it, and `journeys` set back
-to zero. It currently reads `18` — the same version as the reset above, because a clean sheet was asked for.
+to zero. It currently reads `18`, one version behind the reset above: version 18 emptied the books because that was
+asked for, and the re-cut at 19 sent every ladder back to step 1 without touching the history again. Anything banked
+since stays banked.
 
-**It is a separate constant on purpose, and it should stay behind when `JOURNEY_RESET_AT` next moves.** A journey reset
+**It is a separate constant on purpose, and it stays behind when `JOURNEY_RESET_AT` moves.** A journey reset
 says *this climb is over*; a wipe says *there was no climb*. Only the first of those should be inherited by the next
 re-cut of the sheet, and folding them into one number is the single mistake the books cannot come back from. If you
 are re-cutting the ladder and nobody has asked for a wipe, move `JOURNEY_RESET_AT` and leave this one alone.
