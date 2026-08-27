@@ -34,14 +34,14 @@ reload can still serve it.
 `DataSavingFinal.csv` is the source of truth. When the user says they have
 updated it, do this whole chain without being asked for each step:
 
-1. **Regenerate the two tables in `js/plans.js`** from the CSV. Four columns, no
-   header, of which **only A and B are read**: A = VND, B = USD. C and D were a
-   bonus ladder each and are no longer read by anything — leave them in the file
-   and stop after B. A blank trailing cell means that column is shorter than the
-   file, not that the value is zero. VND is kept in thousands (`25,00` =
-   25.000 ₫) and stored ×1000; comma is the decimal separator. Parse in
-   hundredths as integers — floats lose the last digit on figures like
-   `1028,62`.
+1. **Regenerate the three tables in `js/plans.js`** from the CSV. Four columns,
+   no header, of which **A, B and D are read**: A = VND, B = USD, D = the box.
+   Column C is not read by anything and has no ladder — leave it in the file and
+   skip it. A blank trailing cell means that column is shorter than the file, not
+   that the value is zero: A and B run to 209, D to 190. VND is kept in thousands
+   (`25,00` = 25.000 ₫) and stored ×1000; B and D are plain dollars. Comma is the
+   decimal separator. Parse in hundredths as integers — floats lose the last
+   digit on figures like `1028,62`.
 2. **Verify before claiming anything.** Import the rewritten `plans.js` and
    compare every value against the CSV. Never eyeball it.
 3. **Bump `VERSION`** in `js/plans.js`, past any number already committed *or
@@ -51,10 +51,19 @@ updated it, do this whole chain without being asked for each step:
    `state.js` in a browser cache does a *subset* of the reset, and bumped past
    the reset it would instead send books that have already been through one back
    to step 1 a second time.
-4. **Update the figures in `README.md`**: the red/amber/green table, the run
-   count and ratio per column, the totals, and the opening milestones. Run
-   boundaries are read off the data (a value lower than the one before it), and
-   `bandEnds()` finds the colours on its own — do not hand-write band edges.
+4. **Update the figures in `README.md`**: both red/amber/green tables, the run
+   count and ratio per column, the totals, and the opening milestones. Never
+   hand-write a band edge. Two functions in `plans.js` work them out, and which
+   one a column needs depends on the column:
+   - `bandEnds()` for A and B, where a band ends at a step **lower than the one
+     before it** — the round number a run starts over at.
+   - `decadeEnds()` for D, which never goes down at all. Its bands end where the
+     column first **crosses a bar**: the first step to ask for a dollar, then the
+     first to ask for ten. A column with no boundary in it at all would otherwise
+     wear one colour for its whole length and never be promoted once.
+
+   If a re-cut gives column D a step that goes down, say so — it should probably
+   move to `bandEnds()` like the other two, and that is the user's call.
 5. **Commit and push**, per the section above.
 
 ## The three constants that move something without it being climbed

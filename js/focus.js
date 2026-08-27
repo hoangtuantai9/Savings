@@ -1,5 +1,6 @@
-// One currency's own screen. Everything the app will ever tell you about money is here, and only
-// ever one figure of it: the amount due right now.
+// One currency's own screen — and the box's, which is the same screen with the stone swapped for a
+// box and the clock taken out of it. Everything the app will ever tell you about money is here, and
+// only ever one figure of it: the amount due right now.
 //
 //   Revealed  the amount, counting up from zero, and a round tick
 //   Saved     a shockwave, five diamonds flying outward, an accent flash and a big tick
@@ -11,9 +12,9 @@
 // cross on a gem that has just finished counting down, each say what they are on their own.
 
 import { count, amountAt } from './plans.js';
-import { track, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, lighten, dash, pointAt, el, SVG } from './gem.js';
-import { animate, done, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
+import { track, box, remaining } from './state.js';
+import { stone, boxStone, wear, wearBox, accentOf, blend, alpha, lighten, dash, pointAt, el, SVG } from './gem.js';
+import { animate, done, bounce, ring, shards, sparks, countUp, clock, openLid, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
 const G = { cx: 210, cy: 218, w: 132, h: 176 };
@@ -26,7 +27,7 @@ const ICONS = {
   lock: 'M -20 -2 h 40 v 30 h -40 Z M -12 -2 v -12 a 12 12 0 0 1 24 0 v 12'
 };
 
-export function createFocus({ onBack, onTick, onVerdict }) {
+export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
   const root = document.createElement('div');
   root.className = 'view focus';
   root.hidden = true;
@@ -107,6 +108,21 @@ export function createFocus({ onBack, onTick, onVerdict }) {
     return b;
   }
 
+  // The box, built alongside the stone and shown instead of it. Two drawings rather than one that
+  // changes shape: they have nothing in common but the light they are lit by.
+  const boxHost = document.createElement('div');
+  boxHost.className = 'coin-box-host';
+  boxHost.style.display = 'none';
+  const boxHaze = document.createElement('div');
+  boxHaze.className = 'box-haze';
+  boxHost.appendChild(boxHaze);
+  const boxSvg = document.createElementNS(SVG, 'svg');
+  boxSvg.setAttribute('class', 'boxstone coin-box');
+  boxSvg.setAttribute('viewBox', '0 0 200 220');
+  boxHost.appendChild(boxSvg);
+  const boxParts = boxStone(boxSvg, 'coin-box');
+  coin.appendChild(boxHost);
+
   const burst = document.createElement('div');
   burst.className = 'burst';
   coin.appendChild(burst);
@@ -114,22 +130,29 @@ export function createFocus({ onBack, onTick, onVerdict }) {
   // ---- what the screen is currently showing ----------------------------------------------------
 
   let currency = 'VND';
+  let onBox = false;            // the screen has been given over to the box
   let state = null;
   let counted = null;           // which amount the face is currently showing, so it counts up once
 
-  const line = () => track(state, currency);
+  const line = () => (onBox ? box(state) : track(state, currency));
 
   // The stone itself is not a control. It used to turn over between the amount and the currency's name,
   // which meant a tap on the figure hid it behind a word the menu had already said and the ₫ or $
   // says again. The amount is simply always up.
 
-  tickBtn.addEventListener('click', e => { e.stopPropagation(); onTick(currency); });
+  tickBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    onBox ? onTickBox() : onTick(currency);
+  });
   yes.addEventListener('click', e => { e.stopPropagation(); onVerdict(currency, true); });
   no.addEventListener('click', e => { e.stopPropagation(); onVerdict(currency, false); });
 
   function stage() {
     const l = line();
     if (l.done >= count(l.plan)) return 'done';
+    // The box has no wait and no verdict: it was earned by a wait that has already been sat
+    // through, and asking whether you held out for it would be asking the same question twice.
+    if (onBox) return 'revealed';
     if (remaining(l.unlockAt) > 0) return 'waiting';
     // A track waiting to be judged looks exactly like a ready one on the menu; which of the two it
     // is, is this screen's to say.
@@ -143,17 +166,25 @@ export function createFocus({ onBack, onTick, onVerdict }) {
     const l = line();
     const total = count(l.plan);
     const s = stage();
-    const accent = accentOf(currency, l.plan, l.done);
+    const accent = accentOf(onBox ? 'USD' : currency, l.plan, l.done);
     const left = remaining(l.unlockAt);
 
     root.style.setProperty('--accent', accent);
     root.dataset.stage = s;
+    root.dataset.mode = onBox ? 'box' : 'track';
 
     // Waiting, the stone is mixed towards cold blue until the light has gone out of it — the same
     // cooling the menu card does, so the two screens never disagree about what a lock looks like.
     const cold = s === 'waiting';
     const worn = cold ? blend(accent, COLD, 0.84) : accent;
-    wear(svg, worn, cold);
+    svg.style.display = onBox ? 'none' : '';
+    boxHost.style.display = onBox ? 'grid' : 'none';
+    if (onBox) {
+      wearBox(boxSvg, accent);
+      boxParts.rim.setAttribute('stroke-dasharray', `${(l.done / total) * 1000} 1000`);
+    } else {
+      wear(svg, worn, cold);
+    }
 
     coin.style.setProperty('--accent', accent);
     coin.style.setProperty('--bloom-opacity', s === 'waiting' ? 0.12 : 0.42);
@@ -193,7 +224,7 @@ export function createFocus({ onBack, onTick, onVerdict }) {
       // Counted up once, when the amount on offer actually changes. paint() runs four times a
       // second while any lock is draining, and starting the count again on each of those had the
       // figure scrambling on the spot instead of arriving.
-      const key = `${currency}:${l.done}`;
+      const key = `${onBox ? 'box' : currency}:${l.done}`;
       if (counted !== key) {
         counted = key;
         countUp(amountText, currency, amountAt(l.plan, l.done));
@@ -243,6 +274,17 @@ export function createFocus({ onBack, onTick, onVerdict }) {
     await new Promise(r => setTimeout(r, finished ? 2400 : 1800));
   }
 
+  /**
+   * The box banked: the lid comes off and what was in it comes out. No shockwave and no flash —
+   * the burst belongs to a step that started a wait, and this one did not.
+   */
+  async function celebrateBox() {
+    tickBtn.hidden = true;
+    amountText.hidden = true;
+    openLid(boxParts);
+    await new Promise(r => setTimeout(r, 1150));
+  }
+
   /** A step taken back: the shockwave falls inward and the gem sags on its spring. */
   async function celebrateUndo(accent) {
     ring(burst, accent, { size: 200, to: 3.4, ms: 760, dir: -1 });
@@ -264,16 +306,17 @@ export function createFocus({ onBack, onTick, onVerdict }) {
   // ---- coming and going ---------------------------------------------------------------------------
 
   /** The currency's screen zooms in behind the menu, tilting the last few degrees into place. */
-  async function open(next, cur) {
+  async function open(next, cur, asBox) {
     state = next;
     currency = cur;
+    onBox = !!asBox;
     root.hidden = false;
     paint();
     await done(animate(root, [
       { opacity: 0, transform: 'scale(0.62) rotateX(14deg)' },
       { opacity: 1, transform: 'scale(1) rotateX(0deg)' }
     ], { duration: 460, easing: EASE_OUT }));
-    if (stage() === 'verdict') askVerdict(accentOf(currency, line().plan, line().done));
+    if (!onBox && stage() === 'verdict') askVerdict(accentOf(currency, line().plan, line().done));
   }
 
   async function close() {
@@ -290,8 +333,9 @@ export function createFocus({ onBack, onTick, onVerdict }) {
 
   return {
     root, open, close, render, paint,
-    celebrateSave, celebrateUndo, askVerdict,
+    celebrateSave, celebrateUndo, celebrateBox, askVerdict,
     get currency() { return currency; },
+    get onBox() { return onBox; },
     isOpen: () => !root.hidden
   };
 }

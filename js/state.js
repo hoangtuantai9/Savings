@@ -55,9 +55,18 @@ function blank() {
     version: VERSION,
     vnd: plans.vnd(),
     usd: plans.usd(),
+    box: plans.box(),
     journeys: 0,
     vndDone: 0,
     usdDone: 0,
+    boxDone: 0,
+    // Whether a box is standing on the menu right now, waiting to be opened. Persisted, because it
+    // was earned by a wait that was really sat through — closing the tab must not take it away.
+    boxLive: false,
+    // Which wait the box on the menu was earned by, stamped with that lock's own expiry. One wait
+    // buys one box: a lock whose stamp is already here has already paid out, so re-opening the app
+    // onto an expired lock cannot mint a second one.
+    boxGrantedAt: null,
     // When the lock expires. Persisted so closing the tab cannot skip the wait.
     vndUnlockAt: null,
     usdUnlockAt: null,
@@ -70,8 +79,8 @@ function blank() {
 }
 
 /**
- * Puts a saved file onto the ladders as they actually are. Both are rebuilt from plans.js every
- * time, whatever the file claims they were: nothing about a ladder is editable any more, so a file
+ * Puts a saved file onto the ladders as they actually are. All three are rebuilt from plans.js
+ * every time, whatever the file claims they were: nothing about a ladder is editable any more, so a file
  * that disagrees with the spreadsheet is a file that has been got at, not a file to be honoured.
  *
  * The one thing carried across is each track's wait, and only ever lengthened — a stored zero would
@@ -101,9 +110,11 @@ function migrate(s) {
 
   s.vnd = plans.vnd(wait('VND'));
   s.usd = plans.usd(usdWait);
+  s.box = plans.box();
 
-  // A new journey. Both ladders go back to their first milestone, and every clock with them: the
-  // waits and the verdicts they were owed. All of it belonged to a climb that is over.
+  // A new journey. Every ladder goes back to its first milestone — both tracks and the box — and
+  // every clock with them: the waits, the verdicts they were owed, and the box standing on the menu
+  // waiting to be opened. All of it belonged to a climb that is over.
   //
   // The books are not touched, the same way they are not touched by a wrap: the steps were saved
   // and the money is real, so the new pass adds to the old one rather than replacing it. `journeys`
@@ -114,6 +125,9 @@ function migrate(s) {
       s[c + 'UnlockAt'] = null;
       s[c + 'AwaitingVerdict'] = false;
     }
+    s.boxDone = 0;
+    s.boxLive = false;
+    s.boxGrantedAt = null;
   }
 
   // A clean sheet, asked for by name: the history goes with the milestones, and the totals drawn
@@ -131,6 +145,9 @@ function migrate(s) {
 
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
+  s.boxDone = clamp(s.boxDone, 0, count(s.box));
+  // A box on a finished ladder is a box with nothing in it.
+  if (s.boxDone >= count(s.box)) s.boxLive = false;
 
   // Columns C and D are gone, and so are the keys they were kept under. A file written before
   // VERSION 20 still carries them, and this is the reader every file comes through, so they are
@@ -203,6 +220,14 @@ export function track(s, currency) {
     unlockAt: s[k + 'UnlockAt'] ? new Date(s[k + 'UnlockAt']) : null,
     awaitingVerdict: s[k + 'AwaitingVerdict']
   };
+}
+
+/**
+ * The box, as one object the views can read without knowing the keys. It has no lock and no verdict
+ * of its own — where a track carries a clock, the box carries only whether it is standing there.
+ */
+export function box(s) {
+  return { plan: s.box, done: s.boxDone, live: !!s.boxLive };
 }
 
 export const setTrack = (s, currency, patch) => Object.assign(s, prefixed(lower(currency), patch));

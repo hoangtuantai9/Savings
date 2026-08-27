@@ -1,6 +1,6 @@
-// The two ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
-// 209 steps each. The sheet still carries a column C and a column D behind them; they are no longer
-// read, and there is no longer a second ladder to put them on.
+// The three ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
+// 209 steps each, and column D is the box — 190 steps of dollars that only ever come round when a
+// USD wait has been sat through. Column C is not read by anything and has no ladder to sit on.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -11,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 20;
+export const VERSION = 21;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -38,6 +38,11 @@ export const VND_REPEG = { version: 19, done: 0 };
 // stored 25 down with it, or the change would never reach a set of books already in use.
 const VND_LOCK = 18, USD_LOCK = 24;
 
+// The box has no wait of its own, and that is the whole of its design: it turns up when the USD
+// lock reaches zero and goes away once it is banked, so the thing that governs it is a wait that
+// was already sat through rather than a second clock nobody can see.
+const BOX_LOCK = 0;
+
 /**
  * The wait a track was designed around, and the least it may ever be set to. The options panel can
  * lengthen a lock but not shorten one: a wait that can be turned down to nothing takes the verdict
@@ -56,6 +61,27 @@ export const lockFloor = currency => (currency === 'VND' ? VND_LOCK : USD_LOCK);
 function bandEnds(steps) {
   const ends = [];
   for (let i = 1; i < steps.length && ends.length < 2; i++) if (steps[i] < steps[i - 1]) ends.push(i);
+  return ends;
+}
+
+/**
+ * Where the bands end on a column that never starts over.
+ *
+ * Column D climbs at a flat ×1.05 from ten cents to a thousand dollars and does not step down once,
+ * so bandEnds() finds nothing in it and the whole ladder would wear one colour for 190 steps —
+ * a climb with no promotion in it anywhere. Its runs are its decades instead: the step that first
+ * asks for a dollar ends the first band, the step that first asks for ten ends the second, and
+ * everything above that is green. Worked out from the figures for the same reason bandEnds() is —
+ * so that re-cutting the sheet moves the colours without anybody having to remember to.
+ */
+function decadeEnds(steps) {
+  const ends = [];
+  let bar = 1;
+  for (let i = 0; i < steps.length && ends.length < 2; i++) {
+    if (steps[i] < bar) continue;
+    if (i > 0) ends.push(i);
+    bar *= 10;
+  }
   return ends;
 }
 
@@ -135,6 +161,42 @@ const USD_STEPS = [
   239.88, 259.07, 279.80, 302.18, 326.35, 352.46
 ];
 
+// Column D — 190 steps at ×1.05, and the shallowest start in the app at ten cents. One single run:
+// no figure in it is ever lower than the one before it, which is why its colours are read off the
+// decades above rather than off a step that goes down.
+const BOX_STEPS = [
+  // steps 1-48: $0.10 -> $0.99
+  0.10, 0.11, 0.11, 0.12, 0.12, 0.13, 0.13, 0.14, 0.15,
+  0.16, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
+  0.24, 0.25, 0.27, 0.28, 0.29, 0.31, 0.32, 0.34, 0.36,
+  0.37, 0.39, 0.41, 0.43, 0.45, 0.48, 0.50, 0.53, 0.55,
+  0.58, 0.61, 0.64, 0.67, 0.70, 0.74, 0.78, 0.81, 0.86,
+  0.90, 0.94, 0.99,
+  // steps 49-95: $1.04 -> $9.81
+  1.04, 1.09, 1.15, 1.20, 1.26, 1.33, 1.39, 1.46, 1.54,
+  1.61, 1.69, 1.78, 1.87, 1.96, 2.06, 2.16, 2.27, 2.38,
+  2.50, 2.63, 2.76, 2.90, 3.04, 3.19, 3.35, 3.52, 3.70,
+  3.88, 4.08, 4.28, 4.50, 4.72, 4.96, 5.20, 5.46, 5.74,
+  6.02, 6.33, 6.64, 6.97, 7.32, 7.69, 8.07, 8.48, 8.90,
+  9.35, 9.81,
+  // steps 96-142: $10.30 -> $97.21
+  10.30, 10.82, 11.36, 11.93, 12.52, 13.15, 13.81, 14.50, 15.22,
+  15.98, 16.78, 17.62, 18.50, 19.43, 20.40, 21.42, 22.49, 23.62,
+  24.80, 26.04, 27.34, 28.71, 30.14, 31.65, 33.23, 34.89, 36.64,
+  38.47, 40.39, 42.41, 44.53, 46.76, 49.10, 51.55, 54.13, 56.83,
+  59.68, 62.66, 65.79, 69.08, 72.54, 76.16, 79.97, 83.97, 88.17,
+  92.58, 97.21,
+  // steps 143-189: $102.07 -> $962.92
+  102.07, 107.17, 112.53, 118.15, 124.06, 130.26, 136.78, 143.62, 150.80,
+  158.34, 166.25, 174.57, 183.30, 192.46, 202.08, 212.19, 222.80, 233.94,
+  245.63, 257.92, 270.81, 284.35, 298.57, 313.50, 329.17, 345.63, 362.91,
+  381.06, 400.11, 420.12, 441.12, 463.18, 486.34, 510.65, 536.19, 563.00,
+  591.15, 620.70, 651.74, 684.33, 718.54, 754.47, 792.19, 831.80, 873.39,
+  917.06, 962.92,
+  // steps 190-190: $1011.06 -> $1011.06
+  1011.06
+];
+
 export const plans = {
   vnd: (cooldown = VND_LOCK) => ({
     custom: VND_STEPS.slice(), tierEnds: bandEnds(VND_STEPS), cooldown,
@@ -144,6 +206,12 @@ export const plans = {
   usd: (cooldown = USD_LOCK) => ({
     custom: USD_STEPS.slice(), tierEnds: bandEnds(USD_STEPS), cooldown,
     start: 0.30, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
+  }),
+  // The box wears the same three colours as the tracks — the frame it is drawn in is gold whatever
+  // happens, so the band colour is free to go on saying the one thing colour says in this app.
+  box: () => ({
+    custom: BOX_STEPS.slice(), tierEnds: decadeEnds(BOX_STEPS), cooldown: BOX_LOCK,
+    start: 0.10, ratio: 1.05, steps: BOX_STEPS.length, roundTo: 0.01
   })
 };
 

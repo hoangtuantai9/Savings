@@ -225,6 +225,9 @@ html, body {
 /* A paused animation still paints its current frame, so a stone that has gone out has to have its
    idle removed outright rather than merely stopped. */
 .card.shut .stone-star, .focus[data-stage='waiting'] .stone-star { animation: none; opacity: 0; }
+/* Nothing on the menu ever shows a box mid-wait, but the two idles are stopped together anyway:
+   they are the same statement about a thing having gone cold. */
+.card.shut .box-spark, .card.shut .box-gloss { animation: none; opacity: 0; }
 
 @keyframes twinkle {
   0%, 62%, 100% { opacity: 0; }
@@ -257,6 +260,98 @@ html, body {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+
+/* ---- the box ---------------------------------------------------------------------------------- */
+
+/* Its place in the row. There is none at all while it is away: the row is two cards, and no gap is
+   held open for something that may not come — an empty socket announces the box as surely as a
+   countdown would. */
+.box-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(15vmin, 128px);
+  cursor: pointer;
+}
+
+.boxstone {
+  position: relative;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 26px rgba(255, 186, 60, 0.42));
+  transition: filter 300ms ease;
+}
+.box-slot:hover .boxstone {
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(255, 200, 80, 0.75));
+}
+
+/* It does not stand still. A stone sits in its setting; a box has just been put down. */
+.box-body {
+  transform-box: fill-box;
+  transform-origin: 50% 62%;
+  animation: box-bob 3400ms ease-in-out infinite alternate;
+}
+@keyframes box-bob {
+  from { transform: translateY(-2.5px) rotate(-0.7deg); }
+  to   { transform: translateY(3px) rotate(0.7deg); }
+}
+.box-slot:hover .box-body, .coin-box-host:hover .box-body { animation-duration: 1500ms; }
+
+/* The frame is gold whatever the state of the ladder; the panels sunk into it carry the band
+   colour, so colour goes on meaning only how far you have come. */
+.box-panel-top { fill: var(--box-panel-top, #7a2c2a); }
+.box-panel-left { fill: var(--box-panel-left, #662321); }
+.box-panel-right { fill: var(--box-panel-right, #4f1b19); }
+.box-mark { fill: var(--box-ink, #f7e7c8); }
+.box-mark-shadow { fill: rgba(0, 0, 0, 0.42); }
+.box-bevel { fill: none; stroke: #fff8dc; stroke-opacity: 0.55; stroke-width: 1.6; stroke-linejoin: round; }
+.box-rim { fill: none; stroke: #ffe9a3; stroke-opacity: 0.85; stroke-width: 2.2; stroke-linejoin: round; }
+.box-progress {
+  fill: none;
+  stroke: #fffdf2;
+  stroke-opacity: 0.9;
+  stroke-width: 3.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* The gleam travelling over the gold, and the stars around it. */
+.box-gloss { animation: box-gloss 4600ms ease-in-out infinite; }
+@keyframes box-gloss {
+  0%, 55% { transform: translateX(-150px); }
+  85%, 100% { transform: translateX(180px); }
+}
+
+.box-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: box-spark 2400ms ease-in-out infinite;
+}
+@keyframes box-spark {
+  0%, 66%, 100% { opacity: 0; transform: scale(0.35) rotate(0deg); }
+  78% { opacity: 1; transform: scale(1) rotate(22deg); }
+  90% { opacity: 0.22; transform: scale(0.62) rotate(38deg); }
+}
+.box-burst-star, .box-burst-ring { transform-box: fill-box; transform-origin: center; }
+
+/* The warm haze under it. Screen-blended, like every other light in the room. */
+.box-haze {
+  position: absolute;
+  inset: -32%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    rgba(255, 196, 74, 0.6), rgba(255, 150, 40, 0.14) 55%, transparent 72%);
+  filter: blur(10px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: box-haze 2600ms ease-in-out infinite alternate;
+}
+@keyframes box-haze {
+  from { opacity: 0.5; transform: scale(0.88); }
+  to   { opacity: 0.95; transform: scale(1.12); }
 }
 
 /* ---- one currency's own screen ---------------------------------------------------------------- */
@@ -295,6 +390,21 @@ html, body {
 }
 
 .coin-bloom { top: 48%; width: 96%; filter: blur(34px); }
+
+/* The box on its own screen, where the stone would otherwise be. It sits high and the amount goes
+   underneath it rather than across it: the faces already carry their question marks, and a figure
+   laid over those would be a number fighting a mark for the same space. */
+.coin-box-host {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.coin-box { width: 66%; height: auto; transform: translateY(-13%); }
+.coin-box-host .box-haze { inset: 14% 18%; }
+.focus[data-mode='box'] .face-amount { transform: translateY(38%); }
+.focus[data-mode='box'] .coin-bloom { opacity: 0.18; }
 .coin-gem { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; cursor: pointer; }
 
 .rim-progress, .rim-lock { stroke-linejoin: round; stroke-linecap: round; }

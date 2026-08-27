@@ -1,5 +1,10 @@
-// The menu: two cards, VND on the left and USD on the right, and nothing else. No logo, no title,
-// no numbers beyond the count cut into each stone.
+// The menu: two cards, VND on the left and USD on the right, and — when there is one to be had —
+// the box between them. No logo, no title, no numbers beyond the count cut into each stone.
+//
+// The box is not on the menu the rest of the time, and there is no gap left where it would go: an
+// empty socket gives away that something is coming just as surely as a countdown would. So the row
+// is two cards, and when a box is earned the two cards part to let it in — measured before and
+// after, and each card run from where it was to where it now is. That movement is the arrival.
 //
 // There is no button — the gem is the button, and it is the only thing on the card. Open, it wears
 // its full tier colour, twinkles and takes a band of light across its face every few seconds.
@@ -8,19 +13,55 @@
 // the track's own colour.
 
 import { count, toNextTier } from './plans.js';
-import { track, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, el, SVG } from './gem.js';
-import { animate, shiver, clock, EASE_OUT, done } from './fx.js';
+import { track, box, remaining } from './state.js';
+import { stone, boxStone, wear, wearBox, accentOf, blend, alpha, darken, lighten, dash, el, SVG } from './gem.js';
+import { animate, shiver, clock, arrive, boxSparks, slideFrom, EASE_OUT, done } from './fx.js';
 
 const COLD = '#3A4B63';          // where a locked stone is mixed to: cold, and no longer lit
 const GEM = { cx: 100, cy: 118, w: 66, h: 88 };
 
-export function createMenu({ onOpen, onSettings }) {
+export function createMenu({ onOpen, onBox, onSettings }) {
   const root = document.createElement('div');
   root.className = 'view menu';
 
-  const cards = {};
-  for (const currency of ['VND', 'USD']) cards[currency] = buildCard(currency, root);
+  // Built in the order they stand in: VND, the box between them, USD.
+  const cards = { VND: buildCard('VND', root) };
+  const chest = buildBox(root);
+  cards.USD = buildCard('USD', root);
+
+  // What the menu last drew of the box, so that its coming and going is eased from where the row
+  // actually stands rather than snapped to wherever it should be.
+  let boxShown = null;
+
+  function buildBox(parent) {
+    const slot = document.createElement('div');
+    slot.className = 'box-slot';
+    slot.style.display = 'none';
+    parent.appendChild(slot);
+
+    // The warm haze it sits in, which is what makes it read as lit rather than drawn.
+    const haze = document.createElement('div');
+    haze.className = 'box-haze';
+    slot.appendChild(haze);
+
+    const svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('class', 'boxstone');
+    svg.setAttribute('viewBox', '0 0 200 220');
+    slot.appendChild(svg);
+
+    const parts = boxStone(svg, 'menu-box');
+    slot.addEventListener('click', e => { e.stopPropagation(); onBox(); });
+    return { slot, svg, parts };
+  }
+
+  /** Lets the box into the row, or out of it, with the cards gliding to their new places. */
+  function partCards(mutate) {
+    const list = [cards.VND.card, cards.USD.card];
+    const before = list.map(c => c.getBoundingClientRect().left);
+    mutate();
+    const after = list.map(c => c.getBoundingClientRect().left);
+    list.forEach((c, i) => slideFrom(c, before[i] - after[i]));
+  }
 
   function buildCard(currency, parent) {
     const card = document.createElement('article');
@@ -145,8 +186,31 @@ export function createMenu({ onOpen, onSettings }) {
     shiver(cards[currency].wrap);
   }
 
+  /**
+   * The box, which is either there or is not. Its count is stamped on the lid and its progress runs
+   * round the silhouette; the band colour goes into the sunken panels, and the frame stays gold.
+   */
+  function paintBox(state) {
+    const b = box(state);
+    const accent = accentOf('USD', b.plan, b.done);
+    wearBox(chest.svg, accent);
+    chest.parts.setLid(String(b.done));
+    chest.parts.rim.setAttribute('stroke-dasharray', `${(b.done / count(b.plan)) * 1000} 1000`);
+
+    if (b.live === boxShown) return;
+    const first = boxShown === null;
+    boxShown = b.live;
+    partCards(() => { chest.slot.style.display = b.live ? 'grid' : 'none'; });
+    if (!b.live) return;
+    arrive(chest.slot);
+    // A box that was already standing when the app opened has already been announced once. Opening
+    // onto one is not news, the same way opening onto an expired lock is not.
+    if (!first) boxSparks(chest.svg);
+  }
+
   function render(state) {
     for (const currency of ['VND', 'USD']) paint(state, currency);
+    paintBox(state);
   }
 
   /** The cards fade and rise in on launch, and then sit still. */

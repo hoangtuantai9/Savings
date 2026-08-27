@@ -4,11 +4,13 @@
 // touches layout mid-flight. The timings that do real work are exact and stay that way: the 1.8 s
 // burst, the five-flick shiver, the 620 ms elastic settle.
 
-import { SVG, el, outline, alpha } from './gem.js';
+import { SVG, el, outline, alpha, star, boxGeom } from './gem.js';
 
 export const EASE_OUT = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
 export const EASE_IN = 'cubic-bezier(0.55, 0.06, 0.68, 0.19)';
 const EASE_SOFT = 'cubic-bezier(0.45, 0, 0.55, 1)';
+/** Overshoots and settles — something arriving under its own steam rather than being placed. */
+const EASE_BACK = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -54,6 +56,77 @@ export function bounce(node, peak = 1.07, ms = 620) {
     { transform: `scale(${1 - (peak - 1) * 0.14})`, offset: 0.78 },
     { transform: 'scale(1)', offset: 1 }
   ], { duration: ms, easing: EASE_SOFT });
+}
+
+/**
+ * Slides a node from `dx` back to where it sits, leaving nothing behind on it. This is what the
+ * menu cards do when the box arrives between them — and they have a hover state of their own, so an
+ * animation that committed its last frame would overwrite that for good.
+ */
+export function slideFrom(node, dx, ms = 540) {
+  if (!node || reduced.matches || Math.abs(dx) < 0.5) return null;
+  return node.animate(
+    [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
+    { duration: ms, easing: EASE_OUT }
+  );
+}
+
+/**
+ * The box arriving: it springs in past its size and settles, the way something that was not there a
+ * moment ago ought to.
+ */
+export function arrive(node) {
+  return animate(node, [
+    { opacity: 0, transform: 'scale(0.34) translateY(26px)' },
+    { opacity: 1, transform: 'scale(1) translateY(0)' }
+  ], { duration: 620, easing: EASE_BACK });
+}
+
+/**
+ * Stars thrown out of the middle of the box. `up` fans them upward out of an opened lid instead of
+ * scattering them in a circle, and gives them a little weight on the way down.
+ */
+export function boxSparks(svg, n = 12, distance = 92, up = false) {
+  if (reduced.matches) return;
+  const host = el('g', {}, svg);
+  const from = up ? boxGeom.cy - 30 : boxGeom.cy;
+  for (let i = 0; i < n; i++) {
+    const angle = up
+      ? -Math.PI / 2 + (i / Math.max(1, n - 1) - 0.5) * 2.1
+      : (i / n) * Math.PI * 2 + Math.random() * 0.5;
+    const d = distance * (0.65 + Math.random() * 0.5);
+    const node = star(boxGeom.cx, from, 3.5 + Math.random() * 5);
+    node.setAttribute('class', 'box-burst-star');
+    host.appendChild(node);
+    animate(node, [
+      { opacity: 0, transform: 'translate(0px, 0px) scale(0.2) rotate(0deg)' },
+      {
+        opacity: 1, offset: 0.32,
+        transform: `translate(${Math.cos(angle) * d * 0.45}px, ${Math.sin(angle) * d * 0.45}px) scale(1.15) rotate(60deg)`
+      },
+      {
+        opacity: 0,
+        transform: `translate(${Math.cos(angle) * d}px, ${Math.sin(angle) * d + (up ? 26 : 0)}px) scale(0.25) rotate(140deg)`
+      }
+    ], { duration: 820 + Math.random() * 520, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' });
+  }
+  const ring = el('path', {
+    class: 'box-burst-ring', d: boxGeom.outlinePath, fill: 'none', stroke: '#ffd76a', 'stroke-width': 3
+  }, host);
+  animate(ring, [
+    { opacity: 0.9, transform: 'scale(0.7)' },
+    { opacity: 0, transform: 'scale(2.4)' }
+  ], { duration: 900, easing: EASE_OUT });
+  after(1500, () => host.remove());
+}
+
+/** The lid comes off, and what was inside comes out of the opening. */
+export function openLid(box) {
+  animate(box.lid.wrap, [
+    { transform: 'translate(0px, 0px) rotate(0deg)' },
+    { transform: 'translate(4px, -34px) rotate(-11deg)' }
+  ], { duration: 560, easing: EASE_BACK, fill: 'forwards' });
+  after(180, () => boxSparks(box.svg, 11, 84, true));
 }
 
 /**

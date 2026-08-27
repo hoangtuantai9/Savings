@@ -9,6 +9,14 @@ import { lockFloor } from './plans.js';
 import { totals } from './state.js';
 import { money } from './fx.js';
 
+/**
+ * What a saved row was. Three kinds have put money into these books over the app's life: a plain
+ * step off one of the two tracks, a box off column D, and — until VERSION 20 dropped them — a bonus
+ * off column C or D. The books are a record of what happened rather than a view of the app as it
+ * stands today, so every row keeps the name it was saved under.
+ */
+const kindOf = e => (e.box ? 'box' : e.bonus ? 'bonus' : 'step');
+
 const $ = (sel, root = document) => root.querySelector(sel);
 
 /** A modal built from one template, so every panel in the app opens and closes the same way. */
@@ -60,16 +68,13 @@ export function historyPanel(state) {
   const p = panel('History');
   const { vnd, usd } = totals(state);
 
-  // The Kind column outlives the bonus ladders it was put there for. Nothing writes a `bonus` row
-  // any more, but rows already in the books were real money and stay labelled as what they were:
-  // the books are a record, not a view of the app as it stands today.
   const rows = state.history.slice().reverse().map(e => `
     <tr>
       <td>${new Date(e.at).toLocaleString()}</td>
       <td>${e.currency}</td>
       <td class="num">${e.index + 1}</td>
       <td class="num">${money(e.currency, e.amount)}</td>
-      <td>${e.bonus ? 'bonus' : 'step'}</td>
+      <td>${kindOf(e)}</td>
     </tr>`).join('');
 
   p.body.innerHTML = `
@@ -95,7 +100,7 @@ export function historyPanel(state) {
 function exportCsv(state) {
   const lines = ['when,currency,step,amount,kind'];
   for (const e of state.history) {
-    lines.push([new Date(e.at).toISOString(), e.currency, e.index + 1, e.amount, e.bonus ? 'bonus' : 'step'].join(','));
+    lines.push([new Date(e.at).toISOString(), e.currency, e.index + 1, e.amount, kindOf(e)].join(','));
   }
   const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
