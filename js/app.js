@@ -124,6 +124,10 @@ async function tickBox() {
   if (!b.live || b.done >= count(b.plan)) return;
 
   const amount = amountAt(b.plan, b.done);
+  // The colour it was wearing when it was opened, not the one the next box will wear: this burst
+  // belongs to the step being banked.
+  const accent = accentOf('USD', b.plan, b.done);
+
   state.history.push({
     currency: 'USD', index: b.done, amount, at: new Date().toISOString(), box: true
   });
@@ -132,7 +136,7 @@ async function tickBox() {
   save();
 
   busy = true;
-  await focus.celebrateBox();
+  await focus.celebrateBox(amount, accent);
   busy = false;
 
   await leaveFocus();

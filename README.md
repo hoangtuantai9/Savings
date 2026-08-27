@@ -87,6 +87,9 @@ degrees into place, with the amount already counting up on its face.
 | **Verdict** | A tick and a cross, side by side |
 | **Done** | A crown in the track's colour, with a full burst once every step is saved |
 
+The box's own screen has two faces and neither is on that list: **closed** — the box, three question marks and a tick,
+no figure at all — and **opened**, where the lid comes off and the amount counts up under it.
+
 The burst runs for about 1.8 s before the gem settles into the countdown. Not a word of explanation on any of these
 faces: a countdown under a padlock, or a tick beside a cross on a gem that has just finished counting down, each say
 what they are on their own. `BACK` zooms out to the menu.
@@ -193,13 +196,18 @@ re-cutting the sheet moves the colours without anybody having to remember to.
 rule the diamond is cut by, in the one other shape that rule makes sense in. Laid over it is a heavy gold bevelled
 frame, a panel sunk into each face, and a question mark painted across all three. The frame is gold whatever the state
 of the ladder, because a box is treasure; the **panels** take the band colour, so colour goes on meaning the one thing
-it means in this app — how far you have come. The step count is stamped on the lid; on the box's own screen the lid
-goes back to its question mark, because the amount is already on the face below it and that screen only ever shows one
-number.
+it means in this app — how far you have come. On the menu the step count is stamped on the lid; on the box's own screen
+the lid goes back to its question mark.
 
 It does not sit still the way a stone does. It bobs, a gleam crosses the gold every few seconds, stars twinkle around
 it out of step with each other, and a warm haze behind it breathes. Arriving, it springs in past its size with a ring
-of gold and a dozen stars. Banking it, **the lid comes off** and what was inside comes out of the opening.
+of gold and a dozen stars.
+
+**A closed box does not say what is in it.** Every other screen in the app shows the amount due the moment you open it;
+this one shows a box with three question marks on it and a tick, and no figure anywhere. Press the tick and **the lid
+comes off**, the stars come out of the opening, and the amount counts up underneath it — the reveal is the whole reason
+those faces carry a mark instead of a number. It is the one screen where you commit before you know, which is fair
+enough: you have already done the only thing it asks, which was to sit through the wait.
 
 ### What earns one
 

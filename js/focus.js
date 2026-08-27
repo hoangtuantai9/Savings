@@ -67,6 +67,23 @@ export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
   }, parts.g);
   const head = el('circle', { class: 'rim-head', r: 7 }, parts.g);
 
+  // The box, built alongside the stone and shown instead of it. Two drawings rather than one that
+  // changes shape: they have nothing in common but the light they are lit by. It goes in where the
+  // stone is — under the face and over the bloom — because the face is the one thing that has to
+  // stay on top of whichever of the two is up.
+  const boxHost = document.createElement('div');
+  boxHost.className = 'coin-box-host';
+  boxHost.style.display = 'none';
+  const boxHaze = document.createElement('div');
+  boxHaze.className = 'box-haze';
+  boxHost.appendChild(boxHaze);
+  const boxSvg = document.createElementNS(SVG, 'svg');
+  boxSvg.setAttribute('class', 'boxstone coin-box');
+  boxSvg.setAttribute('viewBox', '0 0 200 220');
+  boxHost.appendChild(boxSvg);
+  const boxParts = boxStone(boxSvg, 'coin-box');
+  coin.appendChild(boxHost);
+
   // The face. One group that is swapped out wholesale on every change of stage, so nothing from
   // the last state can be left lying about on the next one.
   const faceWrap = document.createElement('div');
@@ -107,21 +124,6 @@ export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
     b.innerHTML = `<svg viewBox="-60 -60 120 120"><path d="${d}" fill="none" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     return b;
   }
-
-  // The box, built alongside the stone and shown instead of it. Two drawings rather than one that
-  // changes shape: they have nothing in common but the light they are lit by.
-  const boxHost = document.createElement('div');
-  boxHost.className = 'coin-box-host';
-  boxHost.style.display = 'none';
-  const boxHaze = document.createElement('div');
-  boxHaze.className = 'box-haze';
-  boxHost.appendChild(boxHaze);
-  const boxSvg = document.createElementNS(SVG, 'svg');
-  boxSvg.setAttribute('class', 'boxstone coin-box');
-  boxSvg.setAttribute('viewBox', '0 0 200 220');
-  boxHost.appendChild(boxSvg);
-  const boxParts = boxStone(boxSvg, 'coin-box');
-  coin.appendChild(boxHost);
 
   const burst = document.createElement('div');
   burst.className = 'burst';
@@ -210,14 +212,16 @@ export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
       head.style.opacity = 0;
     }
 
-    // The face itself: one thing at a time.
-    amountText.hidden = !(s === 'revealed' || s === 'saved');
+    // The face itself: one thing at a time — and on a closed box, none of them. The question marks
+    // on its three faces are the whole point of not saying what is in it, and a figure sitting next
+    // to them would answer the question they are asking.
+    amountText.hidden = onBox || !(s === 'revealed' || s === 'saved');
     clockText.hidden = s !== 'waiting';
     glyph.style.display = ['waiting', 'verdict', 'done', 'saved'].includes(s) ? '' : 'none';
     tickBtn.hidden = s !== 'revealed';
     verdictRow.hidden = s !== 'verdict';
 
-    if (s === 'revealed') {
+    if (s === 'revealed' && !onBox) {
       // Near-white, not the tier colour: the stone underneath is already wearing that colour, and
       // the one number the app ever shows has to be readable before it is decorative.
       amountText.style.color = lighten(accent, 0.9);
@@ -275,14 +279,23 @@ export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
   }
 
   /**
-   * The box banked: the lid comes off and what was in it comes out. No shockwave and no flash —
-   * the burst belongs to a step that started a wait, and this one did not.
+   * The box opened, which is the only moment it says what was in it. The lid comes off, the stars
+   * come out of the opening, and only then does the amount count up underneath — the reveal is the
+   * whole reason the faces carry a question mark instead of a figure.
+   *
+   * No shockwave and no accent flash: that burst belongs to a step that started a wait, and this
+   * one did not start anything.
    */
-  async function celebrateBox() {
+  async function celebrateBox(amount, accent) {
     tickBtn.hidden = true;
     amountText.hidden = true;
     openLid(boxParts);
-    await new Promise(r => setTimeout(r, 1150));
+    await new Promise(r => setTimeout(r, 420));
+    amountText.hidden = false;
+    amountText.style.color = lighten(accent, 0.9);
+    counted = null;
+    countUp(amountText, 'USD', amount);
+    await new Promise(r => setTimeout(r, 1280));
   }
 
   /** A step taken back: the shockwave falls inward and the gem sags on its spring. */
