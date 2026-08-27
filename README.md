@@ -126,27 +126,27 @@ menu all move together, so crossing into a new band is a visible promotion rathe
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **VND** — 209 steps | 1–35 · `20,000 ₫` → `510,950 ₫` | 36–59 · `400,000 ₫` → `3,581,720 ₫` | 60–209 · peaks at `8,954,300 ₫` |
-| **USD** — 209 steps | 1–71 · `$0.30` → `$62.99` | 72–88 · `$30.00` → `$102.78` | 89–209 · peaks at `$503.38` |
+| **VND** — 185 steps | 1–35 · `20,000 ₫` → `510,950 ₫` | 36–59 · `400,000 ₫` → `3,581,720 ₫` | 60–185 · peaks at `7,400,250 ₫` |
+| **USD** — 185 steps | 1–71 · `$0.30` → `$62.99` | 72–88 · `$30.00` → `$102.78` | 89–185 · peaks at `$319.68` |
 
 The sheet keeps column A in thousands, so the VND figures are stored ×1000 and the app shows plain đồng.
 
-Each column is really a stack of runs — eight in VND at ×1.10, eight in USD at ×1.08 — each starting over at a round
+Each column is really a stack of runs — seven in VND at ×1.10, seven in USD at ×1.08 — each starting over at a round
 number. The first two get a colour of their own; every run from the third on is green, so the top of the ladder reads
 as one long climb rather than a dozen separate ones. The bands are read off the ladder rather than written down: the
-first two runs end where they end, and everything past them is green. VND totals `442,697,310 ₫` and USD totals
-`$22,187.88` across
-all 209 steps.
+first two runs end where they end, and everything past them is green. VND totals `354,199,980 ₫` and USD totals
+`$15,533.49` across all 185 steps.
 
 The two coloured bands sit early in column A: red is thirty-five steps from `20,000 ₫` to `510,950 ₫` — the longest
-run in the column — and amber twenty-four from `400,000 ₫` to `3,581,720 ₫`. Between them they take up twenty-eight
+run in the column — and amber twenty-four from `400,000 ₫` to `3,581,720 ₫`. Between them they take up thirty-two
 per cent of the ladder, so a VND climb turns green inside its first third and stays there. Column B is weighted the
 other way: its red run alone is seventy-one steps, the longest run in the sheet, and amber past it only seventeen —
-forty-two per cent of the column before it goes green.
+forty-eight per cent of the column before it goes green.
 
-Column A finishes on its own highest figure, `8,954,300 ₫`, rather than being cut off part-way through a climb.
-Column B does not: its highest step is `$503.38` at 194, and the last run restarts at `$120.00` and reaches only
-`$352.46` by 209 — fifteen steps where the runs around it have twenty-two, so it stops short of the peak behind it.
+Column A finishes on its own highest figure, `7,400,250 ₫`, rather than being cut off part-way through a climb — its
+last three runs all reach it. Column B does not: its highest step is `$319.68` at 172, and the last run restarts at
+`$100.00` and reaches only `$251.82` by 185 — thirteen steps where the runs around it have nineteen and twenty-two,
+so it stops short of the peak behind it.
 Inside a run every step asks for more than the one before it; the only figure that ever goes down is the first of a
 new run, which is what marks the boundary. Column B does that plainly at step 72, dropping from `$62.99` back to
 `$30.00`.
@@ -174,15 +174,15 @@ Leaving column C in the sheet costs nothing: the generator reads A, B and D, and
 
 ## The box
 
-Column D is a third ladder — 190 steps of dollars at a flat ×1.05, from ten cents to a thousand — and it is the one
-thing in the app you cannot go and get. **It is not on the menu until a USD wait has been sat out.**
+Column D is a third ladder — 185 steps of dollars at a flat ×1.05, from thirty cents to well over two thousand — and
+it is the one thing in the app you cannot go and get. **It is not on the menu until a USD wait has been sat out.**
 
 | | Steps | From → to | All steps come to |
 |---|---|---|---|
-| **Column D** — the box | 190, one single run | `$0.10` → `$1,011.06` | `$21,230.30` |
+| **Column D** — the box | 185, one single run | `$0.30` → `$2,376.58` | `$49,902.14` |
 
 **Its runs are its decades.** Every other column in the sheet says where its bands end by having a step go *down* —
-that is the only thing `bandEnds()` knows how to read. Column D never goes down once in 190 steps, so read that way
+that is the only thing `bandEnds()` knows how to read. Column D never goes down once in 185 steps, so read that way
 it would wear one colour the whole climb and never once be promoted. What it does instead is cross a bar: the step
 that first asks for a dollar ends the first band, the step that first asks for ten ends the second, and everything
 above that is green. `decadeEnds()` works that out from the figures for the same reason `bandEnds()` does — so that
@@ -190,7 +190,7 @@ re-cutting the sheet moves the colours without anybody having to remember to.
 
 | | 🔴 Red | 🟡 Amber | 🟢 Green |
 |---|---|---|---|
-| **Box** — 190 steps | 1–48 · `$0.10` → `$0.99` | 49–95 · `$1.04` → `$9.81` | 96–190 · `$10.30` → `$1,011.06` |
+| **Box** — 185 steps | 1–25 · `$0.30` → `$0.97` | 26–72 · `$1.02` → `$9.58` | 73–185 · `$10.06` → `$2,376.58` |
 
 **A gold box, drawn the way the gems are.** One 2:1 isometric cube, three faces, light fixed at upper left: the same
 rule the diamond is cut by, in the one other shape that rule makes sense in. Laid over it is a heavy gold bevelled
@@ -224,8 +224,8 @@ what sitting through a wait pays out, so the only way to see one is to have sat 
 - **No lock and no verdict of its own.** Ticking a box starts no wait and asks no question — the wait it belonged to
   has already been sat through, and asking again would be asking the same question twice.
 - **It goes once it is banked**, and the next one comes with the next wait. Nothing accumulates.
-- **A box on a finished ladder is a box with nothing in it**: once all 190 steps are banked, no wait pays out again.
-- **Its own numbering, the same books.** The box counts its own 190 steps, but the money is real, so it lands in the
+- **A box on a finished ladder is a box with nothing in it**: once all 185 steps are banked, no wait pays out again.
+- **Its own numbering, the same books.** The box counts its own 185 steps, but the money is real, so it lands in the
   history and in the USD total, labelled `box` rather than `step`. A cross answered on a track walks past those rows.
 
 ### Where it stands
@@ -245,7 +245,7 @@ holds the finished screens for about three seconds, so the crown and its burst l
 across the window: `AGAIN`. Both tracks go back to their first milestone, both locks are cleared, the box goes back to
 step 1 with them, and the climb starts over from `20,000 ₫` and `$0.30`.
 
-The box is not part of the condition. It only ever advances when a wait has been sat through, so waiting for its 190
+The box is not part of the condition. It only ever advances when a wait has been sat through, so waiting for its 185
 steps before a wrap could hold the top of the ladder shut indefinitely — the two tracks are what finish a journey.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
@@ -255,17 +255,21 @@ wrap and they outlive a journey reset; the only thing that empties them is a lin
 under [Emptying the books](#emptying-the-books).
 
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
-track's lock setting and clamps progress to the new length. It currently reads `21`.
+track's lock setting and clamps progress to the new length. It currently reads `22`.
 
 ### Starting a new journey from the source
 
 A version bump can carry a one-off **reset**, and it is the only thing in the app that can move a track without it
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
 every ladder sent back to its first milestone — both tracks and the box — and every clock with them: the waits, the
-verdicts they were owed, and any box standing on the menu waiting to be opened. All of it belonged to a climb that is over. It currently reads `19` — the version that carried the re-cut
-sheet, because a fresh start on the new ladder was asked for along with it. It has **stayed** at 19 through everything since:
-dropping the bonus columns, taking a minute off the USD wait and giving column D a box of its own are none of them
-reasons to send a climb back to step 1, and nobody asked for one.
+verdicts they were owed, and any box standing on the menu waiting to be opened. All of it belonged to a climb that is
+over. It currently reads `22` — the version carrying the 185-step sheet, because a fresh start on the new ladder was
+asked for along with it.
+
+It sat at `19` for three versions before that, and deliberately: dropping the bonus columns, taking a minute off the
+USD wait and giving column D a box of its own are none of them reasons to send a climb back to step 1. **Re-cutting the
+sheet is not by itself a reason either** — a new ladder and a new journey are two separate decisions, and this version
+carries both only because both were asked for.
 
 It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
 it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by
@@ -299,9 +303,10 @@ reset with it; winning the revision count does not make a document right.
 
 `BOOKS_WIPE_AT`, also in `js/state.js`, is the one figure that can take money already banked back off the history.
 Any document written before the version it names has its history emptied, its totals with it, and `journeys` set back
-to zero. It currently reads `18`, three versions behind `VERSION` now: version 18 emptied the books because that was asked
-for, the re-cut at 19 sent both ladders back to step 1 without touching the history, 20 dropped the bonus columns
-without touching it either, and 21 added the box the same way. Anything banked since stays banked.
+to zero. It currently reads `18`, four versions behind `VERSION` now: version 18 emptied the books because that was asked for,
+and nothing since has touched them — the re-cut at 19 sent both ladders back to step 1, 20 dropped the bonus columns,
+21 added the box, and the re-cut at 22 sent every ladder back to step 1 again on a new 185-step sheet. Anything banked
+since version 18 stays banked, and the totals under **Ctrl+H** still carry all of it.
 
 **It is a separate constant on purpose, and it stays behind when `JOURNEY_RESET_AT` moves.** A journey reset
 says *this climb is over*; a wipe says *there was no climb*. Only the first of those should be inherited by the next

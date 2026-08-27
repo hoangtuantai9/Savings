@@ -1,6 +1,6 @@
-// The three ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
-// 209 steps each, and column D is the box — 190 steps of dollars that only ever come round when a
-// USD wait has been sat through. Column C is not read by anything and has no ladder to sit on.
+// The three ladders, transcribed from the source spreadsheet: column A is VND, column B is USD and
+// column D is the box — 185 steps each, the box being the one that only comes round when a USD wait
+// has been sat through. Column C is not read by anything and has no ladder to sit on.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -11,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 21;
+export const VERSION = 22;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -25,12 +25,14 @@ export const VERSION = 21;
  * `done` of zero, and puts the VND track back to step 1 — a subset of the reset below, never a
  * contradiction of it.
  *
- * Which is why it stays at 19 while VERSION moves to 20: it mirrors JOURNEY_RESET_AT, and no reset
- * was asked for with this change. Bumped to 20 it would send a set of books that has already been
- * through the reset at 19 back to step 1 a second time — a contradiction of the reset rather than a
- * subset of it, and one reachable only from a cache nobody can see into.
+ * It mirrors JOURNEY_RESET_AT rather than VERSION, and moves only when that does — to the same
+ * number, never past it. It sat at 19 through three versions that moved no ladder's position; it
+ * moves to 22 with the re-cut sheet, because a new journey was asked for along with it. Ahead of the
+ * reset it would send a set of books that has already been through one back to step 1 a second time,
+ * which is a contradiction of the reset rather than a subset of it, and reachable only from a cache
+ * nobody can see into.
  */
-export const VND_REPEG = { version: 19, done: 0 };
+export const VND_REPEG = { version: 22, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once. USD came down from 25 to 24
@@ -116,11 +118,7 @@ const VND_STEPS = [
   // green — run 7: steps 164-185, 1.000.000 d -> 7.400.250 d
   1_000_000, 1_100_000, 1_210_000, 1_331_000, 1_464_100, 1_610_510, 1_771_560, 1_948_720, 2_143_590,
   2_357_950, 2_593_740, 2_853_120, 3_138_430, 3_452_270, 3_797_500, 4_177_250, 4_594_970, 5_054_470,
-  5_559_920, 6_115_910, 6_727_500, 7_400_250,
-  // green — run 8: steps 186-209, 1.000.000 d -> 8.954.300 d
-  1_000_000, 1_100_000, 1_210_000, 1_331_000, 1_464_100, 1_610_510, 1_771_560, 1_948_720, 2_143_590,
-  2_357_950, 2_593_740, 2_853_120, 3_138_430, 3_452_270, 3_797_500, 4_177_250, 4_594_970, 5_054_470,
-  5_559_920, 6_115_910, 6_727_500, 7_400_250, 8_140_270, 8_954_300
+  5_559_920, 6_115_910, 6_727_500, 7_400_250
 ];
 
 const USD_STEPS = [
@@ -152,49 +150,43 @@ const USD_STEPS = [
   80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
   159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
   319.68,
-  // green — run 7: steps 173-194, $100.00 -> $503.38
+  // green — run 7: steps 173-185, $100.00 -> $251.82
   100.00, 108.00, 116.64, 125.97, 136.05, 146.93, 158.69, 171.38, 185.09,
-  199.90, 215.89, 233.16, 251.82, 271.96, 293.72, 317.22, 342.59, 370.00,
-  399.60, 431.57, 466.10, 503.38,
-  // green — run 8: steps 195-209, $120.00 -> $352.46
-  120.00, 129.60, 139.97, 151.17, 163.26, 176.32, 190.42, 205.66, 222.11,
-  239.88, 259.07, 279.80, 302.18, 326.35, 352.46
+  199.90, 215.89, 233.16, 251.82
 ];
 
-// Column D — 190 steps at ×1.05, and the shallowest start in the app at ten cents. One single run:
-// no figure in it is ever lower than the one before it, which is why its colours are read off the
-// decades above rather than off a step that goes down.
+// Column D — 185 steps at ×1.05, opening at the same thirty cents column B does and climbing well
+// past it. One single run: no figure in it is ever lower than the one before it, which is why its
+// colours are read off the decades above rather than off a step that goes down.
 const BOX_STEPS = [
-  // steps 1-48: $0.10 -> $0.99
-  0.10, 0.11, 0.11, 0.12, 0.12, 0.13, 0.13, 0.14, 0.15,
-  0.16, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
-  0.24, 0.25, 0.27, 0.28, 0.29, 0.31, 0.32, 0.34, 0.36,
-  0.37, 0.39, 0.41, 0.43, 0.45, 0.48, 0.50, 0.53, 0.55,
-  0.58, 0.61, 0.64, 0.67, 0.70, 0.74, 0.78, 0.81, 0.86,
-  0.90, 0.94, 0.99,
-  // steps 49-95: $1.04 -> $9.81
-  1.04, 1.09, 1.15, 1.20, 1.26, 1.33, 1.39, 1.46, 1.54,
-  1.61, 1.69, 1.78, 1.87, 1.96, 2.06, 2.16, 2.27, 2.38,
-  2.50, 2.63, 2.76, 2.90, 3.04, 3.19, 3.35, 3.52, 3.70,
-  3.88, 4.08, 4.28, 4.50, 4.72, 4.96, 5.20, 5.46, 5.74,
-  6.02, 6.33, 6.64, 6.97, 7.32, 7.69, 8.07, 8.48, 8.90,
-  9.35, 9.81,
-  // steps 96-142: $10.30 -> $97.21
-  10.30, 10.82, 11.36, 11.93, 12.52, 13.15, 13.81, 14.50, 15.22,
-  15.98, 16.78, 17.62, 18.50, 19.43, 20.40, 21.42, 22.49, 23.62,
-  24.80, 26.04, 27.34, 28.71, 30.14, 31.65, 33.23, 34.89, 36.64,
-  38.47, 40.39, 42.41, 44.53, 46.76, 49.10, 51.55, 54.13, 56.83,
-  59.68, 62.66, 65.79, 69.08, 72.54, 76.16, 79.97, 83.97, 88.17,
-  92.58, 97.21,
-  // steps 143-189: $102.07 -> $962.92
-  102.07, 107.17, 112.53, 118.15, 124.06, 130.26, 136.78, 143.62, 150.80,
-  158.34, 166.25, 174.57, 183.30, 192.46, 202.08, 212.19, 222.80, 233.94,
-  245.63, 257.92, 270.81, 284.35, 298.57, 313.50, 329.17, 345.63, 362.91,
-  381.06, 400.11, 420.12, 441.12, 463.18, 486.34, 510.65, 536.19, 563.00,
-  591.15, 620.70, 651.74, 684.33, 718.54, 754.47, 792.19, 831.80, 873.39,
-  917.06, 962.92,
-  // steps 190-190: $1011.06 -> $1011.06
-  1011.06
+  // steps 1-25: $0.30 -> $0.97
+  0.30, 0.32, 0.33, 0.35, 0.36, 0.38, 0.40, 0.42, 0.44,
+  0.47, 0.49, 0.51, 0.54, 0.57, 0.59, 0.62, 0.65, 0.69,
+  0.72, 0.76, 0.80, 0.84, 0.88, 0.92, 0.97,
+  // steps 26-72: $1.02 -> $9.58
+  1.02, 1.07, 1.12, 1.18, 1.23, 1.30, 1.36, 1.43, 1.50,
+  1.58, 1.65, 1.74, 1.82, 1.92, 2.01, 2.11, 2.22, 2.33,
+  2.44, 2.57, 2.70, 2.83, 2.97, 3.12, 3.28, 3.44, 3.61,
+  3.79, 3.98, 4.18, 4.39, 4.61, 4.84, 5.08, 5.34, 5.60,
+  5.88, 6.18, 6.49, 6.81, 7.15, 7.51, 7.89, 8.28, 8.69,
+  9.13, 9.58,
+  // steps 73-120: $10.06 -> $99.69
+  10.06, 10.57, 11.10, 11.65, 12.23, 12.84, 13.49, 14.16, 14.87,
+  15.61, 16.39, 17.21, 18.07, 18.98, 19.93, 20.92, 21.97, 23.07,
+  24.22, 25.43, 26.70, 28.04, 29.44, 30.91, 32.46, 34.08, 35.78,
+  37.57, 39.45, 41.42, 43.49, 45.67, 47.95, 50.35, 52.87, 55.51,
+  58.29, 61.20, 64.26, 67.47, 70.85, 74.39, 78.11, 82.01, 86.12,
+  90.42, 94.94, 99.69,
+  // steps 121-167: $104.67 -> $987.52
+  104.67, 109.91, 115.40, 121.17, 127.23, 133.59, 140.27, 147.29, 154.65,
+  162.38, 170.50, 179.03, 187.98, 197.38, 207.25, 217.61, 228.49, 239.91,
+  251.91, 264.50, 277.73, 291.62, 306.20, 321.51, 337.58, 354.46, 372.19,
+  390.79, 410.33, 430.85, 452.39, 475.01, 498.76, 523.70, 549.89, 577.38,
+  606.25, 636.56, 668.39, 701.81, 736.90, 773.75, 812.43, 853.05, 895.71,
+  940.49, 987.52,
+  // steps 168-185: $1036.89 -> $2376.58
+  1036.89, 1088.74, 1143.18, 1200.33, 1260.35, 1323.37, 1389.54, 1459.01, 1531.96,
+  1608.56, 1688.99, 1773.44, 1862.11, 1955.22, 2052.98, 2155.63, 2263.41, 2376.58
 ];
 
 export const plans = {
@@ -211,7 +203,7 @@ export const plans = {
   // happens, so the band colour is free to go on saying the one thing colour says in this app.
   box: () => ({
     custom: BOX_STEPS.slice(), tierEnds: decadeEnds(BOX_STEPS), cooldown: BOX_LOCK,
-    start: 0.10, ratio: 1.05, steps: BOX_STEPS.length, roundTo: 0.01
+    start: 0.30, ratio: 1.05, steps: BOX_STEPS.length, roundTo: 0.01
   })
 };
 
