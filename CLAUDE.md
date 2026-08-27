@@ -34,14 +34,16 @@ reload can still serve it.
 `DataSavingFinal.csv` is the source of truth. When the user says they have
 updated it, do this whole chain without being asked for each step:
 
-1. **Regenerate the three tables in `js/plans.js`** from the CSV. Four columns,
-   no header, of which **A, B and D are read**: A = VND, B = USD, D = the box.
-   Column C is not read by anything and has no ladder — leave it in the file and
-   skip it. A blank trailing cell means that column is shorter than the file, not
-   that the value is zero: A and B run to 209, D to 190. VND is kept in thousands
-   (`25,00` = 25.000 ₫) and stored ×1000; B and D are plain dollars. Comma is the
-   decimal separator. Parse in hundredths as integers — floats lose the last
-   digit on figures like `1028,62`.
+1. **Regenerate the three tables in `js/plans.js`** from the CSV. No header.
+   **Do not assume the shape** — it has been four columns wide and is now three,
+   and the box has moved between columns. Count the fields and the rows first,
+   then map them: the VND ladder, the USD ladder and the box, in that order,
+   left to right. A blank trailing cell means that column is shorter than the
+   file, not that the value is zero. VND is kept in thousands (`25,00` =
+   25.000 ₫) and stored ×1000; the other two are plain dollars. Comma is the
+   decimal separator, and a cell may arrive unquoted (`1`) as readily as quoted.
+   Parse in hundredths as integers — floats lose the last digit on figures like
+   `1028,62`.
 2. **Verify before claiming anything.** Import the rewritten `plans.js` and
    compare every value against the CSV. Never eyeball it.
 3. **Bump `VERSION`** in `js/plans.js`, past any number already committed *or
@@ -57,13 +59,16 @@ updated it, do this whole chain without being asked for each step:
    one a column needs depends on the column:
    - `bandEnds()` for A and B, where a band ends at a step **lower than the one
      before it** — the round number a run starts over at.
-   - `decadeEnds()` for D, which never goes down at all. Its bands end where the
-     column first **crosses a bar**: the first step to ask for a dollar, then the
-     first to ask for ten. A column with no boundary in it at all would otherwise
-     wear one colour for its whole length and never be promoted once.
+   - `decadeEnds()` for the box, which has never had two boundaries of the kind
+     `bandEnds()` can see. Its bands end where the column first **crosses a
+     bar**: the first step to ask for a dollar, then the first to ask for ten.
 
-   If a re-cut gives column D a step that goes down, say so — it should probably
-   move to `bandEnds()` like the other two, and that is the user's call.
+   Which function a column needs is decided by counting its boundaries, not by
+   remembering which one it used last time. `bandEnds()` needs **two** steps that
+   go down to give three colours; with one it gives two colours and the ladder
+   never reaches green, and with none it gives one. If the box column ever grows a
+   second downward step, say so and move it to `bandEnds()` — that is the user's
+   call, and worth raising because it is a visible change.
 5. **Commit and push**, per the section above.
 
 ## The three constants that move something without it being climbed

@@ -19,10 +19,13 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  *
- * At 22 because the sheet was re-cut to 185 steps a column and a new journey was asked for along
- * with it: both tracks and the box back to their first milestone, the locks and the verdicts they
- * were owed cleared, and any box standing on the menu gone with them. The books are not part of it —
- * see BOOKS_WIPE_AT below, which has deliberately stayed where it was.
+ * At 22 because a new journey was asked for by name along with a re-cut sheet: both tracks and the
+ * box back to their first milestone, the locks and the verdicts they were owed cleared, and any box
+ * standing on the menu gone with them. The books are not part of it — see BOOKS_WIPE_AT below, which
+ * has deliberately stayed where it was.
+ *
+ * It has stayed at 22 through the re-cut at 23. Re-cutting the sheet is not by itself a reason to
+ * send a climb back to step 1, and this time nobody asked for one.
  */
 const JOURNEY_RESET_AT = 22;
 
@@ -154,7 +157,7 @@ function migrate(s) {
   // A box on a finished ladder is a box with nothing in it.
   if (s.boxDone >= count(s.box)) s.boxLive = false;
 
-  // Columns C and D are gone, and so are the keys they were kept under. A file written before
+  // The two bonus ladders are gone, and so are the keys they were kept under. A file written before
   // VERSION 20 still carries them, and this is the reader every file comes through, so they are
   // dropped here rather than handed back to the disk and pushed on to every other device. Not
   // version-gated: there is no version at which they should exist again. The history is untouched —

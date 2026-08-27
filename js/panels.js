@@ -11,8 +11,8 @@ import { money } from './fx.js';
 
 /**
  * What a saved row was. Three kinds have put money into these books over the app's life: a plain
- * step off one of the two tracks, a box off column D, and — until VERSION 20 dropped them — a bonus
- * off column C or D. The books are a record of what happened rather than a view of the app as it
+ * step off one of the two tracks, a box off the sheet's third column, and — until VERSION 20 dropped
+ * them — a bonus off the two columns the sheet used to carry behind the main pair. The books are a record of what happened rather than a view of the app as it
  * stands today, so every row keeps the name it was saved under.
  */
 const kindOf = e => (e.box ? 'box' : e.bonus ? 'bonus' : 'step');

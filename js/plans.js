@@ -1,6 +1,6 @@
-// The three ladders, transcribed from the source spreadsheet: column A is VND, column B is USD and
-// column D is the box — 185 steps each, the box being the one that only comes round when a USD wait
-// has been sat through. Column C is not read by anything and has no ladder to sit on.
+// The three ladders, transcribed from the source spreadsheet, which is now three columns wide and
+// has nothing in it that is not read: column A is VND, column B is USD and column C is the box —
+// 185 steps each, the box being the one that only comes round when a USD wait has been sat through.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -11,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 22;
+export const VERSION = 23;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -67,14 +67,18 @@ function bandEnds(steps) {
 }
 
 /**
- * Where the bands end on a column that never starts over.
+ * Where the bands end on a column that does not start over often enough to say.
  *
- * Column D climbs at a flat ×1.05 from ten cents to a thousand dollars and does not step down once,
- * so bandEnds() finds nothing in it and the whole ladder would wear one colour for 190 steps —
- * a climb with no promotion in it anywhere. Its runs are its decades instead: the step that first
- * asks for a dollar ends the first band, the step that first asks for ten ends the second, and
- * everything above that is green. Worked out from the figures for the same reason bandEnds() is —
- * so that re-cutting the sheet moves the colours without anybody having to remember to.
+ * bandEnds() needs two steps that go down to hand out three colours. The box column has never had
+ * them: it climbs at a flat ×1.05 and, on this sheet, drops back exactly once — which would buy two
+ * colours and leave the ladder finishing amber, never promoted to green at all. Its runs are its
+ * decades instead: the step that first asks for a dollar ends the first band, the step that first
+ * asks for ten ends the second, and everything above that is green.
+ *
+ * Worked out from the figures for the same reason bandEnds() is — so that re-cutting the sheet moves
+ * the colours without anybody having to remember to. If the column ever grows a second step that
+ * goes down, it belongs on bandEnds() with the other two, and that is worth asking about rather than
+ * deciding here: it changes what the ladder looks like.
  */
 function decadeEnds(steps) {
   const ends = [];
@@ -93,24 +97,24 @@ const VND_STEPS = [
   47_160, 51_870, 57_060, 62_770, 69_050, 75_950, 83_540, 91_900, 101_090,
   111_200, 122_320, 134_550, 148_000, 162_810, 179_090, 196_990, 216_690, 238_360,
   262_200, 288_420, 317_260, 348_990, 383_890, 422_280, 464_500, 510_950,
-  // amber — run 2: steps 36-59, 400.000 d -> 3.581.720 d
+  // amber — run 2: steps 36-57, 400.000 d -> 2.960.100 d
   400_000, 440_000, 484_000, 532_400, 585_640, 644_200, 708_620, 779_490, 857_440,
   943_180, 1_037_500, 1_141_250, 1_255_370, 1_380_910, 1_519_000, 1_670_900, 1_837_990, 2_021_790,
-  2_223_970, 2_446_360, 2_691_000, 2_960_100, 3_256_110, 3_581_720,
-  // green — run 3: steps 60-88, 300.000 d -> 4.326.300 d
+  2_223_970, 2_446_360, 2_691_000, 2_960_100,
+  // green — run 3: steps 58-85, 300.000 d -> 3.933.000 d
   300_000, 330_000, 363_000, 399_300, 439_230, 483_150, 531_470, 584_620, 643_080,
   707_380, 778_120, 855_940, 941_530, 1_035_680, 1_139_250, 1_253_170, 1_378_490, 1_516_340,
   1_667_980, 1_834_770, 2_018_250, 2_220_070, 2_442_080, 2_686_290, 2_954_920, 3_250_410, 3_575_450,
-  3_933_000, 4_326_300,
-  // green — run 4: steps 89-119, 300.000 d -> 5.234.820 d
+  3_933_000,
+  // green — run 4: steps 86-117, 300.000 d -> 5.758.300 d
   300_000, 330_000, 363_000, 399_300, 439_230, 483_150, 531_470, 584_620, 643_080,
   707_380, 778_120, 855_940, 941_530, 1_035_680, 1_139_250, 1_253_170, 1_378_490, 1_516_340,
   1_667_980, 1_834_770, 2_018_250, 2_220_070, 2_442_080, 2_686_290, 2_954_920, 3_250_410, 3_575_450,
-  3_933_000, 4_326_300, 4_758_930, 5_234_820,
-  // green — run 5: steps 120-141, 1.000.000 d -> 7.400.250 d
-  1_000_000, 1_100_000, 1_210_000, 1_331_000, 1_464_100, 1_610_510, 1_771_560, 1_948_720, 2_143_590,
-  2_357_950, 2_593_740, 2_853_120, 3_138_430, 3_452_270, 3_797_500, 4_177_250, 4_594_970, 5_054_470,
-  5_559_920, 6_115_910, 6_727_500, 7_400_250,
+  3_933_000, 4_326_300, 4_758_930, 5_234_820, 5_758_300,
+  // green — run 5: steps 118-141, 500.000 d -> 4.477.150 d
+  500_000, 550_000, 605_000, 665_500, 732_050, 805_260, 885_780, 974_360, 1_071_790,
+  1_178_970, 1_296_870, 1_426_560, 1_569_210, 1_726_140, 1_898_750, 2_088_620, 2_297_490, 2_527_240,
+  2_779_960, 3_057_950, 3_363_750, 3_700_120, 4_070_140, 4_477_150,
   // green — run 6: steps 142-163, 1.000.000 d -> 7.400.250 d
   1_000_000, 1_100_000, 1_210_000, 1_331_000, 1_464_100, 1_610_510, 1_771_560, 1_948_720, 2_143_590,
   2_357_950, 2_593_740, 2_853_120, 3_138_430, 3_452_270, 3_797_500, 4_177_250, 4_594_970, 5_054_470,
@@ -122,42 +126,43 @@ const VND_STEPS = [
 ];
 
 const USD_STEPS = [
-  // red — run 1: steps 1-71, $0.30 -> $62.99
-  0.30, 0.32, 0.35, 0.38, 0.41, 0.44, 0.48, 0.51, 0.56,
-  0.60, 0.65, 0.70, 0.76, 0.82, 0.88, 0.95, 1.03, 1.11,
-  1.20, 1.29, 1.40, 1.51, 1.63, 1.76, 1.90, 2.05, 2.22,
-  2.40, 2.59, 2.80, 3.02, 3.26, 3.52, 3.80, 4.11, 4.44,
-  4.79, 5.17, 5.59, 6.03, 6.52, 7.04, 7.60, 8.21, 8.87,
-  9.58, 10.34, 11.17, 12.06, 13.03, 14.07, 15.20, 16.41, 17.72,
-  19.14, 20.67, 22.33, 24.11, 26.04, 28.13, 30.38, 32.81, 35.43,
-  38.27, 41.33, 44.63, 48.20, 50.00, 54.00, 58.32, 62.99,
-  // amber — run 2: steps 72-88, $30.00 -> $102.78
-  30.00, 32.40, 34.99, 37.79, 40.81, 44.08, 47.61, 51.41, 55.53,
-  59.97, 64.77, 69.95, 75.55, 81.59, 88.12, 95.17, 102.78,
-  // green — run 3: steps 89-107, $50.00 -> $199.80
-  50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
-  99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
-  199.80,
-  // green — run 4: steps 108-131, $50.00 -> $293.57
+  // red — run 1: steps 1-58, $1.00 -> $80.38
+  1.00, 1.08, 1.17, 1.26, 1.36, 1.47, 1.59, 1.71, 1.85,
+  2.00, 2.16, 2.33, 2.52, 2.72, 2.94, 3.17, 3.43, 3.70,
+  4.00, 4.32, 4.66, 5.03, 5.44, 5.87, 6.34, 6.85, 7.40,
+  7.99, 8.63, 9.32, 10.06, 10.87, 11.74, 12.68, 13.69, 14.79,
+  15.97, 17.25, 18.63, 20.12, 21.72, 23.46, 25.34, 27.37, 29.56,
+  31.92, 34.47, 37.23, 40.21, 43.43, 46.90, 50.65, 54.71, 59.08,
+  63.81, 68.91, 74.43, 80.38,
+  // amber — run 2: steps 59-82, $50.00 -> $293.57
   50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
   99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
   199.80, 215.79, 233.05, 251.69, 271.83, 293.57,
-  // green — run 5: steps 132-153, $50.00 -> $251.69
+  // green — run 3: steps 83-106, $50.00 -> $293.57
   50.00, 54.00, 58.32, 62.99, 68.02, 73.47, 79.34, 85.69, 92.55,
   99.95, 107.95, 116.58, 125.91, 135.98, 146.86, 158.61, 171.30, 185.00,
-  199.80, 215.79, 233.05, 251.69,
-  // green — run 6: steps 154-172, $80.00 -> $319.68
+  199.80, 215.79, 233.05, 251.69, 271.83, 293.57,
+  // green — run 4: steps 107-128, $80.00 -> $402.71
   80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
   159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
-  319.68,
-  // green — run 7: steps 173-185, $100.00 -> $251.82
-  100.00, 108.00, 116.64, 125.97, 136.05, 146.93, 158.69, 171.38, 185.09,
-  199.90, 215.89, 233.16, 251.82
+  319.68, 345.26, 372.88, 402.71,
+  // green — run 5: steps 129-150, $80.00 -> $402.71
+  80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
+  159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
+  319.68, 345.26, 372.88, 402.71,
+  // green — run 6: steps 151-185, $80.00 -> $1095.21
+  80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
+  159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
+  319.68, 345.26, 372.88, 402.71, 434.92, 469.72, 507.29, 547.88, 591.71,
+  639.04, 690.17, 745.38, 805.01, 869.41, 938.97, 1014.08, 1095.21
 ];
 
-// Column D — 185 steps at ×1.05, opening at the same thirty cents column B does and climbing well
-// past it. One single run: no figure in it is ever lower than the one before it, which is why its
-// colours are read off the decades above rather than off a step that goes down.
+// Column C — 185 steps at ×1.05, the shallowest opening in the app at thirty cents.
+//
+// It goes down exactly once, at step 136, which is not enough for bandEnds(): one boundary buys two
+// colours and the third would never be reached, so the ladder would finish amber and never be
+// promoted to green at all. Its colours are still read off the decades above, where it has two real
+// boundaries — the first step to ask for a dollar and the first to ask for ten.
 const BOX_STEPS = [
   // steps 1-25: $0.30 -> $0.97
   0.30, 0.32, 0.33, 0.35, 0.36, 0.38, 0.40, 0.42, 0.44,
@@ -177,16 +182,15 @@ const BOX_STEPS = [
   37.57, 39.45, 41.42, 43.49, 45.67, 47.95, 50.35, 52.87, 55.51,
   58.29, 61.20, 64.26, 67.47, 70.85, 74.39, 78.11, 82.01, 86.12,
   90.42, 94.94, 99.69,
-  // steps 121-167: $104.67 -> $987.52
+  // steps 121-185: $104.67 -> $873.71
   104.67, 109.91, 115.40, 121.17, 127.23, 133.59, 140.27, 147.29, 154.65,
-  162.38, 170.50, 179.03, 187.98, 197.38, 207.25, 217.61, 228.49, 239.91,
-  251.91, 264.50, 277.73, 291.62, 306.20, 321.51, 337.58, 354.46, 372.19,
-  390.79, 410.33, 430.85, 452.39, 475.01, 498.76, 523.70, 549.89, 577.38,
-  606.25, 636.56, 668.39, 701.81, 736.90, 773.75, 812.43, 853.05, 895.71,
-  940.49, 987.52,
-  // steps 168-185: $1036.89 -> $2376.58
-  1036.89, 1088.74, 1143.18, 1200.33, 1260.35, 1323.37, 1389.54, 1459.01, 1531.96,
-  1608.56, 1688.99, 1773.44, 1862.11, 1955.22, 2052.98, 2155.63, 2263.41, 2376.58
+  162.38, 170.50, 179.03, 187.98, 197.38, 207.25, 80.00, 84.00, 88.20,
+  92.61, 97.24, 102.10, 107.21, 112.57, 118.20, 124.11, 130.31, 136.83,
+  143.67, 150.85, 158.39, 166.31, 174.63, 183.36, 192.53, 202.16, 212.26,
+  222.88, 234.02, 245.72, 258.01, 270.91, 284.45, 298.68, 313.61, 329.29,
+  345.76, 363.04, 381.20, 400.26, 420.27, 441.28, 463.35, 486.51, 510.84,
+  536.38, 563.20, 591.36, 620.93, 651.97, 684.57, 718.80, 754.74, 792.48,
+  832.10, 873.71
 ];
 
 export const plans = {
@@ -197,7 +201,7 @@ export const plans = {
   }),
   usd: (cooldown = USD_LOCK) => ({
     custom: USD_STEPS.slice(), tierEnds: bandEnds(USD_STEPS), cooldown,
-    start: 0.30, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
+    start: 1.00, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
   }),
   // The box wears the same three colours as the tracks — the frame it is drawn in is gold whatever
   // happens, so the band colour is free to go on saying the one thing colour says in this app.
