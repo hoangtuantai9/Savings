@@ -1,5 +1,6 @@
-// The four ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
-// 209 steps each; columns C and D are the bonuses behind them.
+// The two ladders, transcribed from the source spreadsheet: column A is VND and column B is USD,
+// 209 steps each. The sheet still carries a column C and a column D behind them; they are no longer
+// read, and there is no longer a second ladder to put them on.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -10,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 19;
+export const VERSION = 20;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -23,21 +24,19 @@ export const VERSION = 19;
  * something wrong: it looks for `.version` and `.done`, finds a version it has not seen and a
  * `done` of zero, and puts the VND track back to step 1 — a subset of the reset below, never a
  * contradiction of it.
+ *
+ * Which is why it stays at 19 while VERSION moves to 20: it mirrors JOURNEY_RESET_AT, and no reset
+ * was asked for with this change. Bumped to 20 it would send a set of books that has already been
+ * through the reset at 19 back to step 1 a second time — a contradiction of the reset rather than a
+ * subset of it, and one reachable only from a cache nobody can see into.
  */
 export const VND_REPEG = { version: 19, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
-// two ladders never fall into step and hand you both questions at once.
-const VND_LOCK = 18, USD_LOCK = 25;
-
-// How long each bonus stays away once taken, and how many times a day it may be taken at all.
-// Neither is ever drawn anywhere: the whole point of a bonus is that you cannot tell whether it is
-// five minutes or fifty away, and a counter of what is left today would give the second one up as
-// surely as a clock gives the first.
-const VND_BONUS_LOCK = 45, USD_BONUS_LOCK = 45;
-
-/** Twice a day, per currency. The third take of the day does not come round until tomorrow. */
-export const BONUS_PER_DAY = 2;
+// two ladders never fall into step and hand you both questions at once. USD came down from 25 to 24
+// in VERSION 20; because a wait is only ever lengthened where it is read, state.js has to move a
+// stored 25 down with it, or the change would never reach a set of books already in use.
+const VND_LOCK = 18, USD_LOCK = 24;
 
 /**
  * The wait a track was designed around, and the least it may ever be set to. The options panel can
@@ -136,55 +135,6 @@ const USD_STEPS = [
   239.88, 259.07, 279.80, 302.18, 326.35, 352.46
 ];
 
-// Column C — 100 steps at ×1.20, opening below the main VND ladder and overtaking it by step three:
-// by step ten it asks 92.360 ₫ where the main ladder asks 47.160 ₫.
-const VND_BONUS_STEPS = [
-  // run 1: steps 1-25, 17.900 d -> 1.422.990 d
-  17_900, 21_480, 25_780, 30_930, 37_120, 44_540, 53_450, 64_140, 76_970,
-  92_360, 110_830, 133_000, 159_600, 191_520, 229_820, 275_790, 330_940, 397_130,
-  476_560, 571_870, 686_240, 823_490, 988_190, 1_185_830, 1_422_990,
-  // run 2: steps 26-40, 150.000 d -> 1.925.880 d
-  150_000, 180_000, 216_000, 259_200, 311_040, 373_250, 447_900, 537_480, 644_970,
-  773_970, 928_760, 1_114_510, 1_337_420, 1_604_900, 1_925_880,
-  // run 3: steps 41-55, 150.000 d -> 1.925.880 d
-  150_000, 180_000, 216_000, 259_200, 311_040, 373_250, 447_900, 537_480, 644_970,
-  773_970, 928_760, 1_114_510, 1_337_420, 1_604_900, 1_925_880,
-  // run 4: steps 56-70, 150.000 d -> 1.925.880 d
-  150_000, 180_000, 216_000, 259_200, 311_040, 373_250, 447_900, 537_480, 644_970,
-  773_970, 928_760, 1_114_510, 1_337_420, 1_604_900, 1_925_880,
-  // run 5: steps 71-85, 150.000 d -> 1.925.880 d
-  150_000, 180_000, 216_000, 259_200, 311_040, 373_250, 447_900, 537_480, 644_970,
-  773_970, 928_760, 1_114_510, 1_337_420, 1_604_900, 1_925_880,
-  // run 6: steps 86-100, 150.000 d -> 1.925.880 d
-  150_000, 180_000, 216_000, 259_200, 311_040, 373_250, 447_900, 537_480, 644_970,
-  773_970, 928_760, 1_114_510, 1_337_420, 1_604_900, 1_925_880
-];
-
-// Column D — 104 steps at ×1.20, the shallowest start in the app at five cents.
-const USD_BONUS_STEPS = [
-  // run 1: steps 1-21, $0.05 -> $1.92
-  0.05, 0.06, 0.07, 0.09, 0.10, 0.12, 0.15, 0.18, 0.21,
-  0.26, 0.31, 0.37, 0.45, 0.53, 0.64, 0.77, 0.92, 1.11,
-  1.33, 1.60, 1.92,
-  // run 2: steps 22-39, $0.80 -> $17.75
-  0.80, 0.96, 1.15, 1.38, 1.66, 1.99, 2.39, 2.87, 3.44,
-  4.13, 4.95, 5.94, 7.13, 8.56, 10.27, 12.33, 14.79, 17.75,
-  // run 3: steps 40-48, $7.00 -> $30.10
-  7.00, 8.40, 10.08, 12.10, 14.52, 17.42, 20.90, 25.08, 30.10,
-  // run 4: steps 49-62, $7.00 -> $74.90
-  7.00, 8.40, 10.08, 12.10, 14.52, 17.42, 20.90, 25.08, 30.10,
-  36.12, 43.34, 52.01, 62.41, 74.90,
-  // run 5: steps 63-76, $7.00 -> $74.90
-  7.00, 8.40, 10.08, 12.10, 14.52, 17.42, 20.90, 25.08, 30.10,
-  36.12, 43.34, 52.01, 62.41, 74.90,
-  // run 6: steps 77-90, $7.00 -> $74.90
-  7.00, 8.40, 10.08, 12.10, 14.52, 17.42, 20.90, 25.08, 30.10,
-  36.12, 43.34, 52.01, 62.41, 74.90,
-  // run 7: steps 91-104, $7.00 -> $74.90
-  7.00, 8.40, 10.08, 12.10, 14.52, 17.42, 20.90, 25.08, 30.10,
-  36.12, 43.34, 52.01, 62.41, 74.90
-];
-
 export const plans = {
   vnd: (cooldown = VND_LOCK) => ({
     custom: VND_STEPS.slice(), tierEnds: bandEnds(VND_STEPS), cooldown,
@@ -194,16 +144,6 @@ export const plans = {
   usd: (cooldown = USD_LOCK) => ({
     custom: USD_STEPS.slice(), tierEnds: bandEnds(USD_STEPS), cooldown,
     start: 0.30, ratio: 1.08, steps: USD_STEPS.length, roundTo: 0.01
-  }),
-  // No tiers on either bonus: one colour of its own, deliberately outside the red-amber-green
-  // scale, so an ice stone can never be mistaken for having just been promoted.
-  vndBonus: () => ({
-    custom: VND_BONUS_STEPS.slice(), tierEnds: [], cooldown: VND_BONUS_LOCK,
-    start: 17900, ratio: 1.20, steps: VND_BONUS_STEPS.length, roundTo: 10
-  }),
-  usdBonus: () => ({
-    custom: USD_BONUS_STEPS.slice(), tierEnds: [], cooldown: USD_BONUS_LOCK,
-    start: 0.05, ratio: 1.20, steps: USD_BONUS_STEPS.length, roundTo: 0.01
   })
 };
 

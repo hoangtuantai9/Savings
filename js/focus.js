@@ -11,9 +11,9 @@
 // cross on a gem that has just finished counting down, each say what they are on their own.
 
 import { count, amountAt } from './plans.js';
-import { track, bonus, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, lighten, dash, pointAt, ICE, el, SVG } from './gem.js';
-import { animate, done, pop, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
+import { track, remaining } from './state.js';
+import { stone, wear, accentOf, blend, alpha, lighten, dash, pointAt, el, SVG } from './gem.js';
+import { animate, done, bounce, ring, shards, sparks, countUp, clock, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
 const G = { cx: 210, cy: 218, w: 132, h: 176 };
@@ -26,7 +26,7 @@ const ICONS = {
   lock: 'M -20 -2 h 40 v 30 h -40 Z M -12 -2 v -12 a 12 12 0 0 1 24 0 v 12'
 };
 
-export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
+export function createFocus({ onBack, onTick, onVerdict }) {
   const root = document.createElement('div');
   root.className = 'view focus';
   root.hidden = true;
@@ -111,49 +111,29 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   burst.className = 'burst';
   coin.appendChild(burst);
 
-  // The bonus stone, out past the rim. Tapping it turns the face over to the bonus amount.
-  const ice = document.createElementNS(SVG, 'svg');
-  ice.setAttribute('class', 'ice coin-ice');
-  ice.setAttribute('viewBox', '0 0 100 120');
-  ice.style.display = 'none';
-  stone(ice, { cx: 50, cy: 58, w: 30, h: 40, id: 'coin-ice' });
-  wear(ice, ICE);
-  coin.appendChild(ice);
-
   // ---- what the screen is currently showing ----------------------------------------------------
 
   let currency = 'VND';
-  let onBonus = false;          // the face has been turned over to the bonus ladder
   let state = null;
-  let bonusLive = false;
   let counted = null;           // which amount the face is currently showing, so it counts up once
 
-  const line = () => (onBonus ? bonus(state, currency) : track(state, currency));
+  const line = () => track(state, currency);
 
   // The stone itself is not a control. It used to turn over between the amount and the currency's name,
   // which meant a tap on the figure hid it behind a word the menu had already said and the ₫ or $
   // says again. The amount is simply always up.
 
-  ice.addEventListener('click', e => {
-    e.stopPropagation();
-    onOpenBonus(currency);
-  });
-
-  tickBtn.addEventListener('click', e => { e.stopPropagation(); onTick(currency, onBonus); });
+  tickBtn.addEventListener('click', e => { e.stopPropagation(); onTick(currency); });
   yes.addEventListener('click', e => { e.stopPropagation(); onVerdict(currency, true); });
   no.addEventListener('click', e => { e.stopPropagation(); onVerdict(currency, false); });
 
   function stage() {
     const l = line();
     if (l.done >= count(l.plan)) return 'done';
-    if (!onBonus) {
-      const t = track(state, currency);
-      const left = remaining(t.unlockAt);
-      if (left > 0) return 'waiting';
-      // A track waiting to be judged looks exactly like a ready one on the menu; which of the two
-      // it is, is this screen's to say.
-      if (t.awaitingVerdict) return 'verdict';
-    }
+    if (remaining(l.unlockAt) > 0) return 'waiting';
+    // A track waiting to be judged looks exactly like a ready one on the menu; which of the two it
+    // is, is this screen's to say.
+    if (l.awaitingVerdict) return 'verdict';
     return 'revealed';
   }
 
@@ -163,9 +143,8 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     const l = line();
     const total = count(l.plan);
     const s = stage();
-    const accent = onBonus ? ICE : accentOf(currency, l.plan, l.done);
-    const t = track(state, currency);
-    const left = onBonus ? 0 : remaining(t.unlockAt);
+    const accent = accentOf(currency, l.plan, l.done);
+    const left = remaining(l.unlockAt);
 
     root.style.setProperty('--accent', accent);
     root.dataset.stage = s;
@@ -185,7 +164,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
 
     // The lock, drawn as the fraction of it that is left, with a glowing head at the tip.
     if (s === 'waiting') {
-      const span = Math.max(1, (t.plan.cooldown || 1) * 60000);
+      const span = Math.max(1, (l.plan.cooldown || 1) * 60000);
       const f = Math.min(1, left / span);
       lockRim.style.opacity = 1;
       lockRim.style.stroke = accent;
@@ -214,7 +193,7 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
       // Counted up once, when the amount on offer actually changes. paint() runs four times a
       // second while any lock is draining, and starting the count again on each of those had the
       // figure scrambling on the spot instead of arriving.
-      const key = `${currency}:${onBonus}:${l.done}`;
+      const key = `${currency}:${l.done}`;
       if (counted !== key) {
         counted = key;
         countUp(amountText, currency, amountAt(l.plan, l.done));
@@ -235,11 +214,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     // the one control on the face is never something you have to look for.
     tickBtn.style.setProperty('--accent', accent);
     tickBtn.style.color = lighten(accent, 0.5);
-
-    // The bonus stone comes and goes on its own hidden clock, through the lock and everything else.
-    const b = bonus(state, currency);
-    const live = !onBonus && b.done < count(b.plan) && remaining(b.readyAt) === 0;
-    if (live !== bonusLive) { pop(ice, live); bonusLive = live; }
   }
 
   function setGlyph(d, colour, mode) {
@@ -290,12 +264,9 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
   // ---- coming and going ---------------------------------------------------------------------------
 
   /** The currency's screen zooms in behind the menu, tilting the last few degrees into place. */
-  async function open(next, cur, asBonus) {
+  async function open(next, cur) {
     state = next;
     currency = cur;
-    onBonus = !!asBonus;
-    bonusLive = false;
-    ice.style.display = 'none';
     root.hidden = false;
     paint();
     await done(animate(root, [
@@ -321,7 +292,6 @@ export function createFocus({ onBack, onTick, onVerdict, onOpenBonus }) {
     root, open, close, render, paint,
     celebrateSave, celebrateUndo, askVerdict,
     get currency() { return currency; },
-    get onBonus() { return onBonus; },
     isOpen: () => !root.hidden
   };
 }

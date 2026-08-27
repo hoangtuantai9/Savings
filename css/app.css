@@ -259,25 +259,6 @@ html, body {
   letter-spacing: 0.02em;
 }
 
-/* The bonus: it shows up, or it does not. There is no dimmed socket for it. */
-.ice {
-  position: absolute;
-  top: 8%;
-  right: 4%;
-  width: 26%;
-  overflow: visible;
-  cursor: pointer;
-  filter: drop-shadow(0 0 14px rgba(143, 214, 255, 0.55));
-  animation: ice-beat 2400ms ease-in-out infinite alternate;
-  transition: filter 300ms ease;
-}
-.ice:hover { filter: drop-shadow(0 0 22px rgba(143, 214, 255, 0.9)); }
-
-@keyframes ice-beat {
-  from { transform: scale(0.94); }
-  to   { transform: scale(1.12); }
-}
-
 /* ---- one currency's own screen ---------------------------------------------------------------- */
 
 .focus { z-index: 2; }
@@ -395,13 +376,6 @@ html, body {
 .verdict-btn { position: static; margin-inline: 0; }
 .verdict-btn.tick { border-color: #35c08e; color: #35c08e; box-shadow: 0 0 26px -6px #35c08e; }
 .verdict-btn.cross { border-color: #ff5a57; color: #ff5a57; box-shadow: 0 0 26px -6px #ff5a57; }
-
-.coin-ice {
-  position: absolute;
-  top: 4%;
-  right: -2%;
-  width: 17%;
-}
 
 /* ---- bursts ------------------------------------------------------------------------------------ */
 

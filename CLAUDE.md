@@ -34,26 +34,32 @@ reload can still serve it.
 `DataSavingFinal.csv` is the source of truth. When the user says they have
 updated it, do this whole chain without being asked for each step:
 
-1. **Regenerate the four tables in `js/plans.js`** from the CSV. Four columns,
-   no header: A = VND main, B = USD main, C = VND bonus, D = USD bonus. A blank
-   trailing cell means that column is shorter than the file, not that the value
-   is zero. VND is kept in thousands (`25,00` = 25.000 ₫) and stored ×1000;
-   comma is the decimal separator. Parse in hundredths as integers — floats lose
-   the last digit on figures like `1028,62`.
+1. **Regenerate the two tables in `js/plans.js`** from the CSV. Four columns, no
+   header, of which **only A and B are read**: A = VND, B = USD. C and D were a
+   bonus ladder each and are no longer read by anything — leave them in the file
+   and stop after B. A blank trailing cell means that column is shorter than the
+   file, not that the value is zero. VND is kept in thousands (`25,00` =
+   25.000 ₫) and stored ×1000; comma is the decimal separator. Parse in
+   hundredths as integers — floats lose the last digit on figures like
+   `1028,62`.
 2. **Verify before claiming anything.** Import the rewritten `plans.js` and
    compare every value against the CSV. Never eyeball it.
-3. **Bump `VERSION`** in `js/plans.js`, and `VND_REPEG.version` with it. Bump
-   past any number already committed *or already sitting in the working tree* —
-   a version a saved document may already carry is a version that fires nothing.
+3. **Bump `VERSION`** in `js/plans.js`, past any number already committed *or
+   already sitting in the working tree* — a version a saved document may already
+   carry is a version that fires nothing. `VND_REPEG.version` moves only when
+   `JOURNEY_RESET_AT` does, and to the same number: it exists so that an old
+   `state.js` in a browser cache does a *subset* of the reset, and bumped past
+   the reset it would instead send books that have already been through one back
+   to step 1 a second time.
 4. **Update the figures in `README.md`**: the red/amber/green table, the run
    count and ratio per column, the totals, and the opening milestones. Run
    boundaries are read off the data (a value lower than the one before it), and
    `bandEnds()` finds the colours on its own — do not hand-write band edges.
 5. **Commit and push**, per the section above.
 
-## The two constants that move a track without it being climbed
+## The three constants that move something without it being climbed
 
-Both live in `js/state.js`, next to the code that reads them, and both are
+All three live in `js/state.js`, next to the code that reads them, and all are
 deliberately unreachable from the app.
 
 - `JOURNEY_RESET_AT` — sends every ladder back to its first milestone. Move it
@@ -65,10 +71,18 @@ deliberately unreachable from the app.
   when `JOURNEY_RESET_AT` next moves**. A journey reset means *this climb is
   over*; a wipe means *there was no climb*. Folding them into one number is the
   single mistake the books cannot come back from.
+- `USD_WAIT_RECUT_AT` — moves a stored USD wait down to the new floor, and the
+  only place in the app where a wait ever gets shorter. `migrate()` otherwise
+  only ever lengthens one, so lowering `USD_LOCK` in `plans.js` on its own
+  reaches a browser that has never opened the app and nobody else. It moves
+  **exactly** the old floor to the new one: a wait somebody lengthened on
+  purpose is theirs. Change it only when the designed wait itself changes, and
+  keep `OLD_USD_LOCK` next to it pointing at the figure being retired.
 
-Both fire once per set of books — `migrate()` stamps the version on the way out
-— and both run inside `normalise()`, so a document arriving over sync from a
-stale device is put through them before it is weighed against anything.
+All three fire once per set of books — `migrate()` stamps the version on the
+way out — and all three run inside `normalise()`, so a document arriving over
+sync from a stale device is put through them before it is weighed against
+anything.
 
 ## House style
 

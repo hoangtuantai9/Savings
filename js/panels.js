@@ -60,6 +60,9 @@ export function historyPanel(state) {
   const p = panel('History');
   const { vnd, usd } = totals(state);
 
+  // The Kind column outlives the bonus ladders it was put there for. Nothing writes a `bonus` row
+  // any more, but rows already in the books were real money and stay labelled as what they were:
+  // the books are a record, not a view of the app as it stands today.
   const rows = state.history.slice().reverse().map(e => `
     <tr>
       <td>${new Date(e.at).toLocaleString()}</td>

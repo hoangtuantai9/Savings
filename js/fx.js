@@ -9,8 +9,6 @@ import { SVG, el, outline, alpha } from './gem.js';
 export const EASE_OUT = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
 export const EASE_IN = 'cubic-bezier(0.55, 0.06, 0.68, 0.19)';
 const EASE_SOFT = 'cubic-bezier(0.45, 0, 0.55, 1)';
-/** Overshoots and settles — small things arriving under their own steam. */
-const EASE_BACK = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -56,17 +54,6 @@ export function bounce(node, peak = 1.07, ms = 620) {
     { transform: `scale(${1 - (peak - 1) * 0.14})`, offset: 0.78 },
     { transform: 'scale(1)', offset: 1 }
   ], { duration: ms, easing: EASE_SOFT });
-}
-
-/** Something small arriving or leaving: it springs in past its size, and drops away quicker. */
-export function pop(node, live) {
-  node.style.display = '';
-  const a = animate(node, live
-    ? [{ opacity: 0, transform: 'scale(0.4)' }, { opacity: 1, transform: 'scale(1)' }]
-    : [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.4)' }],
-    { duration: live ? 620 : 260, easing: live ? EASE_BACK : EASE_IN });
-  if (!live) done(a).then(() => { node.style.display = 'none'; });
-  return a;
 }
 
 /**

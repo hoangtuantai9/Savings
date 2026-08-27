@@ -4,9 +4,9 @@
 // the verdict is on disk the moment a step is banked, so closing the tab is not a way around the
 // question.
 
-import { count, amountAt, BONUS_PER_DAY } from './plans.js';
+import { count, amountAt } from './plans.js';
 import * as store from './state.js';
-import { track, bonus, remaining, setTrack, setBonus, totals, today } from './state.js';
+import { track, remaining, setTrack } from './state.js';
 import { accentOf, alpha } from './gem.js';
 import { proclaim, after } from './fx.js';
 import { createMenu } from './menu.js';
@@ -21,28 +21,19 @@ const room = document.getElementById('room');
 const blooms = { VND: document.getElementById('bloom-vnd'), USD: document.getElementById('bloom-usd') };
 
 const menu = createMenu({
-  onOpen: currency => enter(currency, false),
-  onBonus: currency => enter(currency, true),
+  onOpen: currency => enter(currency),
   onSettings: currency => openSettings(currency)
 });
 room.appendChild(menu.root);
 
 const focus = createFocus({
   onBack: () => leaveFocus(),
-  onTick: (currency, isBonus) => tick(currency, isBonus),
-  onVerdict: (currency, held) => answer(currency, held),
-  onOpenBonus: currency => enter(currency, true)
+  onTick: currency => tick(currency),
+  onVerdict: (currency, held) => answer(currency, held)
 });
 room.appendChild(focus.root);
 
 const save = () => store.save(state);
-
-/** Midnight coming, in local time — where a bonus that has had its two goes today waits. */
-function tomorrow() {
-  const d = new Date();
-  d.setHours(24, 0, 0, 0);
-  return d;
-}
 
 // ---- drawing ----------------------------------------------------------------------------------
 
@@ -61,13 +52,11 @@ function render() {
 
 // ---- moving between the two screens -------------------------------------------------------------
 
-async function enter(currency, asBonus) {
+async function enter(currency) {
   if (busy) return;
-  const b = bonus(state, currency);
-  if (asBonus && (b.done >= count(b.plan) || remaining(b.readyAt) > 0)) return;
   busy = true;
   menu.leave();
-  await focus.open(state, currency, asBonus);
+  await focus.open(state, currency);
   busy = false;
 }
 
@@ -82,49 +71,32 @@ async function leaveFocus() {
 
 // ---- the rules ----------------------------------------------------------------------------------
 
-/** Banks the amount on offer. A bonus starts no wait and asks no question. */
-async function tick(currency, isBonus) {
+/** Banks the amount on offer, and starts the wait that has to be survived for it. */
+async function tick(currency) {
   if (busy) return;
-  const line = isBonus ? bonus(state, currency) : track(state, currency);
+  const line = track(state, currency);
   const total = count(line.plan);
   if (line.done >= total) return;
-  if (!isBonus && (remaining(track(state, currency).unlockAt) > 0 || track(state, currency).awaitingVerdict)) return;
+  if (remaining(line.unlockAt) > 0 || line.awaitingVerdict) return;
 
   const amount = amountAt(line.plan, line.done);
   const beforeTier = accentOf(currency, line.plan, line.done);
 
-  state.history.push({
-    currency, index: line.done, amount, at: new Date().toISOString(), bonus: !!isBonus
-  });
+  state.history.push({ currency, index: line.done, amount, at: new Date().toISOString() });
 
-  if (isBonus) {
-    // Its own numbering, the same books — and the stone goes away for its own hidden while: an
-    // hour, or the rest of the day once it has been taken twice. Neither is ever announced.
-    const taken = line.takenToday + 1;
-    const back = taken >= BONUS_PER_DAY ? tomorrow() : new Date(Date.now() + line.plan.cooldown * 60000);
-    setBonus(state, currency, {
-      done: line.done + 1,
-      readyAt: back.toISOString(),
-      day: today(),
-      today: taken
-    });
-  } else {
-    const mins = line.plan.cooldown;
-    setTrack(state, currency, {
-      done: line.done + 1,
-      unlockAt: mins > 0 ? new Date(Date.now() + mins * 60000).toISOString() : null,
-      awaitingVerdict: mins > 0
-    });
-  }
+  const mins = line.plan.cooldown;
+  setTrack(state, currency, {
+    done: line.done + 1,
+    unlockAt: mins > 0 ? new Date(Date.now() + mins * 60000).toISOString() : null,
+    awaitingVerdict: mins > 0
+  });
   save();
 
   busy = true;
-  const now = isBonus ? bonus(state, currency) : track(state, currency);
-  await focus.celebrateSave(beforeTier, now.done >= total);
+  await focus.celebrateSave(beforeTier, track(state, currency).done >= total);
   busy = false;
 
   render();
-  if (isBonus) { focus.paint(); }
   checkWrap();
 }
 
@@ -156,9 +128,12 @@ async function answer(currency, held) {
 }
 
 /**
- * Takes one main step back off a track: the amount leaves the history with it, the lock is cleared
- * and the track returns to the milestone below. Bonus rows are walked past — they belong to a
- * different ladder.
+ * Takes one step back off a track: the amount leaves the history with it, the lock is cleared and
+ * the track returns to the milestone below.
+ *
+ * A row left behind by one of the old bonus columns is walked past. Those ladders are gone, but the
+ * rows they put in the books are money that was really saved, and a cross answered here must take
+ * this track's own step rather than the nearest thing to it.
  */
 function rollBack(currency) {
   const t = track(state, currency);
@@ -173,14 +148,14 @@ function rollBack(currency) {
 }
 
 /**
- * Once all four ladders are finished — and with no verdict still owed — the app holds the finished
+ * Once both ladders are finished — and with no verdict still owed — the app holds the finished
  * screens for about three seconds, so the crown and its burst land as an ending, then strikes one
  * word across the window and starts the climb over. The books are not touched.
  */
 function checkWrap() {
   const all = ['VND', 'USD'].every(c => {
-    const t = track(state, c), b = bonus(state, c);
-    return t.done >= count(t.plan) && b.done >= count(b.plan) && !t.awaitingVerdict;
+    const t = track(state, c);
+    return t.done >= count(t.plan) && !t.awaitingVerdict;
   });
   if (!all) return;
 
@@ -191,10 +166,7 @@ function checkWrap() {
     if (!still) { busy = false; return; }
 
     state.journeys++;
-    for (const c of ['VND', 'USD']) {
-      setTrack(state, c, { done: 0, unlockAt: null, awaitingVerdict: false });
-      setBonus(state, c, { done: 0, readyAt: null, day: null, today: 0 });
-    }
+    for (const c of ['VND', 'USD']) setTrack(state, c, { done: 0, unlockAt: null, awaitingVerdict: false });
     save();
     const hold = proclaim('AGAIN', accentOf('VND', state.vnd, 0), true);
     after(hold, () => {
@@ -227,7 +199,7 @@ function openHistory() {
 
 // There is no way to start over from inside the app, and that is the point: a ladder you can send
 // back to step 1 on a whim is a ladder that never has to be climbed. The only wipe left is the one
-// the app performs itself, at the top of all four ladders, after the crown and the burst.
+// the app performs itself, at the top of both ladders, after the crown and the burst.
 
 // ---- the clock -----------------------------------------------------------------------------------
 
@@ -237,11 +209,6 @@ const ticking = {
   VND: remaining(track(state, 'VND').unlockAt) > 0,
   USD: remaining(track(state, 'USD').unlockAt) > 0
 };
-const bonusHidden = {
-  VND: remaining(bonus(state, 'VND').readyAt) > 0,
-  USD: remaining(bonus(state, 'USD').readyAt) > 0
-};
-
 setInterval(() => {
   if (busy) return;
   let dirty = false;
@@ -254,7 +221,7 @@ setInterval(() => {
       // The clock reaching zero is announced, not just noted.
       ticking[currency] = false;
       dirty = true;
-      if (focus.isOpen() && focus.currency === currency && !focus.onBonus) {
+      if (focus.isOpen() && focus.currency === currency) {
         focus.render(state);
         focus.askVerdict(accentOf(currency, t.plan, t.done));
       } else {
@@ -264,9 +231,6 @@ setInterval(() => {
       ticking[currency] = true;
       dirty = true;                       // the countdown on the face has a second to lose
     }
-
-    const hidden = remaining(bonus(state, currency).readyAt) > 0;
-    if (hidden !== bonusHidden[currency]) { bonusHidden[currency] = hidden; dirty = true; }
   }
 
   if (dirty) render();

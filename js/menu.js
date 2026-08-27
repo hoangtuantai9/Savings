@@ -1,29 +1,26 @@
 // The menu: two cards, VND on the left and USD on the right, and nothing else. No logo, no title,
 // no numbers beyond the count cut into each stone.
 //
-// There is no button — the gem is the button. Open, it wears its full tier colour, twinkles and
-// takes a band of light across its face every few seconds. Locked, the same stone is mixed towards
-// a cold blue until the light has gone out of it, the bloom behind it fades to nothing, and the
-// countdown is cut into the middle of the face in a pale tint of the track's own colour.
+// There is no button — the gem is the button, and it is the only thing on the card. Open, it wears
+// its full tier colour, twinkles and takes a band of light across its face every few seconds.
+// Locked, the same stone is mixed towards a cold blue until the light has gone out of it, the bloom
+// behind it fades to nothing, and the countdown is cut into the middle of the face in a pale tint of
+// the track's own colour.
 
 import { count, toNextTier } from './plans.js';
-import { track, bonus, remaining } from './state.js';
-import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, ICE, el, SVG } from './gem.js';
-import { animate, pop, shiver, clock, EASE_OUT, done } from './fx.js';
+import { track, remaining } from './state.js';
+import { stone, wear, accentOf, blend, alpha, darken, lighten, dash, el, SVG } from './gem.js';
+import { animate, shiver, clock, EASE_OUT, done } from './fx.js';
 
 const COLD = '#3A4B63';          // where a locked stone is mixed to: cold, and no longer lit
 const GEM = { cx: 100, cy: 118, w: 66, h: 88 };
 
-export function createMenu({ onOpen, onBonus, onSettings }) {
+export function createMenu({ onOpen, onSettings }) {
   const root = document.createElement('div');
   root.className = 'view menu';
 
   const cards = {};
   for (const currency of ['VND', 'USD']) cards[currency] = buildCard(currency, root);
-
-  // Each card is its own little machine: it remembers what it was showing so a change of state can
-  // be eased from wherever it stands, rather than snapped to.
-  const shown = { VND: {}, USD: {} };
 
   function buildCard(currency, parent) {
     const card = document.createElement('article');
@@ -78,21 +75,10 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     name.textContent = currency;
     card.appendChild(name);
 
-    // The bonus: an ice stone that shows up, or does not. There is no dimmed socket for it — an
-    // empty socket would give the hidden clock away just as surely as a countdown would.
-    const ice = document.createElementNS(SVG, 'svg');
-    ice.setAttribute('class', 'ice');
-    ice.setAttribute('viewBox', '0 0 100 120');
-    ice.style.display = 'none';
-    const iceParts = stone(ice, { cx: 50, cy: 58, w: 26, h: 36, id: `ice-${currency}` });
-    wear(ice, ICE);
-    card.appendChild(ice);
-
-    ice.addEventListener('click', e => { e.stopPropagation(); onBonus(currency); });
     card.addEventListener('click', () => { if (!card.classList.contains('shut')) onOpen(currency); });
     card.addEventListener('contextmenu', e => { e.preventDefault(); onSettings(currency); });
 
-    return { card, rim, glow, edgeLight, bloom, wrap, svg, parts, countText, clockText, ice, iceParts, name };
+    return { card, rim, glow, edgeLight, bloom, wrap, svg, parts, countText, clockText, name };
   }
 
   /** Draws one card from the state. Everything is eased from wherever it stands. */
@@ -105,7 +91,6 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     const shut = left > 0;
 
     const accent = accentOf(currency, t.plan, t.done);
-    const was = shown[currency];
 
     // A card winds up as a promotion comes into range: over the last five steps of a colour band
     // the bloom brightens and swells and its beat quickens, all of it scaling with how close you
@@ -149,26 +134,12 @@ export function createMenu({ onOpen, onBonus, onSettings }) {
     c.clockText.style.fill = lighten(worn, 0.55);
 
     c.name.style.color = shut ? 'rgba(139, 149, 165, 0.75)' : alpha(accent, 0.92);
-
-    // The bonus stone: it is there, or it is not. Its clock is unrelated to the main track's, so a
-    // track sitting out a countdown takes nothing away from the stone standing next to it.
-    const b = bonus(state, currency);
-    const live = b.done < count(b.plan) && remaining(b.readyAt) === 0;
-    if (live !== was.bonusLive) {
-      if (live || was.bonusLive !== undefined) pop(c.ice, live);
-      else c.ice.style.display = 'none';
-      was.bonusLive = live;
-    }
-
-    was.accent = accent;
-    was.shut = shut;
   }
 
   /**
-   * The clock reaching zero is announced, not just noted: the main gem shivers five times and goes
+   * The clock reaching zero is announced, not just noted: the gem shivers five times and goes
    * still — five flicks, each a little smaller than the last — and only when it settles does the
-   * gem light up and let you in. The bloom stays where it is; the bonus keeps its own clock and
-   * announces nothing.
+   * gem light up and let you in. The bloom stays where it is.
    */
   function announce(currency) {
     shiver(cards[currency].wrap);

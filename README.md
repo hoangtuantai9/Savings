@@ -4,10 +4,8 @@ A web app for running two savings ladders side by side — **VND** and **USD** �
 
 The screen shows you the amount due right now and a tick to confirm you saved it — no totals, and no schedule. The
 menu shows how many steps you have cleared, and nothing about what they cost. Tick it and the gem locks — 18 minutes
-for VND, 25 for USD — before the next amount exists, and when that lock runs out the gem asks whether you actually
-held out. Say no and the step comes back off the ladder. Now and then a second, colder stone turns up beside a gem
-with its own amount on it — each currency has one; there is no telling when, because the clock behind it is never
-shown.
+for VND, 24 for USD — before the next amount exists, and when that lock runs out the gem asks whether you actually
+held out. Say no and the step comes back off the ladder. Two ladders, two gems, and nothing else on the screen.
 
 It runs in any modern browser, on Windows, macOS, Android and iOS, from one address.
 
@@ -43,7 +41,6 @@ Everything is a click or a key; nothing is a menu.
 | | |
 |---|---|
 | **Click a card** | Into that currency's screen |
-| **Click the ice stone** | Into its bonus, whether the card behind it is open or shut |
 | **Escape** or **BACK** | Out to the menu |
 | **Right-click a card** | That track's options |
 | **Ctrl/⌘ + H** | History and totals |
@@ -69,8 +66,8 @@ into the middle of the face in a pale tint of the track's own colour. A closed c
 right-click, which reaches this track's settings whether it is locked or not.
 
 **The count is cut into the stone.** Each gem carries the number of steps that track has cleared, in dark ink on the
-face — 41 means forty-one banked and the forty-second on offer. Only the main ladder counts here; the bonus keeps its
-own tally and stays out of it. Amounts remain off this screen entirely: the number says how far, never how much.
+face — 41 means forty-one banked and the forty-second on offer. Amounts remain off this screen entirely: the number
+says how far, never how much.
 
 **The card winds up as a promotion comes into range.** Over the last five steps of a colour band the bloom behind the
 gem brightens and swells, its beat quickens from two and a half seconds to under one, and the light travelling the
@@ -97,11 +94,10 @@ spring and asks: **tick** if you held out, **cross** if you did not. Nothing els
 answer is written down the moment a step is banked, so closing the tab is not a way around the question. On the menu
 a track waiting to be judged looks exactly like a ready one; which of the two it is, is its own screen's to say.
 
-**The clock reaching zero is announced, not just noted.** On the menu that currency's main gem **shivers five times
-and goes still** — five flicks, each a little smaller than the last — and only when it settles does the gem light up
-and let you in. The shiver belongs to the main stone alone: the bloom behind it stays where it is, and the bonus
-stone keeps its own clock and announces nothing. A lock that expired while the tab was closed is not news, so opening
-onto one is quiet.
+**The clock reaching zero is announced, not just noted.** On the menu that currency's gem **shivers five times and
+goes still** — five flicks, each a little smaller than the last — and only when it settles does the gem light up and
+let you in. The bloom behind it stays where it is. A lock that expired while the tab was closed is not news, so
+opening onto one is quiet.
 
 **Tick — held out.** The whole window dims and one word is struck across it: `UNLOCKED`, flown in oversized and
 spread apart, snapping home in the tier's colour with a diamond shockwave and a shower of sparks. Crossing into a new
@@ -156,44 +152,28 @@ steps 1–71 as one red run rather than ending red at 67. Nothing is mis-transcr
 the sheet says at every step. It is only where the colour changes that differs from how the sheet looks to a reader.
 If red is meant to end at 67, the sheet has to say so the way every other boundary does — by going down.
 
-## The bonus stones
+### Columns C and D are not read
 
-Columns C and D of the sheet are a second ladder each, both at ×1.20 — one behind VND, one behind USD.
+The sheet still carries two more columns — a second ladder behind each currency, both at ×1.20 — and until VERSION 20
+the app drew them as an ice-blue stone that turned up beside a gem on its own hidden clock. They were asked for, and
+then they were not: **nothing in the app reads column C or column D any more.** There is no ice stone, no second
+ladder, no hidden clock and no allowance behind either of them, and the keys they were kept under are dropped from
+every document that comes through `migrate()` rather than being handed back to the disk and pushed on to the other
+devices.
 
-| | Steps | From → to | All steps come to |
-|---|---|---|---|
-| **Column C** — VND | 100, in 6 runs | `17,900 ₫` → peaks at `1,925,880 ₫` | `62,474,870 ₫` |
-| **Column D** — USD | 104, in 7 runs | `$0.05` → peaks at `$74.90` | `$1,916.85` |
+**What was banked off them stays banked.** Those steps were real money, so their rows stay in the history and in that
+currency's total, still labelled `bonus` in the `Kind` column — the books are a record of what happened, not a view
+of the app as it stands today. Two things follow, and both are deliberate: a cross answered on a main ladder walks
+past those rows and takes that track's own step, and the totals under **Ctrl+H** still count them.
 
-Neither sits anywhere on screen waiting to be used. **It shows up, or it does not** — an ice-blue stone appears
-beside that currency's gem on the menu and out past the rim on the coin's own screen. Tap it and that column opens.
-
-Behind each is a hidden clock, and a hidden allowance. Taking a bonus step puts that stone away for **45 minutes**, and
-a stone may only be taken **twice in a day**; the second take of the day sends it away until tomorrow rather than
-until the hour is up. Each currency keeps its own tally, so VND having had its two goes says nothing about USD.
-
-Neither the clock nor the tally is drawn anywhere: no countdown, no padlock, no dimmed socket where the stone would
-be, and no count of what is left today. An empty socket would give the game away just as surely as a clock would, and
-a counter would give away the one thing the hour cannot — whether it is worth waiting at all.
-
-Both wear the same ice-blue, and they wear it precisely because red, amber and green all mean *this is how far you
-have come* — a bonus means nothing of the sort. Three more things follow from a bonus not being a normal step:
-
-- **No lock and no verdict.** Ticking one does not start that track's wait and does not ask whether you held out —
-  asking would announce that the hidden clock had just run out.
-- **It comes through the lock.** A stone can turn up while its track is mid-countdown. The clocks are unrelated.
-- **Its own numbering, the same books.** Each bonus counts independently of the main 209, but the money is real, so
-  it lands in the history and in that currency's total, labelled `bonus` rather than `step`. A step taken back off a
-  main ladder by a cross walks past those rows — they belong to a different ladder.
-
-Once a bonus ladder is finished its stone simply never returns. No announcement.
+Leaving the columns in the sheet costs nothing: the generator reads A and B and stops.
 
 ## The journey comes round again
 
-There is no dead end at the top. Once **all four ladders are finished** — VND and USD, main and bonus, with no
-verdict still owed — the app holds the finished screens for about three seconds, so the crown and its burst land as
-an ending, then strikes one word across the window: `AGAIN`. Every track goes back to its first milestone, both locks
-and both hidden bonus clocks are cleared, and the climb starts over from `20,000 ₫` and `$0.30`.
+There is no dead end at the top. Once **both ladders are finished** — VND and USD, with no verdict still owed — the
+app holds the finished screens for about three seconds, so the crown and its burst land as an ending, then strikes
+one word across the window: `AGAIN`. Both tracks go back to their first milestone, both locks are cleared, and the
+climb starts over from `20,000 ₫` and `$0.30`.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
 so a second pass adds to the first rather than replacing it. Only the milestones start over. Nothing inside the app
@@ -202,16 +182,17 @@ wrap and they outlive a journey reset; the only thing that empties them is a lin
 under [Emptying the books](#emptying-the-books).
 
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
-track's lock setting and clamps progress to the new length.
+track's lock setting and clamps progress to the new length. It currently reads `20`.
 
 ### Starting a new journey from the source
 
 A version bump can carry a one-off **reset**, and it is the only thing in the app that can move a track without it
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
-every ladder sent back to its first milestone — both main tracks and both bonuses — and every clock with them: the
-waits, the verdicts they were owed, the hidden bonus clocks and the day's bonus tally. All of it belonged to a climb
-that is over. It currently reads `19` — the version that carries the re-cut sheet, because a fresh start on the new
-ladder was asked for along with it.
+both ladders sent back to their first milestone, and every clock with them: the waits and the verdicts they were
+owed. All of it belonged to a climb that is over. It currently reads `19` — the version that carried the re-cut
+sheet, because a fresh start on the new ladder was asked for along with it. It **stayed** at 19 when `VERSION` moved
+to 20: dropping the two bonus columns and taking a minute off the USD wait are not reasons to send a climb back to
+step 1, and nobody asked for one.
 
 It fires **once per set of books, not once per load**: the version stamped on the way out of `migrate()` is what stops
 it firing again, and a document already at that version is left where it stands. A fresh set of books is untouched by
@@ -232,7 +213,9 @@ that had merely been opened is already at that number and reads as "reset done".
 generations of this folder can sit mixed in a browser's HTTP cache for as long as the cache lasts, and a module that
 asks `plans.js` for a name it has not got yet takes the whole graph down — a white window, not a stale one. That is
 what `VND_REPEG` is still doing in `plans.js`: nothing, except being findable by a `state.js` that a browser has
-not let go of yet. Delete it once the caches have turned over.
+not let go of yet. It has to mirror `JOURNEY_RESET_AT` rather than `VERSION`, for the same reason: bumped past the
+reset it would send a set of books that has already been through one back to step 1 a second time, from a cache
+nobody can see into. Delete it once the caches have turned over.
 
 The reset is deliberately not reachable from the app: it is a line in the source, applied by the code that reads a
 save, not a button. Every document the app believes goes through that reader — including one arriving over sync. A
@@ -243,9 +226,9 @@ reset with it; winning the revision count does not make a document right.
 
 `BOOKS_WIPE_AT`, also in `js/state.js`, is the one figure that can take money already banked back off the history.
 Any document written before the version it names has its history emptied, its totals with it, and `journeys` set back
-to zero. It currently reads `18`, one version behind the reset above: version 18 emptied the books because that was
-asked for, and the re-cut at 19 sent every ladder back to step 1 without touching the history again. Anything banked
-since stays banked.
+to zero. It currently reads `18`, two versions behind `VERSION` now: version 18 emptied the books because that was asked for,
+the re-cut at 19 sent both ladders back to step 1 without touching the history, and 20 dropped the bonus columns
+without touching it either. Anything banked since stays banked.
 
 **It is a separate constant on purpose, and it stays behind when `JOURNEY_RESET_AT` moves.** A journey reset
 says *this climb is over*; a wipe says *there was no climb*. Only the first of those should be inherited by the next
@@ -265,12 +248,18 @@ it: **right-click a card** for that track's options, **Ctrl+H** for the books, *
 is no start-over key — `Ctrl+R` went back to the browser, where it means reload.
 
 **Lock after ticking a step** — minutes to wait before the next amount unlocks, and the only thing in the app that
-can be configured at all. VND starts at `18` and USD at `25`, deliberately different so the two ladders never fall
+can be configured at all. VND starts at `18` and USD at `24`, deliberately different so the two ladders never fall
 into step and hand you both questions at once.
 
 > It can be made **longer, never shorter**, and there is no off. Those two numbers are the floor, enforced when a save
 > is read as well as when the box is saved — a wait that can be turned down to nothing takes the verdict with it, and
 > then there is nothing left to have survived.
+
+**The one wait that came down.** USD was designed around 25 minutes and is now designed around 24. Because a stored
+wait is only ever lengthened where it is read, lowering the floor in `plans.js` would have reached a new browser and
+nobody else: a set of books already carrying `25` would have carried it for ever. `USD_WAIT_RECUT_AT` in
+`js/state.js` is what actually moves it, and it moves **exactly** the old figure to the new one, once. A wait you
+lengthened on purpose — an hour, a day, a week — is yours, and is left where you put it.
 
 **The milestones are not editable.** Not the list, not a multiplier, not one figure of one step — they are generated
 from the spreadsheet and rebuilt from it every time a save is read, so a file that disagrees with the sheet is
@@ -288,7 +277,7 @@ that number is the thing you are trying not to think about. Export to CSV from t
 **There is no way to start over.** Nothing in the app sets a track to a step of your choosing, and nothing wipes the
 books — not a button, not a shortcut. A ladder that can be sent back to step 1 on a whim is a ladder that never has to
 be climbed, and a step that can be jumped to is a step nobody saved for. The only wipe the app performs is its own, at
-the top of all four ladders, after the crown and the burst.
+the top of both ladders, after the crown and the burst.
 
 ## Data
 
@@ -349,7 +338,7 @@ icon.svg                 the split stone
 css/app.css              every colour, every idle
 js/config.js             where the books are kept, if anywhere but this browser
 js/sync.js               one set of books across every machine
-js/plans.js              the four ladders, and how to read one
+js/plans.js              the two ladders, and how to read one
 js/state.js              what is remembered, and the one place it is written
 js/gem.js                the diamond: geometry, cuts and colour
 js/fx.js                 movement, bursts, and the words struck across the window

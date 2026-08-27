@@ -36,30 +36,28 @@ const JOURNEY_RESET_AT = 19;
  */
 const BOOKS_WIPE_AT = 18;
 
+/**
+ * The version at which USD's designed wait came down from twenty-five minutes to twenty-four, and
+ * the reason that one minute needed a version of its own.
+ *
+ * A wait is only ever lengthened where it is read — see migrate() below — so lowering the floor in
+ * plans.js does nothing on its own: a set of books carrying the old twenty-five would go on
+ * carrying it for ever, and the change would only ever reach a browser that had never opened the
+ * app. This moves exactly the old figure down to the new one, once. A wait somebody lengthened on
+ * purpose is theirs, and is left where they put it.
+ */
+const USD_WAIT_RECUT_AT = 20;
+const OLD_USD_LOCK = 25;
+
 /** A fresh, unclimbed set of ladders. Only load() ever needs one. */
 function blank() {
   return {
     version: VERSION,
     vnd: plans.vnd(),
     usd: plans.usd(),
-    vndBonus: plans.vndBonus(),
-    usdBonus: plans.usdBonus(),
     journeys: 0,
     vndDone: 0,
     usdDone: 0,
-    vndBonusDone: 0,
-    usdBonusDone: 0,
-    // When each bonus is allowed back, or null for "right now". Never shown: the app draws the
-    // stone or it draws nothing, and the gap between those two is the only thing that gives the
-    // clock away.
-    vndBonusReadyAt: null,
-    usdBonusReadyAt: null,
-    // The day each bonus was last taken, and how many times it has been taken on that day. Two a
-    // day, per currency; the third does not come round until tomorrow.
-    vndBonusDay: null,
-    usdBonusDay: null,
-    vndBonusToday: 0,
-    usdBonusToday: 0,
     // When the lock expires. Persisted so closing the tab cannot skip the wait.
     vndUnlockAt: null,
     usdUnlockAt: null,
@@ -72,13 +70,14 @@ function blank() {
 }
 
 /**
- * Puts a saved file onto the ladders as they actually are. All four are rebuilt from plans.js every
+ * Puts a saved file onto the ladders as they actually are. Both are rebuilt from plans.js every
  * time, whatever the file claims they were: nothing about a ladder is editable any more, so a file
  * that disagrees with the spreadsheet is a file that has been got at, not a file to be honoured.
  *
  * The one thing carried across is each track's wait, and only ever lengthened — a stored zero would
  * otherwise buy a ladder with no waits and no verdicts, which is the loophole the options panel has
- * just been shut on.
+ * just been shut on. The single exception is the minute USD lost at USD_WAIT_RECUT_AT, which has to
+ * come down or never arrive at all.
  *
  * Where a track stands is carried across too, and is the one figure this function will move of its
  * own accord: see JOURNEY_RESET_AT above. Every document the app believes comes through here, so
@@ -94,14 +93,17 @@ function migrate(s) {
     const stored = Number(s[currency === 'VND' ? 'vnd' : 'usd']?.cooldown);
     return Math.max(lockFloor(currency), Number.isFinite(stored) ? stored : 0);
   };
-  s.vnd = plans.vnd(wait('VND'));
-  s.usd = plans.usd(wait('USD'));
-  s.vndBonus = plans.vndBonus();
-  s.usdBonus = plans.usdBonus();
+  // The one wait this function will shorten, and only from the exact figure it used to be.
+  const usdStored = Number(s.usd?.cooldown);
+  const usdWait = (s.version ?? 0) < USD_WAIT_RECUT_AT && usdStored === OLD_USD_LOCK
+    ? lockFloor('USD')
+    : wait('USD');
 
-  // A new journey. Every ladder goes back to its first milestone — both main tracks and both
-  // bonuses — and every clock with them: the waits, the verdicts they were owed, the hidden bonus
-  // clocks and today's bonus tally. All of it belonged to a climb that is over.
+  s.vnd = plans.vnd(wait('VND'));
+  s.usd = plans.usd(usdWait);
+
+  // A new journey. Both ladders go back to their first milestone, and every clock with them: the
+  // waits and the verdicts they were owed. All of it belonged to a climb that is over.
   //
   // The books are not touched, the same way they are not touched by a wrap: the steps were saved
   // and the money is real, so the new pass adds to the old one rather than replacing it. `journeys`
@@ -111,10 +113,6 @@ function migrate(s) {
       s[c + 'Done'] = 0;
       s[c + 'UnlockAt'] = null;
       s[c + 'AwaitingVerdict'] = false;
-      s[c + 'BonusDone'] = 0;
-      s[c + 'BonusReadyAt'] = null;
-      s[c + 'BonusDay'] = null;
-      s[c + 'BonusToday'] = 0;
     }
   }
 
@@ -133,8 +131,17 @@ function migrate(s) {
 
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
-  s.vndBonusDone = clamp(s.vndBonusDone, 0, count(s.vndBonus));
-  s.usdBonusDone = clamp(s.usdBonusDone, 0, count(s.usdBonus));
+
+  // Columns C and D are gone, and so are the keys they were kept under. A file written before
+  // VERSION 20 still carries them, and this is the reader every file comes through, so they are
+  // dropped here rather than handed back to the disk and pushed on to every other device. Not
+  // version-gated: there is no version at which they should exist again. The history is untouched —
+  // a bonus step that was banked was money, and money stays in the books.
+  for (const k of ['Bonus', 'BonusDone', 'BonusReadyAt', 'BonusDay', 'BonusToday']) {
+    delete s['vnd' + k];
+    delete s['usd' + k];
+  }
+
   s.version = VERSION;
   return s;
 }
@@ -198,24 +205,7 @@ export function track(s, currency) {
   };
 }
 
-/** The calendar day, as the machine in front of you reckons it. */
-export const today = () => new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD, local
-
-/** The bonus ladder of one currency. Its clock is unrelated to the main track's. */
-export function bonus(s, currency) {
-  const k = lower(currency) + 'Bonus';
-  return {
-    currency,
-    plan: s[k],
-    done: s[k + 'Done'],
-    readyAt: s[k + 'ReadyAt'] ? new Date(s[k + 'ReadyAt']) : null,
-    // Yesterday's tally is not today's: a stored count only counts if it was set today.
-    takenToday: s[k + 'Day'] === today() ? (s[k + 'Today'] ?? 0) : 0
-  };
-}
-
 export const setTrack = (s, currency, patch) => Object.assign(s, prefixed(lower(currency), patch));
-export const setBonus = (s, currency, patch) => Object.assign(s, prefixed(lower(currency) + 'Bonus', patch));
 
 function prefixed(prefix, patch) {
   const out = {};
@@ -225,7 +215,11 @@ function prefixed(prefix, patch) {
 
 // ---- the books --------------------------------------------------------------------------------
 
-/** Totals across every pass of the ladders. History survives a wrap; the milestones do not. */
+/**
+ * Totals across every pass of the ladders. History survives a wrap; the milestones do not — and it
+ * survived the bonus ladders going away too, so a row banked off column C or D is still counted
+ * here.
+ */
 export function totals(s) {
   let vnd = 0, usd = 0;
   for (const e of s.history) (e.currency === 'VND' ? (vnd += e.amount) : (usd += e.amount));

@@ -50,7 +50,6 @@ export function dash(w, h, fraction) {
 
 const TIERS = ['#FF5A57', '#FFB020', '#35C08E'];
 const ACCENT = { VND: '#FFB020', USD: '#35C08E' };
-export const ICE = '#8FD6FF';
 
 const hex = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
 
