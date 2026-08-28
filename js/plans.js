@@ -11,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 24;
+export const VERSION = 25;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -26,13 +26,13 @@ export const VERSION = 24;
  * contradiction of it.
  *
  * It mirrors JOURNEY_RESET_AT rather than VERSION, and moves only when that does — to the same
- * number, never past it. It sat at 19 through three versions that moved no ladder's position; it
- * moves to 22 with the re-cut sheet, because a new journey was asked for along with it. Ahead of the
+ * number, never past it. It has sat still through every version that moved no ladder's position and
+ * moved twice, at 22 and now at 25, each time a new journey was asked for by name. Ahead of the
  * reset it would send a set of books that has already been through one back to step 1 a second time,
  * which is a contradiction of the reset rather than a subset of it, and reachable only from a cache
  * nobody can see into.
  */
-export const VND_REPEG = { version: 22, done: 0 };
+export const VND_REPEG = { version: 25, done: 0 };
 
 // Minutes each track locks for after a step is banked. Deliberately different per currency, so the
 // two ladders never fall into step and hand you both questions at once. USD came down from 25 to 24

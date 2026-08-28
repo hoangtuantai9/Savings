@@ -251,7 +251,7 @@ wrap and they outlive a journey reset; the only thing that empties them is a lin
 under [Emptying the books](#emptying-the-books).
 
 The tables live in `js/plans.js`. Edit them there and bump `VERSION`; the next load adopts the new ladder, keeps each
-track's lock setting and clamps progress to the new length. It currently reads `23`.
+track's lock setting and clamps progress to the new length. It currently reads `25`.
 
 ### Starting a new journey from the source
 
@@ -259,11 +259,12 @@ A version bump can carry a one-off **reset**, and it is the only thing in the ap
 being climbed. `JOURNEY_RESET_AT` in `js/state.js` names a version; any document written before that version has
 every ladder sent back to its first milestone — both tracks and the box — and every clock with them: the waits, the
 verdicts they were owed, and any box standing on the menu waiting to be opened. All of it belonged to a climb that is
-over. It currently reads `22`, the version at which a fresh start was asked for by name.
+over. It currently reads `25`, the version at which a fresh start was most recently asked for by name.
 
-It has **stayed** at 22 through the re-cut at 23. Re-cutting the sheet is not by itself a reason to send a climb back
-to step 1: a new ladder and a new journey are two separate decisions, and only the first of them was asked for that
-time.
+It has moved twice — at 22 and at 25 — and sat still everywhere else, including through the re-cut at 23 and the box
+being cut loose from the USD track at 24. Re-cutting a sheet or changing what a ladder does is not by itself a reason
+to send a climb back to step 1: a new ladder and a new journey are two separate decisions, and only being asked moves
+this one.
 
 It sat at `19` for three versions before that, and deliberately: dropping the bonus columns, taking a minute off the
 USD wait and giving the sheet's third column a box of its own are none of them reasons to send a climb back to step 1. **Re-cutting the
@@ -302,10 +303,10 @@ reset with it; winning the revision count does not make a document right.
 
 `BOOKS_WIPE_AT`, also in `js/state.js`, is the one figure that can take money already banked back off the history.
 Any document written before the version it names has its history emptied, its totals with it, and `journeys` set back
-to zero. It currently reads `18`, five versions behind `VERSION` now: version 18 emptied the books because that was asked for,
-and nothing since has touched them — 19 sent both ladders back to step 1, 20 dropped the bonus columns, 21 added the
-box, 22 sent every ladder back to step 1 again, and 23 re-cut all three columns without moving anything. Anything
-banked since version 18 stays banked, and the totals under **Ctrl+H** still carry all of it.
+to zero. It currently reads `18`, seven versions behind `VERSION` now: version 18 emptied the books because that was asked
+for, and nothing since has touched them — 19 and 22 and 25 each sent every ladder back to step 1, 20 dropped the bonus
+columns, 21 added the box, 23 re-cut all three columns and 24 gave the box a clock of its own. Anything banked since
+version 18 stays banked, and the totals under **Ctrl+H** still carry all of it.
 
 **It is a separate constant on purpose, and it stays behind when `JOURNEY_RESET_AT` moves.** A journey reset
 says *this climb is over*; a wipe says *there was no climb*. Only the first of those should be inherited by the next
