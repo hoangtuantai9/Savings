@@ -1,6 +1,6 @@
 // The three ladders, transcribed from the source spreadsheet, which is now three columns wide and
 // has nothing in it that is not read: column A is VND, column B is USD and column C is the box —
-// 185 steps each, the box being the one that only comes round when a USD wait has been sat through.
+// 185 steps each, all three independent of one another, each on its own clock.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -11,7 +11,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 23;
+export const VERSION = 24;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -40,10 +40,14 @@ export const VND_REPEG = { version: 22, done: 0 };
 // stored 25 down with it, or the change would never reach a set of books already in use.
 const VND_LOCK = 18, USD_LOCK = 24;
 
-// The box has no wait of its own, and that is the whole of its design: it turns up when the USD
-// lock reaches zero and goes away once it is banked, so the thing that governs it is a wait that
-// was already sat through rather than a second clock nobody can see.
-const BOX_LOCK = 0;
+// The box's own wait, and the whole of what governs it: it is away for this long after it is
+// opened, and it is back when the time is up. Nothing about it is tied to either track — a USD lock
+// running out neither summons it nor sends it away, and the length is deliberately unlike both of
+// theirs so the three never fall into step and hand you everything at once.
+//
+// Forty-five minutes is what the bonus stone this replaced used to keep, and it is the one number
+// here to change if the box should come round more or less often.
+const BOX_LOCK = 45;
 
 /**
  * The wait a track was designed around, and the least it may ever be set to. The options panel can

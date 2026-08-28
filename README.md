@@ -5,8 +5,8 @@ A web app for running two savings ladders side by side — **VND** and **USD** �
 The screen shows you the amount due right now and a tick to confirm you saved it — no totals, and no schedule. The
 menu shows how many steps you have cleared, and nothing about what they cost. Tick it and the gem locks — 18 minutes
 for VND, 24 for USD — before the next amount exists, and when that lock runs out the gem asks whether you actually
-held out. Say no and the step comes back off the ladder. Sit a USD wait out and a gold box rises between the two
-cards with something in it; there is no box the rest of the time, and no gap where one would go.
+held out. Say no and the step comes back off the ladder. Between the two cards a gold box comes and goes on a clock of
+its own with something in it; there is no box the rest of the time, and no gap where one would go.
 
 It runs in any modern browser, on Windows, macOS, Android and iOS, from one address.
 
@@ -42,7 +42,7 @@ Everything is a click or a key; nothing is a menu.
 | | |
 |---|---|
 | **Click a card** | Into that currency's screen |
-| **Click the box** | Into what a survived wait paid out — when there is one |
+| **Click the box** | Into the box, on the times its own clock has it standing there |
 | **Escape** or **BACK** | Out to the menu |
 | **Right-click a card** | That track's options |
 | **Ctrl/⌘ + H** | History and totals |
@@ -167,7 +167,8 @@ still count them.
 ## The box
 
 Column C is the third ladder — 185 steps of dollars at a flat ×1.05, from thirty cents to the better part of a
-thousand — and it is the one thing in the app you cannot go and get. **It is not on the menu until a USD wait has been sat out.**
+thousand — and it is **fully independent of both tracks**. Nothing either of them does summons it, sends it away or
+touches it in any way; it keeps its own clock and answers to that alone. 
 
 | | Steps | From → to | All steps come to |
 |---|---|---|---|
@@ -203,31 +204,32 @@ comes off**, the stars come out of the opening, and the amount counts up underne
 those faces carry a mark instead of a number. It is the one screen where you commit before you know, which is fair
 enough: you have already done the only thing it asks, which was to sit through the wait.
 
-### What earns one
+### Its own clock, and nobody else's
 
-**A USD wait reaching zero**, and that is the whole rule. Not a hidden clock, not an allowance, not chance: the box is
-what sitting through a wait pays out, so the only way to see one is to have sat through one.
+**It is there when its wait is up, and away for 45 minutes after it is opened.** That is the whole rule. Neither track
+reaches it: a VND lock running out does nothing to it, a USD lock running out does nothing to it, and a cross answered
+on either does nothing to it.
 
-- **One wait, one box.** The payout is stamped with the expiry of the lock that earned it, so a wait pays out once.
-  Opening the app onto a lock that ran out yesterday cannot mint a second box, and neither can two tabs noticing the
-  same zero. Answering the verdict clears the lock, so the next box waits for the next wait.
-- **It is USD's**, because column C is dollars. A VND wait running out pays out nothing.
-- **It outlives the verdict, unless the verdict goes against you.** The box arrives when the clock hits zero, before
-  the gem asks whether you held out. Answer **tick** and it stays until you open it. Answer **cross** and it goes with
-  the step: a wait you have just owned up to not surviving did not earn anything.
-- **No lock and no verdict of its own.** Ticking a box starts no wait and asks no question — the wait it belonged to
-  has already been sat through, and asking again would be asking the same question twice.
-- **It goes once it is banked**, and the next one comes with the next wait. Nothing accumulates.
-- **A box on a finished ladder is a box with nothing in it**: once all 185 steps are banked, no wait pays out again.
+- **Whether it is standing there is never stored**, only worked out from its clock each time it is asked for. A flag
+  and a wait can disagree; a wait on its own cannot.
+- **Opening it starts its wait.** Bank the step and the box goes for three quarters of an hour, then comes back on the
+  next milestone. Nothing accumulates, and nothing is ever owed.
+- **No verdict.** The tracks ask whether you held out because their wait is time you have to hold out *through*, and
+  somebody has to say whether you did. The box's wait is only time it spends away — there is nothing to own up to.
+- **Forty-five minutes, deliberately unlike either track's 18 and 24**, so the three never fall into step and hand you
+  everything at once. It is one constant, `BOX_LOCK` in `js/plans.js`.
+- **A fresh set of books has it standing there**, because there is no wait behind it yet to sit through.
+- **A box on a finished ladder is a box with nothing in it**: once all 185 steps are banked it never returns.
 - **Its own numbering, the same books.** The box counts its own 185 steps, but the money is real, so it lands in the
-  history and in the USD total, labelled `box` rather than `step`. A cross answered on a track walks past those rows.
+  history and in the USD total, labelled `box` rather than `step` — that is a matter of which currency it is in, not
+  of anything the USD ladder does. A cross answered on a track walks past those rows.
 
 ### Where it stands
 
 **Between the two cards** — and *only* when there is one. No gap is held open for it while it is away: an empty socket
 announces that something is coming just as surely as a countdown would, so the row is two cards and nothing else.
 
-When a box is earned, the two cards **part to let it in**. Where it stands is measured before and after it joins the
+When its clock comes round, the two cards **part to let it in**. Where it stands is measured before and after it joins the
 row, and each card is then run from where it was to where it now is over about half a second, so the movement reads as
 the room opening up rather than as a layout that jumped. The cards close again behind it the same way. Each card has a
 hover state of its own, so that glide deliberately leaves nothing behind on them — see `slideFrom()` in `js/fx.js`.
@@ -239,8 +241,8 @@ holds the finished screens for about three seconds, so the crown and its burst l
 across the window: `AGAIN`. Both tracks go back to their first milestone, both locks are cleared, the box goes back to
 step 1 with them, and the climb starts over from `20,000 ₫` and `$0.30`.
 
-The box is not part of the condition. It only ever advances when a wait has been sat through, so waiting for its 185
-steps before a wrap could hold the top of the ladder shut indefinitely — the two tracks are what finish a journey.
+The box is not part of the condition. It advances on its own clock rather than with the tracks, so waiting for its 185
+steps before a wrap could hold the top of the ladder shut for weeks — the two tracks are what finish a journey.
 
 **The books are not touched.** History and the totals survive the wrap — the steps were saved and the money is real,
 so a second pass adds to the first rather than replacing it. Only the milestones start over. Nothing inside the app
@@ -324,7 +326,8 @@ is no start-over key — `Ctrl+R` went back to the browser, where it means reloa
 
 **Lock after ticking a step** — minutes to wait before the next amount unlocks, and the only thing in the app that
 can be configured at all. VND starts at `18` and USD at `24`, deliberately different so the two ladders never fall
-into step and hand you both questions at once.
+into step and hand you both questions at once. The box keeps its own 45 and is not configurable: it is not a track,
+and it asks nothing of you.
 
 > It can be made **longer, never shorter**, and there is no off. Those two numbers are the floor, enforced when a save
 > is read as well as when the box is saved — a wait that can be turned down to nothing takes the verdict with it, and

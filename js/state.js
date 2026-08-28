@@ -68,13 +68,10 @@ function blank() {
     vndDone: 0,
     usdDone: 0,
     boxDone: 0,
-    // Whether a box is standing on the menu right now, waiting to be opened. Persisted, because it
-    // was earned by a wait that was really sat through — closing the tab must not take it away.
-    boxLive: false,
-    // Which wait the box on the menu was earned by, stamped with that lock's own expiry. One wait
-    // buys one box: a lock whose stamp is already here has already paid out, so re-opening the app
-    // onto an expired lock cannot mint a second one.
-    boxGrantedAt: null,
+    // When the box comes back, or null for "it is there now". Its own clock and nobody else's: the
+    // box is away for its wait after being opened and is standing there again once the time is up.
+    // Persisted, so closing the tab neither skips the wait nor loses a box that is due.
+    boxUnlockAt: null,
     // When the lock expires. Persisted so closing the tab cannot skip the wait.
     vndUnlockAt: null,
     usdUnlockAt: null,
@@ -134,8 +131,7 @@ function migrate(s) {
       s[c + 'AwaitingVerdict'] = false;
     }
     s.boxDone = 0;
-    s.boxLive = false;
-    s.boxGrantedAt = null;
+    s.boxUnlockAt = null;
   }
 
   // A clean sheet, asked for by name: the history goes with the milestones, and the totals drawn
@@ -154,8 +150,12 @@ function migrate(s) {
   s.vndDone = clamp(s.vndDone, 0, count(s.vnd));
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
   s.boxDone = clamp(s.boxDone, 0, count(s.box));
-  // A box on a finished ladder is a box with nothing in it.
-  if (s.boxDone >= count(s.box)) s.boxLive = false;
+
+  // Whether the box is standing there is worked out from its clock every time it is asked for, so
+  // these two are the shape it used to be kept in and nothing reads them any more. A file written
+  // before VERSION 24 still carries them; they go the same way the bonus keys did.
+  delete s.boxLive;
+  delete s.boxGrantedAt;
 
   // The two bonus ladders are gone, and so are the keys they were kept under. A file written before
   // VERSION 20 still carries them, and this is the reader every file comes through, so they are
@@ -231,11 +231,17 @@ export function track(s, currency) {
 }
 
 /**
- * The box, as one object the views can read without knowing the keys. It has no lock and no verdict
- * of its own — where a track carries a clock, the box carries only whether it is standing there.
+ * The box, as one object the views can read without knowing the keys.
+ *
+ * Whether it is standing there is not stored — it is read off its own clock every time, which is
+ * what makes it impossible for the flag and the wait to disagree. It is there when its wait is up
+ * and there is something left in the column, and nowhere otherwise. No verdict: its wait is time it
+ * spends away rather than time you have to hold out through, so there is nothing to own up to.
  */
 export function box(s) {
-  return { plan: s.box, done: s.boxDone, live: !!s.boxLive };
+  const done = s.boxDone;
+  const unlockAt = s.boxUnlockAt ? new Date(s.boxUnlockAt) : null;
+  return { plan: s.box, done, unlockAt, live: done < count(s.box) && remaining(unlockAt) === 0 };
 }
 
 export const setTrack = (s, currency, patch) => Object.assign(s, prefixed(lower(currency), patch));

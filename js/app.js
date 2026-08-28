@@ -114,9 +114,11 @@ async function tick(currency) {
 }
 
 /**
- * Banks what was in the box. It starts no wait and asks no question — the wait it belonged to has
- * already been sat through, which is the only reason the box was there at all — and the box goes
- * away with it: one wait survived, one box, and the next one comes with the next wait.
+ * Banks what was in the box, and sends it away for its own wait.
+ *
+ * It asks no question on the way out. The tracks ask because their wait is time you have to hold
+ * out through and somebody has to say whether you did; the box's wait is only time it spends away,
+ * and there is nothing to own up to.
  */
 async function tickBox() {
   if (busy) return;
@@ -131,8 +133,9 @@ async function tickBox() {
   state.history.push({
     currency: 'USD', index: b.done, amount, at: new Date().toISOString(), box: true
   });
+  const mins = b.plan.cooldown;
   state.boxDone = b.done + 1;
-  state.boxLive = false;
+  state.boxUnlockAt = mins > 0 ? new Date(Date.now() + mins * 60000).toISOString() : null;
   save();
 
   busy = true;
@@ -177,8 +180,6 @@ async function answer(currency, held) {
  * Both are money that was really saved; a cross answered here has to take this track's own step
  * rather than the nearest thing to it.
  *
- * The box standing on the menu does go, though. It was earned by a wait, and a wait that has just
- * been owned up to as not survived did not earn anything.
  */
 function rollBack(currency) {
   const t = track(state, currency);
@@ -189,7 +190,6 @@ function rollBack(currency) {
   setTrack(state, currency, {
     done: Math.max(0, t.done - 1), unlockAt: null, awaitingVerdict: false
   });
-  if (currency === 'USD') state.boxLive = false;
   save();
 }
 
@@ -213,10 +213,9 @@ function checkWrap() {
 
     state.journeys++;
     for (const c of ['VND', 'USD']) setTrack(state, c, { done: 0, unlockAt: null, awaitingVerdict: false });
-    // The box goes back to its first milestone with them, and the one standing on the menu goes.
+    // The box goes back to its first milestone with them, and its clock with it.
     state.boxDone = 0;
-    state.boxLive = false;
-    state.boxGrantedAt = null;
+    state.boxUnlockAt = null;
     save();
     const hold = proclaim('AGAIN', accentOf('VND', state.vnd, 0), true);
     after(hold, () => {
@@ -251,27 +250,6 @@ function openHistory() {
 // back to step 1 on a whim is a ladder that never has to be climbed. The only wipe left is the one
 // the app performs itself, at the top of both ladders, after the crown and the burst.
 
-// ---- what a wait pays out --------------------------------------------------------------------
-
-/**
- * A USD wait that has run out earns a box, once.
- *
- * Keyed on the lock's own expiry rather than on a flag, which is what makes it once: a lock whose
- * stamp is already on the file has already paid out, so opening the app onto a wait that ended
- * yesterday cannot mint a second box, and neither can two tabs noticing the same zero. Answering
- * the verdict clears the lock, so the next box waits for the next wait.
- */
-function grantBox() {
-  const t = track(state, 'USD');
-  if (!t.unlockAt || remaining(t.unlockAt) > 0) return;
-  const stamp = t.unlockAt.toISOString();
-  if (state.boxGrantedAt === stamp) return;
-  if (box(state).done >= count(state.box)) return;   // nothing left in the column to be had
-  state.boxGrantedAt = stamp;
-  state.boxLive = true;
-  save();
-}
-
 // ---- the clock -----------------------------------------------------------------------------------
 
 // What each track's lock looked like a moment ago, so the app can tell a lock running out now from
@@ -280,6 +258,10 @@ const ticking = {
   VND: remaining(track(state, 'VND').unlockAt) > 0,
   USD: remaining(track(state, 'USD').unlockAt) > 0
 };
+
+// And whether the box was standing there a moment ago, so that its own clock coming round is drawn
+// the moment it does. It is announced by nothing: the box turning up is the announcement.
+let boxWasLive = box(state).live;
 setInterval(() => {
   if (busy) return;
   let dirty = false;
@@ -289,10 +271,9 @@ setInterval(() => {
     const live = remaining(t.unlockAt) > 0;
 
     if (ticking[currency] && !live) {
-      // The clock reaching zero is announced, not just noted — and on USD it also pays out.
+      // The clock reaching zero is announced, not just noted.
       ticking[currency] = false;
       dirty = true;
-      if (currency === 'USD') grantBox();
       if (focus.isOpen() && focus.currency === currency) {
         focus.render(state);
         focus.askVerdict(accentOf(currency, t.plan, t.done));
@@ -304,6 +285,9 @@ setInterval(() => {
       dirty = true;                       // the countdown on the face has a second to lose
     }
   }
+
+  const boxLive = box(state).live;
+  if (boxLive !== boxWasLive) { boxWasLive = boxLive; dirty = true; }
 
   if (dirty) render();
 }, 250);
@@ -355,10 +339,6 @@ function openSync() {
     onSignOut: () => sync.signOut()
   });
 }
-
-// A wait that ran out while the tab was closed still earns its box; it simply does not get
-// announced, the same way the lock it belonged to does not.
-grantBox();
 
 menu.enter();
 render();
