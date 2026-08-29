@@ -275,16 +275,15 @@ html, body {
   cursor: pointer;
 }
 
+/* No filter on this element, deliberately. Its contents move — the box idles, the gleam crosses it,
+   the sparks come and go — and a filter on a node whose contents change has to be re-rasterised on
+   every frame of all of it. The shadow it needs is drawn inside the drawing (an ellipse on the
+   floor) and the light it throws is the haze behind it, which is its own layer and cheap to move. */
 .boxstone {
   position: relative;
   width: 100%;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 20px var(--box-halo, rgba(143, 214, 255, 0.4)));
-  transition: filter 300ms ease;
-}
-.box-slot:hover .boxstone, .coin-box-host:hover .boxstone {
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 34px var(--box-halo, rgba(143, 214, 255, 0.7)));
 }
 
 /* It does not stand still. A stone sits in its setting; a box has just been put down. */
@@ -298,6 +297,7 @@ html, body {
   to   { transform: translateY(3px) rotate(0.55deg); }
 }
 .box-slot:hover .box-body, .coin-box-host:hover .box-body { animation-duration: 1600ms; }
+.box-slot:hover .box-haze, .coin-box-host:hover .box-haze { opacity: 1; filter: blur(15px); }
 
 /* The steel is fixed. Only what glows carries the band colour, so colour goes on meaning the one
    thing it means in this app: how far you have come. */
@@ -305,7 +305,8 @@ html, body {
 .box-glow-fill { fill: var(--box-glow, #8FD6FF); }
 .box-glow-stroke { fill: none; stroke: var(--box-glow, #8FD6FF); }
 .box-ink { fill: var(--box-ink, #08131c); }
-.box-lit { filter: drop-shadow(0 0 4px var(--box-glow, #8FD6FF)) drop-shadow(0 0 11px var(--box-glow, #8FD6FF)); }
+/* The bloom around a lit shape: the same shape again, wider and fainter, under it. */
+.box-bloom { opacity: 0.22; }
 .box-pulse { animation: box-pulse 2600ms ease-in-out infinite; }
 @keyframes box-pulse { 0%, 100% { opacity: 0.74; } 50% { opacity: 1; } }
 

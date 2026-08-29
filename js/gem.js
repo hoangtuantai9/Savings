@@ -325,7 +325,20 @@ export function boxStone(svg, id) {
     }, g);
   };
 
-  const lit = (g, node) => { node.classList.add('box-lit'); g.appendChild(node); return node; };
+  /**
+   * A lit shape, and the bloom around it — drawn rather than filtered.
+   *
+   * A CSS filter here would be a disaster and was one: these shapes live inside a group the face
+   * matrix scales by about sixty, and a filter's lengths go through that scale with everything
+   * else, so a four-pixel blur came out over three hundred pixels wide. It swamped the artwork and
+   * had to be re-rasterised on every frame of the idle. A wider, fainter copy of the same shape
+   * costs nothing, stays sharp at any size, and is what a glow looks like anyway.
+   */
+  const lit = (g, node, bloom) => {
+    if (bloom) { bloom.classList.add('box-bloom'); g.appendChild(bloom); }
+    g.appendChild(node);
+    return node;
+  };
 
   /** A framed triangle with the app's own stone glowing in the middle of it. */
   const sigil = g => {
@@ -335,10 +348,14 @@ export function boxStone(svg, id) {
       d: tri, fill: 'none', stroke: STEEL.shade, 'stroke-opacity': 0.75,
       'stroke-width': 0.055, 'stroke-linejoin': 'round'
     }, g);
-    lit(g, el('path', { d: tri, fill: 'none', 'stroke-width': 0.028, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }));
+    lit(g,
+      el('path', { d: tri, fill: 'none', 'stroke-width': 0.028, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }),
+      el('path', { d: tri, fill: 'none', 'stroke-width': 0.085, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }));
     const stoneAt = (rx, ry) => `M 0.5 ${0.5 - ry} L ${0.5 + rx} 0.5 L 0.5 ${0.5 + ry} L ${0.5 - rx} 0.5 Z`;
     el('path', { d: stoneAt(0.115, 0.16), fill: STEEL.shade, opacity: 0.6 }, g);
-    lit(g, el('path', { d: stoneAt(0.1, 0.14), class: 'box-glow-fill box-pulse' }));
+    lit(g,
+      el('path', { d: stoneAt(0.1, 0.14), class: 'box-glow-fill box-pulse' }),
+      el('path', { d: stoneAt(0.19, 0.26), class: 'box-glow-fill' }));
   };
 
   // ---- body, then the mouth, then the lid over both ----
@@ -375,7 +392,9 @@ export function boxStone(svg, id) {
         stroke: STEEL.shade, 'stroke-opacity': 0.7, 'stroke-width': 0.05, 'stroke-linecap': 'round'
       }, g);
     }
-    lit(g, el('circle', { cx: 0.5, cy: 0.5, r: 0.135, class: 'box-glow-fill box-pulse' }));
+    lit(g,
+      el('circle', { cx: 0.5, cy: 0.5, r: 0.135, class: 'box-glow-fill box-pulse' }),
+      el('circle', { cx: 0.5, cy: 0.5, r: 0.23, class: 'box-glow-fill' }));
   }
 
   // Whatever the lid says, stamped over its lit core: the step count on the menu, nothing on the
