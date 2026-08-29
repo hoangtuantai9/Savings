@@ -215,45 +215,53 @@ export function stone(svg, { cx, cy, w, h, id }) {
 
 // ---- the box -----------------------------------------------------------------------------------
 //
-// One 2:1 isometric cube, three faces, light fixed at upper left: the same rule the diamond is cut
-// by, in the one other shape that rule makes sense in. What makes it a box rather than a stone is
-// what is laid on top of that: a heavy gold frame, a panel sunk into each face, and a question mark
-// painted across all three.
+// A steel reliquary: one 2:1 isometric cube on the same rule the diamond is cut by — light fixed at
+// upper left, every face a unit square pushed through a matrix so anything drawn straight lands on
+// it already skewed.
 //
-// The frame is gold whatever the state of the ladder, because a box is treasure and treasure is
-// gold. The panels take the band colour, so the one thing colour means in this app — how far you
-// have come — still means only that.
+// What makes it a box rather than a stone is everything laid over that. The lid is its own slab
+// with a visible thickness and a seam where it meets the body, so it reads as a piece that can come
+// off. Each flank carries a panel sunk into the steel, bevelled light along its top edge and dark
+// along its bottom, with a framed triangle standing in it and the app's own stone glowing at the
+// centre. The lid is engraved with two rings and four notches around a lit core.
 //
-// Every face is a unit square pushed through a matrix, which is what lets the panel, the gloss and
-// the question mark be drawn straight and land already skewed onto the face. The matrix goes on an
-// inner <g> and the animations on an outer one: a CSS transform replaces the transform attribute
-// outright rather than composing with it, and would flatten the cube the first time the lid moved.
+// The steel never changes. What glows takes the band colour — the sigil, the frame, the core — so
+// the one thing colour means in this app still means only that: how far you have come.
 
 const BOX = (() => {
-  const cx = 100, cy = 112, w = 62, hh = 31, b = 72;
-  const T = [cx, cy - b / 2 - hh], TR = [cx + w, cy - b / 2], F = [cx, cy - b / 2 + hh], TL = [cx - w, cy - b / 2];
-  const BR = [cx + w, cy + b / 2], BF = [cx, cy + b / 2 + hh], BL = [cx - w, cy + b / 2];
+  const cx = 100, w = 58, h = 29, lid = 16, body = 62, top = 34;
+  const T = [cx, top], TR = [cx + w, top + h], F = [cx, top + 2 * h], TL = [cx - w, top + h];
+  const T2 = [cx, top + lid], TL2 = [TL[0], TL[1] + lid], F2 = [F[0], F[1] + lid], TR2 = [TR[0], TR[1] + lid];
+  const TL3 = [TL2[0], TL2[1] + body], F3 = [F2[0], F2[1] + body], TR3 = [TR2[0], TR2[1] + body];
   const pts = list => list.map(p => p.join(',')).join(' ');
   return {
-    cx, cy,
-    T, TR, F, TL, BR, BF, BL,
-    top: `matrix(${w},${-hh},${w},${hh},${TL[0]},${TL[1]})`,
-    left: `matrix(${w},${hh},0,${b},${TL[0]},${TL[1]})`,
-    right: `matrix(${w},${-hh},0,${b},${F[0]},${F[1]})`,
-    lidQuad: pts([T, TR, F, TL]),
-    outlinePath: `M ${T} L ${TR} L ${BR} L ${BF} L ${BL} L ${TL} Z`,
-    lidEdges: `M ${TL} L ${T} L ${TR}`,
-    frontSeam: `M ${F} L ${BF}`
+    cx, cy: (top + F3[1]) / 2, w, lid, body,
+    T, TR, F, TL, TL2, F2, TR2, TL3, F3, TR3,
+    // unit square -> face
+    lidTop: `matrix(${w},${-h},${w},${h},${TL[0]},${TL[1]})`,
+    lidLeft: `matrix(${w},${h},0,${lid},${TL[0]},${TL[1]})`,
+    lidRight: `matrix(${w},${-h},0,${lid},${F[0]},${F[1]})`,
+    bodyLeft: `matrix(${w},${h},0,${body},${TL2[0]},${TL2[1]})`,
+    bodyRight: `matrix(${w},${-h},0,${body},${F2[0]},${F2[1]})`,
+    // what the lid coming off reveals
+    mouth: pts([T2, TR2, F2, TL2]),
+    outlinePath: `M ${T} L ${TR} L ${TR3} L ${F3} L ${TL3} L ${TL} Z`,
+    crownEdges: `M ${TL} L ${T} L ${TR}`,
+    lidSeam: `M ${TL2} L ${F2} L ${TR2}`,
+    frontSeam: `M ${F2} L ${F3}`,
+    floor: F3[1] + 8
   };
 })();
 
 export const boxGeom = BOX;
 
-/** The gold, at three values — the lid, the left flank, the right flank in shade. */
-const GOLD = {
-  top: [['0', '#FFFAD9'], ['0.42', '#FFDC6B'], ['1', '#F0AE22']],
-  left: [['0', '#FFE491'], ['0.5', '#F7B72B'], ['1', '#BE7A04']],
-  right: [['0', '#F0B838'], ['0.55', '#CE8A12'], ['1', '#8A5300']]
+/** Steel at three values: the lid catches most light, the left flank less, the right flank least. */
+const STEEL = {
+  top: ['#EEF6FC', '#B4C7D8', '#7C8FA2'],
+  left: ['#C3D4E3', '#8698AA', '#546575'],
+  right: ['#93A7B9', '#647689', '#394654'],
+  hair: '#F2F8FD',
+  shade: '#0E141B'
 };
 
 /**
@@ -263,74 +271,147 @@ const GOLD = {
 export function boxStone(svg, id) {
   const defs = el('defs', {}, svg);
 
-  const grad = (suffix, stops, coords = { x1: '0', y1: '0', x2: '0.35', y2: '1' }) => {
+  const grad = (suffix, stops, coords = { x1: '0', y1: '0', x2: '0.4', y2: '1' }) => {
     const g = el('linearGradient', { id: `${id}-${suffix}`, ...coords }, defs);
     for (const [offset, colour, o] of stops) {
       el('stop', { offset, 'stop-color': colour, 'stop-opacity': o ?? '1' }, g);
     }
     return `url(#${id}-${suffix})`;
   };
+  const plate = (suffix, arr) => grad(suffix, [['0', arr[0]], ['0.45', arr[1]], ['1', arr[2]]]);
 
-  const goldTop = grad('gt', GOLD.top);
-  const goldLeft = grad('gl', GOLD.left);
-  const goldRight = grad('gr', GOLD.right);
-  // Laid over each sunken panel: light gathering at its top edge, shadow pooling at the bottom. A
-  // flat colour in a recess reads as a sticker rather than a hollow.
-  const inner = grad('in', [['0', '#000000', '0.42'], ['0.45', '#000000', '0.06'], ['1', '#ffffff', '0.09']]);
-  const gloss = grad('gs', [['0', '#ffffff', '0'], ['0.5', '#ffffff', '0.55'], ['1', '#ffffff', '0']],
+  const fillTop = plate('t', STEEL.top);
+  const fillLeft = plate('l', STEEL.left);
+  const fillRight = plate('r', STEEL.right);
+  // Light gathering at the top edge of a recess and shadow pooling at its foot. Flat colour in a
+  // sunken panel reads as a sticker rather than a hollow.
+  const inner = grad('in', [['0', '#000000', '0.5'], ['0.5', '#000000', '0.1'], ['1', '#ffffff', '0.1']]);
+  const gloss = grad('gs', [['0', '#ffffff', '0'], ['0.5', '#ffffff', '0.5'], ['1', '#ffffff', '0']],
     { x1: '0', y1: '0', x2: '1', y2: '0.3' });
-  // What you see when the lid comes off: dark at the back, a little warm light at the near edge.
-  grad('hole', [['0', '#0a0603'], ['0.7', '#20110a'], ['1', '#4a2a10']]);
+  grad('mouth', [['0', '#04060a'], ['0.75', '#0d1219'], ['1', '#2a3444']]);
 
   const clip = el('clipPath', { id: `${id}-clip` }, defs);
   el('path', { d: BOX.outlinePath }, clip);
 
-  const body = el('g', { class: 'box-body' }, svg);
+  const soften = el('filter', { id: `${id}-soft`, x: '-60%', y: '-300%', width: '220%', height: '700%' }, defs);
+  el('feGaussianBlur', { stdDeviation: '5' }, soften);
 
-  const face = (matrix, gold, panelClass) => {
-    const wrap = el('g', {}, body);                    // what the animations are allowed to move
-    const g = el('g', { transform: matrix }, wrap);     // what holds the face flat
-    el('rect', { x: 0, y: 0, width: 1, height: 1, fill: gold }, g);
-    const panel = { x: 0.115, y: 0.115, width: 0.77, height: 0.77, rx: 0.055 };
-    el('rect', { ...panel, class: panelClass }, g);
-    el('rect', { ...panel, fill: inner }, g);
-    // the hairline where the frame meets the panel, which is what gives the recess an edge
-    el('rect', { ...panel, fill: 'none', stroke: '#2a0f0e', 'stroke-opacity': 0.55, 'stroke-width': 0.02 }, g);
-    const mark = (cls, dx, dy) => el('text', {
-      class: cls, x: 0.5 + dx, y: 0.53 + dy, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-      'font-size': 0.58, 'font-weight': 800, 'letter-spacing': -0.02
-    }, g);
-    return { wrap, shadow: mark('box-mark-shadow', 0.022, 0.03), text: mark('box-mark', 0, 0) };
+  // The contact shadow. Without one the box floats, and nothing else on it can fix that.
+  el('ellipse', {
+    class: 'box-shadow', cx: BOX.cx, cy: BOX.floor, rx: BOX.w * 0.92, ry: 10,
+    filter: `url(#${id}-soft)`
+  }, svg);
+
+  const root = el('g', { class: 'box-body' }, svg);
+
+  /** One face: steel, and a group in unit space to draw the rest of it into. */
+  const face = (parent, matrix, fill) => {
+    const wrap = el('g', {}, parent);
+    const g = el('g', { transform: matrix }, wrap);
+    el('rect', { x: 0, y: 0, width: 1, height: 1, fill }, g);
+    return { wrap, g };
   };
 
-  const left = face(BOX.left, goldLeft, 'box-panel-left');
-  const right = face(BOX.right, goldRight, 'box-panel-right');
-  // The inside, drawn before the lid and never moved: it is what the lid coming off reveals.
-  el('polygon', { points: BOX.lidQuad, fill: `url(#${id}-hole)` }, body);
-  const lid = face(BOX.top, goldTop, 'box-panel-top');
+  /** A panel sunk into a face: the band colour, a bevel, a cut edge and a lit inner lip. */
+  const recess = (g, inset) => {
+    const s = inset, w = 1 - inset * 2;
+    const box = attrs => el('rect', { x: s, y: s, width: w, height: w, rx: 0.05, ...attrs }, g);
+    box({ class: 'box-panel' });
+    box({ fill: inner });
+    box({ fill: 'none', stroke: STEEL.shade, 'stroke-opacity': 0.85, 'stroke-width': 0.028 });
+    el('rect', {
+      x: s + 0.018, y: s + 0.018, width: w - 0.036, height: w - 0.036, rx: 0.04,
+      fill: 'none', stroke: STEEL.hair, 'stroke-opacity': 0.3, 'stroke-width': 0.016
+    }, g);
+  };
+
+  const lit = (g, node) => { node.classList.add('box-lit'); g.appendChild(node); return node; };
+
+  /** A framed triangle with the app's own stone glowing in the middle of it. */
+  const sigil = g => {
+    recess(g, 0.1);
+    const tri = 'M 0.5 0.845 L 0.155 0.235 L 0.845 0.235 Z';
+    el('path', {
+      d: tri, fill: 'none', stroke: STEEL.shade, 'stroke-opacity': 0.75,
+      'stroke-width': 0.055, 'stroke-linejoin': 'round'
+    }, g);
+    lit(g, el('path', { d: tri, fill: 'none', 'stroke-width': 0.028, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }));
+    const stoneAt = (rx, ry) => `M 0.5 ${0.5 - ry} L ${0.5 + rx} 0.5 L 0.5 ${0.5 + ry} L ${0.5 - rx} 0.5 Z`;
+    el('path', { d: stoneAt(0.115, 0.16), fill: STEEL.shade, opacity: 0.6 }, g);
+    lit(g, el('path', { d: stoneAt(0.1, 0.14), class: 'box-glow-fill box-pulse' }));
+  };
+
+  // ---- body, then the mouth, then the lid over both ----
+  const body = el('g', {}, root);
+  sigil(face(body, BOX.bodyLeft, fillLeft).g);
+  sigil(face(body, BOX.bodyRight, fillRight).g);
+
+  el('polygon', { points: BOX.mouth, fill: `url(#${id}-mouth)` }, root);
+
+  const lidWrap = el('g', { class: 'box-lid' }, root);
+  face(lidWrap, BOX.lidLeft, fillLeft);
+  face(lidWrap, BOX.lidRight, fillRight);
+  const lidTop = face(lidWrap, BOX.lidTop, fillTop);
   // The lid turns about its own middle. Left alone an SVG element turns about the origin of the
   // whole drawing, which sends it across the room rather than off the box.
-  lid.wrap.style.transformBox = 'fill-box';
-  lid.wrap.style.transformOrigin = '50% 50%';
+  lidWrap.style.transformBox = 'fill-box';
+  lidWrap.style.transformOrigin = '50% 50%';
 
-  // The bevel: the two top edges catching the light, and the seam down the front corner.
-  el('path', { class: 'box-bevel', d: BOX.lidEdges }, body);
-  el('path', { class: 'box-bevel', d: BOX.frontSeam, 'stroke-opacity': 0.22 }, body);
-  el('path', { class: 'box-rim', d: BOX.outlinePath }, body);
+  // Two engraved rings, four notches and a lit core.
+  {
+    const g = lidTop.g;
+    const ring = (r, width, opacity) => el('circle', {
+      cx: 0.5, cy: 0.5, r, fill: 'none', stroke: STEEL.shade,
+      'stroke-opacity': opacity, 'stroke-width': width
+    }, g);
+    ring(0.34, 0.05, 0.6);
+    el('circle', { cx: 0.5, cy: 0.5, r: 0.34, fill: 'none', stroke: STEEL.hair, 'stroke-opacity': 0.35, 'stroke-width': 0.016 }, g);
+    ring(0.24, 0.035, 0.5);
+    for (const deg of [0, 90, 180, 270]) {
+      const a = deg * Math.PI / 180;
+      el('line', {
+        x1: 0.5 + Math.cos(a) * 0.28, y1: 0.5 + Math.sin(a) * 0.28,
+        x2: 0.5 + Math.cos(a) * 0.4, y2: 0.5 + Math.sin(a) * 0.4,
+        stroke: STEEL.shade, 'stroke-opacity': 0.7, 'stroke-width': 0.05, 'stroke-linecap': 'round'
+      }, g);
+    }
+    lit(g, el('circle', { cx: 0.5, cy: 0.5, r: 0.135, class: 'box-glow-fill box-pulse' }));
+  }
 
-  // A band of light crossing the whole box every few seconds, clipped to its silhouette so it reads
-  // as a gleam travelling over the gold rather than a highlight laid on top of it.
-  const glossBox = el('g', { 'clip-path': `url(#${id}-clip)` }, body);
-  el('rect', { class: 'box-gloss', x: -10, y: 30, width: 34, height: 170, fill: gloss }, glossBox);
+  // Whatever the lid says, stamped over its lit core: the step count on the menu, nothing on the
+  // box's own screen, where saying anything would be answering the question the box is asking.
+  const lidInk = el('text', {
+    class: 'box-ink', x: 0.5, y: 0.53, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+    'font-size': 0.2, 'font-weight': 800
+  }, lidTop.g);
+  const setLid = text => { lidInk.textContent = text ?? ''; };
 
-  // Progress round the silhouette, drawn over the gold: geometry only, never a number.
-  const rim = el('path', { class: 'box-progress', pathLength: 1000, d: BOX.outlinePath }, body);
+  // Brackets over the two side corners, and the light along the crown.
+  const bracket = (p, dir) => el('path', {
+    class: 'box-bracket',
+    d: `M ${p[0]} ${p[1] - 3} l ${dir * 13} 6.5 l 0 ${BOX.lid + 3} l ${-dir * 13} -6.5 Z`
+  }, lidWrap);
+  bracket(BOX.TL, 1);
+  bracket(BOX.TR, -1);
 
-  // The stones twinkle; the box twinkles harder, and above itself as well as beside.
+  el('path', { class: 'box-bevel', d: BOX.crownEdges }, root);
+  el('path', { class: 'box-bevel', d: BOX.frontSeam, 'stroke-opacity': 0.2 }, root);
+  el('path', { class: 'box-rim', d: BOX.outlinePath }, root);
+  // the seam the lid sits on, which is what makes it read as a separate piece
+  el('path', { class: 'box-seam', d: BOX.lidSeam }, root);
+
+  // A band of light crossing the whole box, clipped to it, so it reads as a gleam travelling over
+  // the steel rather than a highlight laid on top of it.
+  const glossBox = el('g', { 'clip-path': `url(#${id}-clip)` }, root);
+  el('rect', { class: 'box-gloss', x: -14, y: 20, width: 30, height: 180, fill: gloss }, glossBox);
+
+  // Progress round the silhouette: geometry only, never a number.
+  const rim = el('path', { class: 'box-progress', pathLength: 1000, d: BOX.outlinePath }, root);
+
   const sparks = el('g', { class: 'box-sparks' }, svg);
   for (const [x, y, r, delay] of [
-    [100, 30, 8.5, 0], [46, 48, 5.5, 700], [158, 52, 6.5, 1400],
-    [172, 118, 5, 2000], [28, 126, 4.5, 900], [140, 34, 4, 1800], [64, 190, 4.5, 2300]
+    [BOX.cx, 16, 7.5, 0], [40, 42, 5, 700], [163, 48, 6, 1500],
+    [176, 116, 4.5, 2100], [24, 124, 4, 900], [70, 190, 4.5, 2400]
   ]) {
     const node = star(x, y, r);
     node.setAttribute('class', 'box-spark');
@@ -338,19 +419,14 @@ export function boxStone(svg, id) {
     sparks.appendChild(node);
   }
 
-  // Whatever the lid says has to be written to the mark and to the shadow under it, or the two fall
-  // out of step: the count on the menu, a question mark on the box's own screen.
-  const setLid = text => { lid.text.textContent = text; lid.shadow.textContent = text; };
-  setLid('?');
-  for (const side of [left, right]) { side.text.textContent = '?'; side.shadow.textContent = '?'; }
-
-  return { svg, body, lid, rim, sparks, setLid };
+  setLid('');
+  return { svg, body: root, lid: { wrap: lidWrap }, rim, sparks, setLid };
 }
 
-/** The band colour goes into the sunken panels; the frame stays gold. */
+/** The steel never moves; what glows takes the band colour. */
 export function wearBox(node, colour) {
-  node.style.setProperty('--box-panel-top', darken(colour, 0.46));
-  node.style.setProperty('--box-panel-left', darken(colour, 0.56));
-  node.style.setProperty('--box-panel-right', darken(colour, 0.66));
-  node.style.setProperty('--box-ink', lighten(colour, 0.88));
+  node.style.setProperty('--box-panel', darken(colour, 0.74));
+  node.style.setProperty('--box-glow', lighten(colour, 0.35));
+  node.style.setProperty('--box-halo', alpha(lighten(colour, 0.2), 0.85));
+  node.style.setProperty('--box-ink', darken(colour, 0.7));
 }

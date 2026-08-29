@@ -280,34 +280,59 @@ html, body {
   width: 100%;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 26px rgba(255, 186, 60, 0.42));
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 20px var(--box-halo, rgba(143, 214, 255, 0.4)));
   transition: filter 300ms ease;
 }
-.box-slot:hover .boxstone {
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(255, 200, 80, 0.75));
+.box-slot:hover .boxstone, .coin-box-host:hover .boxstone {
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 34px var(--box-halo, rgba(143, 214, 255, 0.7)));
 }
 
 /* It does not stand still. A stone sits in its setting; a box has just been put down. */
 .box-body {
   transform-box: fill-box;
-  transform-origin: 50% 62%;
-  animation: box-bob 3400ms ease-in-out infinite alternate;
+  transform-origin: 50% 60%;
+  animation: box-bob 3600ms ease-in-out infinite alternate;
 }
 @keyframes box-bob {
-  from { transform: translateY(-2.5px) rotate(-0.7deg); }
-  to   { transform: translateY(3px) rotate(0.7deg); }
+  from { transform: translateY(-2.5px) rotate(-0.55deg); }
+  to   { transform: translateY(3px) rotate(0.55deg); }
 }
-.box-slot:hover .box-body, .coin-box-host:hover .box-body { animation-duration: 1500ms; }
+.box-slot:hover .box-body, .coin-box-host:hover .box-body { animation-duration: 1600ms; }
 
-/* The frame is gold whatever the state of the ladder; the panels sunk into it carry the band
-   colour, so colour goes on meaning only how far you have come. */
-.box-panel-top { fill: var(--box-panel-top, #7a2c2a); }
-.box-panel-left { fill: var(--box-panel-left, #662321); }
-.box-panel-right { fill: var(--box-panel-right, #4f1b19); }
-.box-mark { fill: var(--box-ink, #f7e7c8); }
-.box-mark-shadow { fill: rgba(0, 0, 0, 0.42); }
-.box-bevel { fill: none; stroke: #fff8dc; stroke-opacity: 0.55; stroke-width: 1.6; stroke-linejoin: round; }
-.box-rim { fill: none; stroke: #ffe9a3; stroke-opacity: 0.85; stroke-width: 2.2; stroke-linejoin: round; }
+/* The steel is fixed. Only what glows carries the band colour, so colour goes on meaning the one
+   thing it means in this app: how far you have come. */
+.box-panel { fill: var(--box-panel, #101821); }
+.box-glow-fill { fill: var(--box-glow, #8FD6FF); }
+.box-glow-stroke { fill: none; stroke: var(--box-glow, #8FD6FF); }
+.box-ink { fill: var(--box-ink, #08131c); }
+.box-lit { filter: drop-shadow(0 0 4px var(--box-glow, #8FD6FF)) drop-shadow(0 0 11px var(--box-glow, #8FD6FF)); }
+.box-pulse { animation: box-pulse 2600ms ease-in-out infinite; }
+@keyframes box-pulse { 0%, 100% { opacity: 0.74; } 50% { opacity: 1; } }
+
+.box-shadow { fill: #000; opacity: 0.42; }
+.box-bracket { fill: #B4C7D8; stroke: #0E141B; stroke-opacity: 0.5; stroke-width: 1; }
+.box-bevel {
+  fill: none;
+  stroke: #F2F8FD;
+  stroke-opacity: 0.55;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+.box-rim {
+  fill: none;
+  stroke: #F2F8FD;
+  stroke-opacity: 0.7;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+/* the seam the lid sits on: what makes it read as a piece that can come off */
+.box-seam {
+  fill: none;
+  stroke: #0E141B;
+  stroke-opacity: 0.75;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
 .box-progress {
   fill: none;
   stroke: #fffdf2;
@@ -317,41 +342,41 @@ html, body {
   stroke-linecap: round;
 }
 
-/* The gleam travelling over the gold, and the stars around it. */
-.box-gloss { animation: box-gloss 4600ms ease-in-out infinite; }
+/* The gleam travelling over the steel, and the stars around it. */
+.box-gloss { animation: box-gloss 5200ms ease-in-out infinite; }
 @keyframes box-gloss {
-  0%, 55% { transform: translateX(-150px); }
-  85%, 100% { transform: translateX(180px); }
+  0%, 58% { transform: translateX(-160px); }
+  88%, 100% { transform: translateX(190px); }
 }
 
 .box-spark {
   transform-box: fill-box;
   transform-origin: center;
   opacity: 0;
-  animation: box-spark 2400ms ease-in-out infinite;
+  animation: box-spark 2600ms ease-in-out infinite;
 }
 @keyframes box-spark {
-  0%, 66%, 100% { opacity: 0; transform: scale(0.35) rotate(0deg); }
-  78% { opacity: 1; transform: scale(1) rotate(22deg); }
-  90% { opacity: 0.22; transform: scale(0.62) rotate(38deg); }
+  0%, 68%, 100% { opacity: 0; transform: scale(0.32) rotate(0deg); }
+  80% { opacity: 1; transform: scale(1) rotate(20deg); }
+  91% { opacity: 0.2; transform: scale(0.6) rotate(34deg); }
 }
 .box-burst-star, .box-burst-ring { transform-box: fill-box; transform-origin: center; }
 
-/* The warm haze under it. Screen-blended, like every other light in the room. */
+/* The cold haze it sits in. Screen-blended, like every other light in the room. */
 .box-haze {
   position: absolute;
-  inset: -32%;
+  inset: -30%;
   border-radius: 50%;
   background: radial-gradient(closest-side,
-    rgba(255, 196, 74, 0.6), rgba(255, 150, 40, 0.14) 55%, transparent 72%);
-  filter: blur(10px);
+    var(--box-halo, rgba(143, 214, 255, 0.55)), transparent 70%);
+  filter: blur(11px);
   mix-blend-mode: screen;
   pointer-events: none;
-  animation: box-haze 2600ms ease-in-out infinite alternate;
+  animation: box-haze 2800ms ease-in-out infinite alternate;
 }
 @keyframes box-haze {
-  from { opacity: 0.5; transform: scale(0.88); }
-  to   { opacity: 0.95; transform: scale(1.12); }
+  from { opacity: 0.4; transform: scale(0.88); }
+  to   { opacity: 0.85; transform: scale(1.12); }
 }
 
 /* ---- one currency's own screen ---------------------------------------------------------------- */

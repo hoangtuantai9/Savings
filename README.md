@@ -5,8 +5,8 @@ A web app for running two savings ladders side by side — **VND** and **USD** �
 The screen shows you the amount due right now and a tick to confirm you saved it — no totals, and no schedule. The
 menu shows how many steps you have cleared, and nothing about what they cost. Tick it and the gem locks — 18 minutes
 for VND, 24 for USD — before the next amount exists, and when that lock runs out the gem asks whether you actually
-held out. Say no and the step comes back off the ladder. Between the two cards a gold box comes and goes on a clock of
-its own with something in it; there is no box the rest of the time, and no gap where one would go.
+held out. Say no and the step comes back off the ladder. Between the two cards a steel reliquary comes and goes on a
+clock of its own with something in it; there is no box the rest of the time, and no gap where one would go.
 
 It runs in any modern browser, on Windows, macOS, Android and iOS, from one address.
 
@@ -87,8 +87,8 @@ degrees into place, with the amount already counting up on its face.
 | **Verdict** | A tick and a cross, side by side |
 | **Done** | A crown in the track's colour, with a full burst once every step is saved |
 
-The box's own screen has two faces and neither is on that list: **closed** — the box, three question marks and a tick,
-no figure at all — and **opened**, where the lid comes off and the amount counts up under it.
+The box's own screen has two faces and neither is on that list: **closed** — the sealed box and a tick, no figure at
+all — and **opened**, where the lid comes off and the amount counts up under it.
 
 The burst runs for about 1.8 s before the gem settles into the countdown. Not a word of explanation on any of these
 faces: a countdown under a padlock, or a tick beside a cross on a gem that has just finished counting down, each say
@@ -189,21 +189,32 @@ re-cut takes them away again, the colours need deciding rather than inferring.
 |---|---|---|---|
 | **Box** — 114 steps | 1–31 · `$0.15` → `$35.61` | 32–45 · `$5.00` → `$53.50` | 46–114 · `$5.00` → `$824.22` |
 
-**A gold box, drawn the way the gems are.** One 2:1 isometric cube, three faces, light fixed at upper left: the same
-rule the diamond is cut by, in the one other shape that rule makes sense in. Laid over it is a heavy gold bevelled
-frame, a panel sunk into each face, and a question mark painted across all three. The frame is gold whatever the state
-of the ladder, because a box is treasure; the **panels** take the band colour, so colour goes on meaning the one thing
-it means in this app — how far you have come. On the menu the step count is stamped on the lid; on the box's own screen
-the lid goes back to its question mark.
+**A steel reliquary, cut the way the gems are.** One 2:1 isometric cube, light fixed at upper left: the same rule the
+diamond is cut by, in the one other shape that rule makes sense in. Everything laid over that is what makes it a box
+rather than a stone —
 
-It does not sit still the way a stone does. It bobs, a gleam crosses the gold every few seconds, stars twinkle around
-it out of step with each other, and a warm haze behind it breathes. Arriving, it springs in past its size with a ring
-of gold and a dozen stars.
+- **The lid is its own slab**, with a visible thickness and a seam where it meets the body, so it reads as a piece that
+  can come off rather than a face that has been painted on. Two brackets clamp its side corners.
+- **Each flank carries a panel sunk into the steel**, bevelled light along its top edge and dark along its foot. Flat
+  colour in a recess reads as a sticker; a bevel reads as a hollow.
+- **A framed triangle stands in each panel with the app's own stone glowing at its centre** — the diamond the whole app
+  is built on, turning up inside the one thing that is not a gem.
+- **The lid is engraved** with two rings and four notches around a lit core, and it is the core the step count is
+  stamped on. On the box's own screen the lid says nothing at all: naming a figure there would answer the question the
+  box is asking.
+- **A contact shadow on the floor.** Without one the box floats, and nothing else on it can fix that.
+
+The steel never changes. Only what glows takes the band colour — the sigil, the frame around it, the lid's core — so
+colour goes on meaning the one thing it means in this app: how far you have come.
+
+It does not sit still the way a stone does. It bobs, a gleam crosses the steel every few seconds, stars twinkle around
+it out of step with each other, and a cold haze behind it breathes. Arriving, it springs in past its size with a ring
+and a dozen stars.
 
 **A closed box does not say what is in it.** Every other screen in the app shows the amount due the moment you open it;
-this one shows a box with three question marks on it and a tick, and no figure anywhere. Press the tick and **the lid
-comes off**, the stars come out of the opening, and the amount counts up underneath it — the reveal is the whole reason
-those faces carry a mark instead of a number. It is the one screen where you commit before you know, which is fair
+this one shows the box, sealed, and a tick — no figure anywhere. Press the tick and **the lid comes off**, the stars
+come out of the opening, and the amount counts up underneath it — the reveal is the whole reason those faces carry a
+sigil instead of a number. It is the one screen where you commit before you know, which is fair
 enough: you have already done the only thing it asks, which was to sit through the wait.
 
 ### Its own clock, and nobody else's
