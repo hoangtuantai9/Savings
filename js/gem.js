@@ -286,12 +286,7 @@ export function boxStone(svg, id) {
   // Light gathering at the top edge of a recess and shadow pooling at its foot. Flat colour in a
   // sunken panel reads as a sticker rather than a hollow.
   const inner = grad('in', [['0', '#000000', '0.5'], ['0.5', '#000000', '0.1'], ['1', '#ffffff', '0.1']]);
-  const gloss = grad('gs', [['0', '#ffffff', '0'], ['0.5', '#ffffff', '0.5'], ['1', '#ffffff', '0']],
-    { x1: '0', y1: '0', x2: '1', y2: '0.3' });
   grad('mouth', [['0', '#04060a'], ['0.75', '#0d1219'], ['1', '#2a3444']]);
-
-  const clip = el('clipPath', { id: `${id}-clip` }, defs);
-  el('path', { d: BOX.outlinePath }, clip);
 
   const soften = el('filter', { id: `${id}-soft`, x: '-60%', y: '-300%', width: '220%', height: '700%' }, defs);
   el('feGaussianBlur', { stdDeviation: '5' }, soften);
@@ -350,12 +345,12 @@ export function boxStone(svg, id) {
     }, g);
     lit(g,
       el('path', { d: tri, fill: 'none', 'stroke-width': 0.028, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }),
-      el('path', { d: tri, fill: 'none', 'stroke-width': 0.085, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }));
+      el('path', { d: tri, fill: 'none', 'stroke-width': 0.055, 'stroke-linejoin': 'round', class: 'box-glow-stroke' }));
     const stoneAt = (rx, ry) => `M 0.5 ${0.5 - ry} L ${0.5 + rx} 0.5 L 0.5 ${0.5 + ry} L ${0.5 - rx} 0.5 Z`;
     el('path', { d: stoneAt(0.115, 0.16), fill: STEEL.shade, opacity: 0.6 }, g);
     lit(g,
       el('path', { d: stoneAt(0.1, 0.14), class: 'box-glow-fill box-pulse' }),
-      el('path', { d: stoneAt(0.19, 0.26), class: 'box-glow-fill' }));
+      el('path', { d: stoneAt(0.145, 0.2), class: 'box-glow-fill' }));
   };
 
   // ---- body, then the mouth, then the lid over both ----
@@ -394,7 +389,7 @@ export function boxStone(svg, id) {
     }
     lit(g,
       el('circle', { cx: 0.5, cy: 0.5, r: 0.135, class: 'box-glow-fill box-pulse' }),
-      el('circle', { cx: 0.5, cy: 0.5, r: 0.23, class: 'box-glow-fill' }));
+      el('circle', { cx: 0.5, cy: 0.5, r: 0.185, class: 'box-glow-fill' }));
   }
 
   // Whatever the lid says, stamped over its lit core: the step count on the menu, nothing on the
@@ -419,18 +414,14 @@ export function boxStone(svg, id) {
   // the seam the lid sits on, which is what makes it read as a separate piece
   el('path', { class: 'box-seam', d: BOX.lidSeam }, root);
 
-  // A band of light crossing the whole box, clipped to it, so it reads as a gleam travelling over
-  // the steel rather than a highlight laid on top of it.
-  const glossBox = el('g', { 'clip-path': `url(#${id}-clip)` }, root);
-  el('rect', { class: 'box-gloss', x: -14, y: 20, width: 30, height: 180, fill: gloss }, glossBox);
-
   // Progress round the silhouette: geometry only, never a number.
   const rim = el('path', { class: 'box-progress', pathLength: 1000, d: BOX.outlinePath }, root);
 
   const sparks = el('g', { class: 'box-sparks' }, svg);
+  // Three, not a handful. Each is an element animating for ever inside a drawing that is itself
+  // being scaled whenever a screen moves, and three read as "it sparkles" just as well as six.
   for (const [x, y, r, delay] of [
-    [BOX.cx, 16, 7.5, 0], [40, 42, 5, 700], [163, 48, 6, 1500],
-    [176, 116, 4.5, 2100], [24, 124, 4, 900], [70, 190, 4.5, 2400]
+    [BOX.cx, 16, 7.5, 0], [163, 48, 6, 1500], [28, 122, 4.5, 900]
   ]) {
     const node = star(x, y, r);
     node.setAttribute('class', 'box-spark');
@@ -444,8 +435,9 @@ export function boxStone(svg, id) {
 
 /** The steel never moves; what glows takes the band colour. */
 export function wearBox(node, colour) {
-  node.style.setProperty('--box-panel', darken(colour, 0.74));
+  node.style.setProperty('--box-panel', darken(colour, 0.68));
   node.style.setProperty('--box-glow', lighten(colour, 0.35));
-  node.style.setProperty('--box-halo', alpha(lighten(colour, 0.2), 0.85));
+  node.style.setProperty('--box-halo', alpha(lighten(colour, 0.2), 0.62));
+  node.style.setProperty('--box-halo-far', alpha(colour, 0.14));
   node.style.setProperty('--box-ink', darken(colour, 0.7));
 }

@@ -54,11 +54,23 @@ function render() {
 
 // ---- moving between the two screens -------------------------------------------------------------
 
+/**
+ * Held for the length of any move between the two screens. Everything inside a view that is being
+ * scaled has to be re-rendered at a new size on every frame of it, so for those few hundred
+ * milliseconds the idles inside it stop — see `.shifting` in the stylesheet.
+ */
+async function shifting(move) {
+  room.classList.add('shifting');
+  try { await move(); } finally { room.classList.remove('shifting'); }
+}
+
 async function enter(currency) {
   if (busy) return;
   busy = true;
-  menu.leave();
-  await focus.open(state, currency);
+  await shifting(async () => {
+    menu.leave();
+    await focus.open(state, currency);
+  });
   busy = false;
 }
 
@@ -68,17 +80,21 @@ async function enterBox() {
   const b = box(state);
   if (!b.live || b.done >= count(b.plan)) return;
   busy = true;
-  menu.leave();
-  await focus.open(state, 'USD', true);
+  await shifting(async () => {
+    menu.leave();
+    await focus.open(state, 'USD', true);
+  });
   busy = false;
 }
 
 async function leaveFocus() {
   if (busy) return;
   busy = true;
-  await focus.close();
-  menu.back();
-  render();
+  await shifting(async () => {
+    await focus.close();
+    menu.back();
+    render();
+  });
   busy = false;
 }
 

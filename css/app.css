@@ -297,7 +297,7 @@ html, body {
   to   { transform: translateY(3px) rotate(0.55deg); }
 }
 .box-slot:hover .box-body, .coin-box-host:hover .box-body { animation-duration: 1600ms; }
-.box-slot:hover .box-haze, .coin-box-host:hover .box-haze { opacity: 1; filter: blur(15px); }
+.box-slot:hover .box-haze, .coin-box-host:hover .box-haze { opacity: 1; transform: scale(1.16); }
 
 /* The steel is fixed. Only what glows carries the band colour, so colour goes on meaning the one
    thing it means in this app: how far you have come. */
@@ -306,7 +306,7 @@ html, body {
 .box-glow-stroke { fill: none; stroke: var(--box-glow, #8FD6FF); }
 .box-ink { fill: var(--box-ink, #08131c); }
 /* The bloom around a lit shape: the same shape again, wider and fainter, under it. */
-.box-bloom { opacity: 0.22; }
+.box-bloom { opacity: 0.16; }
 .box-pulse { animation: box-pulse 2600ms ease-in-out infinite; }
 @keyframes box-pulse { 0%, 100% { opacity: 0.74; } 50% { opacity: 1; } }
 
@@ -343,13 +343,9 @@ html, body {
   stroke-linecap: round;
 }
 
-/* The gleam travelling over the steel, and the stars around it. */
-.box-gloss { animation: box-gloss 5200ms ease-in-out infinite; }
-@keyframes box-gloss {
-  0%, 58% { transform: translateX(-160px); }
-  88%, 100% { transform: translateX(190px); }
-}
-
+/* The stars around it. There is no gleam sweeping the steel any more: it was a rect animating
+   inside a clip path, which is a re-clip and a re-raster of everything under it on every frame,
+   and the rim light already says the box is metal. */
 .box-spark {
   transform-box: fill-box;
   transform-origin: center;
@@ -363,15 +359,29 @@ html, body {
 }
 .box-burst-star, .box-burst-ring { transform-box: fill-box; transform-origin: center; }
 
-/* The cold haze it sits in. Screen-blended, like every other light in the room. */
+/* While a screen is zooming, everything inside it is being re-rendered at a new size on every
+   frame — so nothing inside it should also be animating on its own. The room wears this class for
+   the length of a transition and the box holds perfectly still through it. */
+.shifting .box-body,
+.shifting .box-spark,
+.shifting .box-haze,
+.shifting .stone-star,
+.shifting .stone-glint { animation: none; }
+
+/* The cold haze it sits in.
+   A plain gradient, with neither a blur nor a blend mode on it — and that is the point. Both of
+   those force this onto a layer of its own and force it to be re-rendered every time an ancestor's
+   scale changes, which is exactly what happens while a screen is zooming in. A radial gradient is
+   already a soft edge; blurring one is paying twice for the same falloff, and paying it on every
+   frame of the zoom. */
 .box-haze {
   position: absolute;
-  inset: -30%;
+  inset: -34%;
   border-radius: 50%;
   background: radial-gradient(closest-side,
-    var(--box-halo, rgba(143, 214, 255, 0.55)), transparent 70%);
-  filter: blur(11px);
-  mix-blend-mode: screen;
+    var(--box-halo, rgba(143, 214, 255, 0.6)),
+    var(--box-halo-far, rgba(143, 214, 255, 0.12)) 46%,
+    transparent 72%);
   pointer-events: none;
   animation: box-haze 2800ms ease-in-out infinite alternate;
 }
