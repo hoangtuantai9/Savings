@@ -206,18 +206,20 @@ enough: you have already done the only thing it asks, which was to sit through t
 
 ### Its own clock, and nobody else's
 
-**It is there when its wait is up, and away for 45 minutes after it is opened.** That is the whole rule. Neither track
-reaches it: a VND lock running out does nothing to it, a USD lock running out does nothing to it, and a cross answered
-on either does nothing to it.
+**It is there when its wait is up, and away for 30 minutes after it is opened.** That is the whole rule, and it is the
+only one. There is no allowance, no count of what is left today, no limit on how many times it may be taken — open it
+as often as its clock comes round. Neither track reaches it either: a VND lock running out does nothing to it, a USD
+lock running out does nothing to it, and a cross answered on either does nothing to it.
 
 - **Whether it is standing there is never stored**, only worked out from its clock each time it is asked for. A flag
   and a wait can disagree; a wait on its own cannot.
-- **Opening it starts its wait.** Bank the step and the box goes for three quarters of an hour, then comes back on the
-  next milestone. Nothing accumulates, and nothing is ever owed.
+- **Opening it starts its wait.** Bank the step and the box goes for half an hour, then comes back on the next
+  milestone. Nothing accumulates, and nothing is ever owed.
 - **No verdict.** The tracks ask whether you held out because their wait is time you have to hold out *through*, and
   somebody has to say whether you did. The box's wait is only time it spends away — there is nothing to own up to.
-- **Forty-five minutes, deliberately unlike either track's 18 and 24**, so the three never fall into step and hand you
-  everything at once. It is one constant, `BOX_LOCK` in `js/plans.js`.
+- **Thirty minutes, deliberately unlike either track's 18 and 24**, so the three never fall into step and hand you
+  everything at once. It is one constant, `BOX_LOCK` in `js/plans.js`, and lowering it shortens a wait already
+  running as well as every one after it.
 - **A fresh set of books has it standing there**, because there is no wait behind it yet to sit through.
 - **A box on a finished ladder is a box with nothing in it**: once all 150 steps are banked it never returns.
 - **Its own numbering, the same books.** The box counts its own 150 steps, but the money is real, so it lands in the
@@ -327,7 +329,7 @@ is no start-over key — `Ctrl+R` went back to the browser, where it means reloa
 
 **Lock after ticking a step** — minutes to wait before the next amount unlocks, and the only thing in the app that
 can be configured at all. VND starts at `18` and USD at `24`, deliberately different so the two ladders never fall
-into step and hand you both questions at once. The box keeps its own 45 and is not configurable: it is not a track,
+into step and hand you both questions at once. The box keeps its own 30 and is not configurable: it is not a track,
 and it asks nothing of you.
 
 > It can be made **longer, never shorter**, and there is no off. Those two numbers are the floor, enforced when a save

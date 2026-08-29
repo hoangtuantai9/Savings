@@ -152,6 +152,15 @@ function migrate(s) {
   s.usdDone = clamp(s.usdDone, 0, count(s.usd));
   s.boxDone = clamp(s.boxDone, 0, count(s.box));
 
+  // A wait longer than the box's own is not a wait the box could have started — the figure has come
+  // down since it was stamped. Trim it rather than making somebody sit out a cadence that no longer
+  // exists, which also puts a stop to any nonsense date arriving over sync from a machine whose
+  // clock is wrong.
+  if (s.boxUnlockAt) {
+    const most = Date.now() + s.box.cooldown * 60000;
+    if (new Date(s.boxUnlockAt).getTime() > most) s.boxUnlockAt = new Date(most).toISOString();
+  }
+
   // Whether the box is standing there is worked out from its clock every time it is asked for, so
   // these two are the shape it used to be kept in and nothing reads them any more. A file written
   // before VERSION 24 still carries them; they go the same way the bonus keys did.

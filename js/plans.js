@@ -12,7 +12,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 26;
+export const VERSION = 27;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -42,13 +42,15 @@ export const VND_REPEG = { version: 25, done: 0 };
 const VND_LOCK = 18, USD_LOCK = 24;
 
 // The box's own wait, and the whole of what governs it: it is away for this long after it is
-// opened, and it is back when the time is up. Nothing about it is tied to either track — a USD lock
-// running out neither summons it nor sends it away, and the length is deliberately unlike both of
-// theirs so the three never fall into step and hand you everything at once.
+// opened, and it is back when the time is up. Nothing else limits it — there is no allowance, no
+// count of what is left today and no ceiling on how many times it may be taken; open it as often as
+// its clock comes round. Nothing about it is tied to either track either: a USD lock running out
+// neither summons it nor sends it away.
 //
-// Forty-five minutes is what the bonus stone this replaced used to keep, and it is the one number
-// here to change if the box should come round more or less often.
-const BOX_LOCK = 45;
+// Thirty minutes. The tracks wait 18 and 24, so this is deliberately unlike both — three clocks
+// that fall into step would hand you everything at once — and it is the one number here to change
+// if the box should come round more or less often.
+const BOX_LOCK = 30;
 
 /**
  * The wait a track was designed around, and the least it may ever be set to. The options panel can
