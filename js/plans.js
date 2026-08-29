@@ -1,6 +1,7 @@
 // The three ladders, transcribed from the source spreadsheet, which is now three columns wide and
-// has nothing in it that is not read: column A is VND, column B is USD and column C is the box —
-// 185 steps each, all three independent of one another, each on its own clock.
+// has nothing in it that is not read: column A is VND, column B is USD and column C is the box.
+// The three are no longer the same length — a column ends where the sheet stops filling it in, and
+// each ladder is as long as its own column — and all three are independent, each on its own clock.
 // The sheet keeps VND in thousands ("20,00" = 20.000 ₫), so every VND figure is stored ×1000 —
 // the rest of the app deals in plain đồng and never has to know about the sheet's unit.
 //
@@ -11,7 +12,7 @@
 // colour bands below will find it on their own.
 
 /** Bumped whenever the tables below change, so a saved file adopts the new ladder. */
-export const VERSION = 25;
+export const VERSION = 26;
 
 /**
  * Vestigial, and here for one reason only: a state.js still sitting in a browser's HTTP cache
@@ -154,11 +155,10 @@ const USD_STEPS = [
   80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
   159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
   319.68, 345.26, 372.88, 402.71,
-  // green — run 6: steps 151-185, $80.00 -> $1095.21
+  // green — run 6: steps 151-175, $80.00 -> $507.29
   80.00, 86.40, 93.31, 100.78, 108.84, 117.55, 126.95, 137.11, 148.07,
   159.92, 172.71, 186.53, 201.45, 217.57, 234.98, 253.77, 274.08, 296.00,
-  319.68, 345.26, 372.88, 402.71, 434.92, 469.72, 507.29, 547.88, 591.71,
-  639.04, 690.17, 745.38, 805.01, 869.41, 938.97, 1014.08, 1095.21
+  319.68, 345.26, 372.88, 402.71, 434.92, 469.72, 507.29
 ];
 
 // Column C — 185 steps at ×1.05, the shallowest opening in the app at thirty cents.
@@ -186,15 +186,11 @@ const BOX_STEPS = [
   37.57, 39.45, 41.42, 43.49, 45.67, 47.95, 50.35, 52.87, 55.51,
   58.29, 61.20, 64.26, 67.47, 70.85, 74.39, 78.11, 82.01, 86.12,
   90.42, 94.94, 99.69,
-  // steps 121-185: $104.67 -> $873.71
-  104.67, 109.91, 115.40, 121.17, 127.23, 133.59, 140.27, 147.29, 154.65,
-  162.38, 170.50, 179.03, 187.98, 197.38, 207.25, 80.00, 84.00, 88.20,
-  92.61, 97.24, 102.10, 107.21, 112.57, 118.20, 124.11, 130.31, 136.83,
-  143.67, 150.85, 158.39, 166.31, 174.63, 183.36, 192.53, 202.16, 212.26,
-  222.88, 234.02, 245.72, 258.01, 270.91, 284.45, 298.68, 313.61, 329.29,
-  345.76, 363.04, 381.20, 400.26, 420.27, 441.28, 463.35, 486.51, 510.84,
-  536.38, 563.20, 591.36, 620.93, 651.97, 684.57, 718.80, 754.74, 792.48,
-  832.10, 873.71
+  // steps 121-150: $104.67 -> $338.64
+  104.67, 109.91, 115.40, 121.17, 100.00, 105.00, 110.25, 115.76, 121.55,
+  127.63, 134.01, 140.71, 147.75, 155.13, 162.89, 171.03, 179.59, 188.56,
+  197.99, 207.89, 218.29, 229.20, 240.66, 252.70, 265.33, 278.60, 292.53,
+  307.15, 322.51, 338.64
 ];
 
 export const plans = {
