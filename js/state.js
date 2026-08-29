@@ -19,26 +19,26 @@ const KEY = 'savings.data';
  * file already asks plans.js only for names every generation of it has had, so the one figure that
  * changes with each reset lives here, next to the code that reads it.
  *
- * At 25 because a new journey was asked for by name: both tracks and the box back to their first
- * milestone, the locks cleared, the verdicts they were owed cleared, and the box's own clock cleared
- * with them so it is standing there for the new climb. The books are not part of it — see
- * BOOKS_WIPE_AT below, which has deliberately stayed where it was.
+ * At 28 because a new journey was asked for by name alongside a re-cut sheet: both tracks and the
+ * box back to their first milestone, the locks cleared, the verdicts they were owed cleared, and the
+ * box's own clock cleared with them so it is standing there for the new climb. The books are not
+ * part of it — see BOOKS_WIPE_AT below, which has deliberately stayed where it was.
  *
- * It sat at 22 through the re-cut at 23 and the box being cut loose at 24. Re-cutting a sheet or
- * changing what a ladder does is not by itself a reason to send a climb back to step 1; only being
- * asked is.
+ * It has moved only when asked, and sat still through everything else: the re-cuts at 23 and 26, the
+ * box being cut loose at 24, its cadence coming down at 27. Re-cutting a sheet or changing what a
+ * ladder does is not by itself a reason to send a climb back to step 1.
  */
-const JOURNEY_RESET_AT = 25;
+const JOURNEY_RESET_AT = 28;
 
 /**
  * The version at which the books themselves were emptied, and the only thing in the app that can
  * take a saved step back off the history without a cross being answered.
  *
- * Kept apart from JOURNEY_RESET_AT on purpose, and now seven versions behind it: every ladder has
- * just been sent back to its first milestone for the second time, and neither time did anybody ask
- * for the money to go with it. A journey reset means "this climb is over"; a wipe means "there was
+ * Kept apart from JOURNEY_RESET_AT on purpose, and now ten versions behind it: every ladder has
+ * just been sent back to its first milestone for the third time, and not once did anybody ask for
+ * the money to go with it. A journey reset means "this climb is over"; a wipe means "there was
  * no climb" — and only one of those should ever be carried by a reset. Staying at 18 while the reset
- * above has moved twice is exactly what that separation is for: a reset that quietly took the books
+ * above has moved three times is exactly what that separation is for: a reset that quietly took the books
  * with it would be the one mistake they cannot come back from.
  *
  * Move this only on an instruction to empty the books by name.

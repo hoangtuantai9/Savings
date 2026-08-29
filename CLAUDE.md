@@ -55,20 +55,19 @@ updated it, do this whole chain without being asked for each step:
    to step 1 a second time.
 4. **Update the figures in `README.md`**: both red/amber/green tables, the run
    count and ratio per column, the totals, and the opening milestones. Never
-   hand-write a band edge. Two functions in `plans.js` work them out, and which
-   one a column needs depends on the column:
-   - `bandEnds()` for A and B, where a band ends at a step **lower than the one
-     before it** — the round number a run starts over at.
-   - `decadeEnds()` for the box, which has never had two boundaries of the kind
-     `bandEnds()` can see. Its bands end where the column first **crosses a
-     bar**: the first step to ask for a dollar, then the first to ask for ten.
+   hand-write a band edge — `bandEnds()` in `plans.js` reads them off the
+   figures, taking the first two steps **lower than the one before**, which is
+   the round number a run starts over at.
 
-   Which function a column needs is decided by counting its boundaries, not by
-   remembering which one it used last time. `bandEnds()` needs **two** steps that
-   go down to give three colours; with one it gives two colours and the ladder
-   never reaches green, and with none it gives one. If the box column ever grows a
-   second downward step, say so and move it to `bandEnds()` — that is the user's
-   call, and worth raising because it is a visible change.
+   **Count the boundaries in every column before trusting it.** Three colours
+   need **two** steps that go down; with one a column gets two colours and never
+   reaches green, and with none it gets one colour for its whole length. All
+   three columns have enough today. If a re-cut takes a column below two, say so
+   and ask — the colours then have to be decided rather than inferred, and it is
+   a visible change. There was a `decadeEnds()` for exactly that case, reading
+   the bands off the bars a column crossed instead; it was deleted at VERSION 28
+   when the box column grew boundaries of its own, and it is in the history at
+   `7077cbc` if it is ever wanted back.
 5. **Commit and push**, per the section above.
 
 ## The three constants that move something without it being climbed
