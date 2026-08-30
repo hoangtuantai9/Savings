@@ -120,6 +120,25 @@ export function boxSparks(svg, n = 12, distance = 92, up = false) {
   after(1500, () => host.remove());
 }
 
+/**
+ * Puts the lid back where it belongs.
+ *
+ * openLid() finishes with the lid held open, and animate() commits its last frame as an inline
+ * style on the way out — which is the point, or the lid would snap shut halfway through the
+ * reveal. But the box's screen builds its drawing once and shows the same one every time, so that
+ * inline transform outlived the moment it was for: the next box you opened was already open.
+ *
+ * Anything that shows the box has to shut it first. There is no state to consult — a closed lid is
+ * simply the absence of a transform, and cancelling first stops a reveal that is still running from
+ * committing itself over the top a moment later.
+ */
+export function closeLid(box) {
+  const lid = box?.lid?.wrap;
+  if (!lid) return;
+  for (const a of lid.getAnimations?.() ?? []) a.cancel();
+  lid.style.transform = '';
+}
+
 /** The lid comes off, and what was inside comes out of the opening. */
 export function openLid(box) {
   animate(box.lid.wrap, [

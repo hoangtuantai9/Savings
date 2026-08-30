@@ -14,7 +14,7 @@
 import { count, amountAt } from './plans.js';
 import { track, box, remaining } from './state.js';
 import { stone, boxStone, wear, wearBox, accentOf, blend, alpha, lighten, dash, pointAt, el, SVG } from './gem.js';
-import { animate, done, bounce, ring, shards, sparks, countUp, clock, openLid, EASE_OUT, EASE_IN } from './fx.js';
+import { animate, done, bounce, ring, shards, sparks, countUp, clock, openLid, closeLid, EASE_OUT, EASE_IN } from './fx.js';
 
 const COLD = '#3A4B63';
 const G = { cx: 210, cy: 218, w: 132, h: 176 };
@@ -323,6 +323,9 @@ export function createFocus({ onBack, onTick, onVerdict, onTickBox }) {
     state = next;
     currency = cur;
     onBox = !!asBox;
+    // The same drawing is shown every time, so it arrives however the last visit left it. A box is
+    // shut until it is opened.
+    if (onBox) closeLid(boxParts);
     root.hidden = false;
     paint();
     await done(animate(root, [
